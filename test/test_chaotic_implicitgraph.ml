@@ -2,8 +2,8 @@ open OUnit2
 
 let all : (string * test_fun) list =
   [
-    ("silly", fun _ -> assert_equal true Silly.assertion);
     ("fib", fun _ -> assert_equal true Fib.assertion);
+    ("silly", fun _ -> assert_equal true Silly.assertion);
     ("fibdiv", fun _ -> assert_equal true Fibdiv.assertion);
     ("fibmix", fun _ -> assert_equal true Fibmix.assertion);
     ("fibn", fun _ -> assert_equal true Fibn.assertion);
