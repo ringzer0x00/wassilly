@@ -10,7 +10,7 @@ let body =
           Num 1,
           Language.Add
             ( Language.Call ("fib", [ Sub (Var "loc", Num 1) ]),
-              Language.Call ("fib", [ Sub (Var "loc", Num 2) ]) ) ) )
+              Language.Call ("fib", [ Sub (Var "loc", Num 1) ]) ) ) )
 
 let env =
   let e =
