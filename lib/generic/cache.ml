@@ -15,9 +15,9 @@ module Cache (D : CD) (K : I) : C = struct
   type k = K.t
   type d = D.t
 
-  module M = Map.Make (K)
+  module M = Datastructures.Mapping.Make (K) (D)
 
-  type t = d M.t
+  type t = M.t
 
   let empty : t = M.empty
   let add k d m : t = M.add k d m

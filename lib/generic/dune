@@ -1,2 +1,3 @@
 (library
- (name genericcomponents))
+ (name genericcomponents)
+ (libraries datastructures apron apron.polkaMPQ))

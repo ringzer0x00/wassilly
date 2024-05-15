@@ -1,2 +1,2 @@
-module C = Genericcomponents.Cache.Cache
-module CacheSFL = C (Cacheddata.CachedDataSFL) (Input.SFLInput)
+module Cache = Genericcomponents.Cache.Cache
+module CacheSFL = Cache (Cacheddata.CachedDataSFL) (Input.SFLInput)
