@@ -6,11 +6,12 @@ module type GE = sig
   val make : t
   val add : alloc -> value -> t -> t
   val lookup : alloc -> t -> value
-  (*val lub : t -> t -> t
-    val widen : t -> t -> t*)
+  val leq : t -> t -> bool
+  val lub : t -> t -> t
+  val widen : t -> t -> t
 end
 
-module MapEnv (V : Value.GV) (A : Alloc.MapAlloc) : GE = struct
+module MapEnv (V : Value.GVal) (A : Alloc.MapAlloc) : GE = struct
   type value = V.t
   type alloc = A.t
 
@@ -23,13 +24,17 @@ module MapEnv (V : Value.GV) (A : Alloc.MapAlloc) : GE = struct
 
   let lookup a m =
     match M.find_opt a m with None -> failwith "fail @ lookup" | Some v -> v
+
+  let leq _ _ = failwith ""
+  let lub _ _ = failwith ""
+  let widen _ _ = failwith ""
 end
 
 module ApronEnv (A : Alloc.ApronAlloc) : GE = struct
-  module V = Value.ApronValue
+  module V = Value.ApronValue (*this has to become an expression!*)
   module AH = Datastructures.Apronhelper.ApronEnvHelper
 
-  type value = V.t
+  type value = Apron.Interval.t
   type alloc = A.t
 
   let mgr = Polka.manager_alloc_strict ()
@@ -38,9 +43,12 @@ module ApronEnv (A : Alloc.ApronAlloc) : GE = struct
 
   let make : t = AH.make mgr
 
-  let add _a _v _m =
-    let _e' = AH.add mgr _m _a A.to_add in
+  let add _a _expr _m =
+    let _m', _var = AH.add_and_assign mgr _m _a A.to_add in
     failwith ""
 
-  let lookup _ _ = failwith ""
+  let lookup a m = Apron.Abstract1.bound_variable mgr m (A.var_of_alloc a)
+  let leq e1 e2 = Apron.Abstract1.is_leq mgr e1 e2
+  let lub e1 e2 = Apron.Abstract1.join mgr e1 e2
+  let widen e1 e2 = Apron.Abstract1.widening mgr e1 e2
 end

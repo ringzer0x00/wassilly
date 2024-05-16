@@ -17,8 +17,9 @@ module type ApronAlloc = sig
 
   val mkalloc : string -> alloc -> t
   val type_of_valtype : valtype -> string
-  val to_add : t -> alloc array * alloc array
+  val to_add : t -> alloc array * alloc array * alloc
   val compare : t -> t -> int
+  val var_of_alloc : t -> alloc
 end
 
 module VarMapAlloc : MapAlloc = struct
@@ -46,8 +47,9 @@ module VarApronAlloc : ApronAlloc = struct
 
   let to_add (alloc : t) =
     match alloc with
-    | INT, vname -> ([| vname |], [||])
-    | REAL, vname -> ([||], [| vname |])
+    | INT, vname -> ([| vname |], [||], vname)
+    | REAL, vname -> ([||], [| vname |], vname)
 
+  let var_of_alloc a : alloc = snd a
   let compare = compare
 end

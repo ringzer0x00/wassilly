@@ -1,4 +1,13 @@
-module type GV = sig
+module type GVal = sig
+  type t
+
+  val compare : t -> t -> int
+  val leq : t -> t -> bool
+  val lub : t -> t -> t
+  val widen : t -> t -> t
+end
+
+module type GEx = sig
   type t
 
   val compare : t -> t -> int
@@ -6,4 +15,5 @@ module type GV = sig
     val widen : t -> t -> t*)
 end
 
-module ApronValue : GV = Datastructures.Apronhelper.ApronValue
+module ApronValue : GVal = Datastructures.Apronhelper.ApronValue
+module ApronExpr : GEx = Datastructures.Apronhelper.ApronExpression
