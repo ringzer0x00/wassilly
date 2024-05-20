@@ -1,4 +1,4 @@
 module type E = Genericcomponents.Env.GE
 
-module SFLEnv : E =
+module SFLEnv =
   Genericcomponents.Env.ApronEnv (Genericcomponents.Alloc.VarApronAlloc)

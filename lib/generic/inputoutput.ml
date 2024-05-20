@@ -17,10 +17,15 @@ module type InterpreterOutput = sig
   (*val*)
   type t
 
+  val top : t
+  val bot : t
+  val leq : t -> t -> bool
+  val lub : t -> t -> t
+  val widen : t -> t -> t
   val compare : t -> t -> int
 end
 
-module InterpreterInput (Env : Env.GE) (Expr : Language.AST) :
+module InterpreterInput (Env : Env.GE) (Expr : Language.Language) :
   InterpreterInput = struct
   type env = Env.t
   type expr = Expr.l
@@ -35,6 +40,8 @@ module InterpreterInput (Env : Env.GE) (Expr : Language.AST) :
 end
 
 module InterpreterOutputPure (V : Value.GVal) : InterpreterOutput = struct
+  include V
+
   type value = V.t
   type t = value (*interval*)
 

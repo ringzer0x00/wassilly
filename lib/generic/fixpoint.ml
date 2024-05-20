@@ -21,3 +21,5 @@ end
 module Fixpoint (I : INfix) (O : OUTfix) = struct
   type comp = I.t -> O.t
 end
+
+(*  MAY NOT BE NECESSARY *)

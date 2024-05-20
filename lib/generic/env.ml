@@ -1,16 +1,19 @@
 module type GE = sig
   type value
   type alloc
+  type typedalloc
   type t
 
   val make : t
-  val add_and_assign : alloc -> value -> t -> t
+  val add_and_assign : typedalloc -> value -> t -> t
   val lookup : alloc -> t -> value
   val leq : t -> t -> bool
   val lub : t -> t -> t
   val widen : t -> t -> t
+  val alloc_of_string : string -> alloc
 end
 
+(*
 module MapEnv (V : Value.GVal) (A : Alloc.MapAlloc) : GE = struct
   type value = V.t
   type alloc = A.t
@@ -29,13 +32,14 @@ module MapEnv (V : Value.GVal) (A : Alloc.MapAlloc) : GE = struct
   let lub _ _ = failwith ""
   let widen _ _ = failwith ""
 end
-
+*)
 module ApronEnv (A : Alloc.ApronAlloc) : GE = struct
   module V = Value.ApronValue (*this has to become an expression!*)
   module AA1 = Apron.Abstract1
 
   type value = Apron.Interval.t
-  type alloc = A.t
+  type alloc = Apron.Var.t
+  type typedalloc = A.t
 
   let mgr = Polka.manager_alloc_strict ()
 
@@ -54,7 +58,8 @@ module ApronEnv (A : Alloc.ApronAlloc) : GE = struct
     let _m', _var = addvar mgr m a A.to_add in
     failwith ""
 
-  let lookup a m = AA1.bound_variable mgr m (A.var_of_alloc a)
+  let alloc_of_string = A.of_string
+  let lookup a m = AA1.bound_variable mgr m a
   let leq e1 e2 = AA1.is_leq mgr e1 e2
   let lub e1 e2 = AA1.join mgr e1 e2
 

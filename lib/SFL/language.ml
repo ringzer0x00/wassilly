@@ -1,4 +1,9 @@
-module type L = Genericcomponents.Language.AST
+module type L = Genericcomponents.Language.Language
+
+module ExEnv =
+  Genericcomponents.Env.ApronEnv (Genericcomponents.Alloc.VarApronAlloc)
+
+module Out = Genericcomponents.Value.ApronValue
 
 module Language : L = struct
   type _bexpr = Eq of _expr * _expr
@@ -13,7 +18,11 @@ module Language : L = struct
     | Call of string * _expr list
 
   type l = _expr
-end
+  type in_ = ExEnv.t * l
+  type out_ = ExEnv.value
 
-module C = Genericcomponents.Language.Command
-module Command = C (Language)
+  let eval (_env, expr) _stack _cache : out_ =
+    match expr with
+    | Var v -> ExEnv.lookup (ExEnv.alloc_of_string v) _env
+    | _ -> failwith "meaow"
+end

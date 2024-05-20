@@ -1,3 +1,3 @@
 module type V = Genericcomponents.Value.GVal
 
-module SFLVal : V = Genericcomponents.Value.ApronValue
+module SFLVal = Genericcomponents.Value.ApronValue

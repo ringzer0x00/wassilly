@@ -1,17 +1,8 @@
-module type AST = sig
-  type _bexpr
-  type _expr
+module type Language = sig
   type l
+  type in_
+  type out_
+
+  val eval : in_ -> 'a -> 'b -> out_
 end
-
-module type C = sig
-  type t
-
-  val compare : t -> t -> int
-end
-
-module Command (L : AST) : C = struct
-  type t = L.l
-
-  let compare = compare
-end
+(* I/O *)

@@ -20,6 +20,7 @@ module type ApronAlloc = sig
   val to_add : t -> alloc array * alloc array * alloc
   val compare : t -> t -> int
   val var_of_alloc : t -> alloc
+  val of_string : string -> alloc
 end
 
 module VarMapAlloc : MapAlloc = struct
@@ -52,4 +53,5 @@ module VarApronAlloc : ApronAlloc = struct
 
   let var_of_alloc a : alloc = snd a
   let compare = compare
+  let of_string = Apron.Var.of_string
 end
