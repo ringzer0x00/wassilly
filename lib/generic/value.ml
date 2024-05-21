@@ -24,7 +24,7 @@ module ApronValue : GVal = struct
   module AI = Apron.Interval
   module AS = Apron.Scalar
 
-  type t = AI.t
+  type t = Apron.Interval.t
 
   let top = AI.top
   let bot = AI.bottom

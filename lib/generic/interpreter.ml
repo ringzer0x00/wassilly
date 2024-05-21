@@ -36,7 +36,7 @@ module Fixpoint (I : II) (O : IO) (S : Sk) (C : Ca) (SCG : SCG) : FP = struct
 
   let fixpoint _input _stack _cache = failwith "todo"
 end
-(*
+
 module Interpreter (Fix : FP) (I : II) (O : IO) (S : Sk) (C : Ca) (SCG : SCG) :
   GI = struct
   type in_ = Fix.in_
@@ -51,4 +51,4 @@ module Interpreter (Fix : FP) (I : II) (O : IO) (S : Sk) (C : Ca) (SCG : SCG) :
       =
     failwith "must be defined on target language"
 end
-*)
+

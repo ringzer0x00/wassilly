@@ -33,8 +33,7 @@ module MapEnv (V : Value.GVal) (A : Alloc.MapAlloc) : GE = struct
   let widen _ _ = failwith ""
 end
 *)
-module ApronEnv (A : Alloc.ApronAlloc) : GE = struct
-  module V = Value.ApronValue (*this has to become an expression!*)
+module ApronEnv (A : Alloc.ApronAlloc) (V: Value.GVal) : GE = struct
   module AA1 = Apron.Abstract1
 
   type value = Apron.Interval.t
