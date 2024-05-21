@@ -1,9 +1,6 @@
 module type L = Genericcomponents.Language.Language
 
-module ExEnv =
-  Genericcomponents.Env.ApronEnv
-    (Genericcomponents.Alloc.VarApronAlloc)
-    (Genericcomponents.Value.ApronValue)
+module Env = Env.SFLEnv
 
 module Language : L = struct
   type _bexpr = Eq of _expr * _expr
@@ -18,12 +15,18 @@ module Language : L = struct
     | Call of string * _expr list
 
   type l = _expr
-  type in_ = ExEnv.t * l
-  type out_ = ExEnv.value
+  type in_ = Env.t * l
+  type out_ = Env.value
 
   let eval (_env, expr) _stack _cache : out_ =
     match expr with
-    | Var v -> ExEnv.lookup (ExEnv.alloc_of_string v) _env
-    | Add (_l,_r) -> failwith "meaow"
+    | Var v -> Env.lookup (Env.alloc_of_string v) _env
+    | Add (_l, _r) -> failwith "meaow"
     | _ -> failwith "meaow"
 end
+
+module Out = Genericcomponents.Value.ApronValue
+module CD = Cacheddata.CD (Out)
+module Cache = Cache.Cache (Cacheddata.CD (Out))
+
+(*env is defined*)

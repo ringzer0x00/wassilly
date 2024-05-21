@@ -1,3 +1,2 @@
 (library
- (name arrow)
- (libraries genericcomponents))
+ (name arrow))
