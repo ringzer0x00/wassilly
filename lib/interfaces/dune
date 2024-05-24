@@ -1,3 +1,0 @@
-(library
- (name ifaces)
- (libraries datastructures apron apron.polkaMPQ))
