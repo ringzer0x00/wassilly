@@ -2,7 +2,9 @@ module LocalVar = Variablemem.LocalVar
 module GlobalVar = Variablemem.GlobalVar
 
 type aval = Apronext.Intervalext.t
-type operand = Value of aval | LVarRef of int32 | GVarRef of int32
+type operand = Value of aval | LVarRef of int32 | GVarRef of int32 | Label (*placeholder*)
+
+(*| Label*)
 type stack = operand list
 type t = stack
 type varmemories = Variablememories.t
@@ -18,13 +20,14 @@ let concretize (mem : varmemories) = function
   | Value a -> a
   | LVarRef i -> GlobalVar.lookup mem.loc i
   | GVarRef i -> GlobalVar.lookup mem.glob i
+  | Label -> failwith "cannot concretize label"
 
 let replace (s : stack) (op : operand) (v : aval) =
   List.map (fun x -> if x = op then Value v else op) s
 
 let concretize_assignment (s : stack) (mem : varmemories) ref =
   match ref with
-  | Value _ -> failwith "must be reference"
+  | Value _ | Label -> failwith "must be reference"
   | LVarRef _ | GVarRef _ ->
       let v = concretize mem ref in
       replace s ref v

@@ -33,11 +33,12 @@ module VariableMem = struct
     let ma' = M.add b v ma in
     (ma', ad')
 
-  let lookup (_ : t) (_ : binding) : Apronext.Intervalext.t =
-    failwith "reads binding from map, queries abstract domain"
+  let lookup ((ma, ad) : t) (b : binding) : Apronext.Intervalext.t =
+    (*raw interval, would returning ref would be appropriate?*)
+    let v = M.find_opt b ma in
+    match v with None -> failwith "noooo" | Some v -> AD.bound_variable ad v
 
   let widen ((ma1, ad1) : t) ((ma2, ad2) : t) : t =
-    (*might be buggy with the assumpion that one env is bigger than the other*)
     if ma1 = ma2 then
       let ad' = AD.widen ad1 ad2 in
       (ma1, ad')

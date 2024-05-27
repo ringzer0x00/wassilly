@@ -9,6 +9,7 @@ RUN opam install camlidl
 RUN opam install mlgmpidl 
 RUN opam install apron 
 RUN opam install ounit2
+RUN opam install apronext
 RUN eval $(opam env)
 
 WORKDIR wassilly
