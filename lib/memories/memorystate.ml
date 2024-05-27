@@ -5,6 +5,13 @@ type t = {
   tab : Tables.t;
 }
 
+let pop ms =
+  { stk = Stack.pop ms.stk; var = ms.var; mem = ms.mem; tab = ms.tab }
+
+let pop_n _n = failwith "todo"
+let peek ms = Stack.peek ms.stk
+let peek_binop ms = Stack.peek_binop ms.stk
+
 let join ms1 ms2 =
   {
     stk = Stack.join (ms1.var, ms1.stk) (ms2.var, ms2.stk);
