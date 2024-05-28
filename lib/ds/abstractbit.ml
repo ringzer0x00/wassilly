@@ -6,10 +6,10 @@ let lub b1 b2 =
   match (b1, b2) with
   | _, Top | Top, _ -> Top
   | Zero, One | One, Zero -> Top
-  | Zero, Zero -> Zero
-  | One, One -> One
   | Bot, One | One, Bot -> One
   | Bot, Zero | Zero, Bot -> Zero
+  | Zero, Zero -> Zero
+  | One, One -> One
   | Bot, Bot -> Bot
 
 let widen = lub
