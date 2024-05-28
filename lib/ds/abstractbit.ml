@@ -2,7 +2,7 @@ type t = Zero | One | Bot | Top
 
 (*put here bit operations*)
 
-let lub b1 b2 =
+let join b1 b2 =
   match (b1, b2) with
   | _, Top | Top, _ -> Top
   | Zero, One | One, Zero -> Top
@@ -12,7 +12,7 @@ let lub b1 b2 =
   | One, One -> One
   | Bot, Bot -> Bot
 
-let widen = lub
+let widen = join
 let eq b1 b2 = b1 = b2
 
 let leq b1 b2 =

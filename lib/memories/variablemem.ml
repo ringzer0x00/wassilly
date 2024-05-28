@@ -46,7 +46,7 @@ module VariableMem = struct
 
   let join ((ma1, ad1) : t) ((ma2, ad2) : t) : t =
     if ma1 = ma2 then
-      let ad' = AD.lub ad1 ad2 in
+      let ad' = AD.join ad1 ad2 in
       (ma1, ad')
     else failwith "not compatible"
 

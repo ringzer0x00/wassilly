@@ -43,7 +43,7 @@ let concretize_assignment (s : stack) (mem : varmemories) ref =
       let v = concretize mem ref in
       replace s ref v
 
-let ival_lub i1 i2 : aval = Apronext.Intervalext.join i1 i2
+let ival_join i1 i2 : aval = Apronext.Intervalext.join i1 i2
 
 let ival_widen i1 i2 : aval =
   Apronext.Intervalext.join i1 i2 (*to be replaced with widening*)
@@ -60,7 +60,7 @@ let jw_operand (mem1, o1) (mem2, o2) operation =
 
 let join (m1, s1) (m2, s2) =
   (*two memories are needed, one for locals and one for globals*)
-  List.map2 (fun x y -> jw_operand (m1, x) (m2, y) ival_lub) s1 s2
+  List.map2 (fun x y -> jw_operand (m1, x) (m2, y) ival_join) s1 s2
 
 let widen (m1, s1) (m2, s2) =
   (*two memories are needed, one for locals and one for globals*)

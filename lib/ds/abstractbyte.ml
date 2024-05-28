@@ -2,7 +2,7 @@ type t = Abstractbit.t array
 
 let def_init = Abstractbit.Zero
 let alloc_byte : t = Array.make 8 def_init
-let join b1 b2 = Array.map2 (fun fst snd -> Abstractbit.lub fst snd) b1 b2
+let join b1 b2 = Array.map2 (fun fst snd -> Abstractbit.join fst snd) b1 b2
 let widen = join
 
 let byte_leq b1 b2 =
