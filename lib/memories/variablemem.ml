@@ -51,6 +51,9 @@ module VariableMem = struct
     else failwith "not compatible"
 
   let filter ((ma, ad) : t) cons : t = (ma, AD.filter ad cons)
+  let leq ((ma1, ad1) : t) ((ma2, ad2) : t) = ma1 == ma2 && AD.leq ad1 ad2
+  let eq ((ma1, ad1) : t) ((ma2, ad2) : t) = ma1 == ma2 && AD.eq ad1 ad2
+  let le (vm1 : t) (vm2 : t) = leq vm1 vm2 && not (eq vm1 vm2)
 end
 
 module LocalVar = VariableMem

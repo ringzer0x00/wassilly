@@ -47,14 +47,14 @@ let filter_glob ms c =
 (*ms1 <= ms2*)
 let leq ms1 ms2 =
   Stack.leq (ms1.mem, ms1.stk) (ms2.mem, ms2.stk)
-  && Variablememories.leq ms1.mem ms2.mem
+  && Variablememories.leq ms1.var ms2.var
   && Linearmem.leq ms1.mem ms2.mem
   && Tables.leq ms1.tab ms2.tab
 
 (*ms1 = ms2*)
 let eq ms1 ms2 =
   Stack.eq (ms1.mem, ms1.stk) (ms2.mem, ms2.stk)
-  && Variablememories.eq ms1.mem ms2.mem
+  && Variablememories.eq ms1.var ms2.var
   && Linearmem.eq ms1.mem ms2.mem
   && Tables.eq ms1.tab ms2.tab
 

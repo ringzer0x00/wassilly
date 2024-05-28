@@ -20,5 +20,8 @@ let filter_glob ms _ : t = ms
 let return_context finished continuation : t =
   { loc = continuation.loc; glob = finished.glob }
 
-let leq _ _ = failwith ""
-let eq _ _ = failwith ""
+let leq vm1 vm2 =
+  LocalVar.leq vm1.loc vm2.loc && GlobalVar.leq vm1.glob vm2.glob
+
+let eq vm1 vm2 = LocalVar.eq vm1.loc vm2.loc && GlobalVar.eq vm1.glob vm2.glob
+let le vm1 vm2 = leq vm1 vm2 && not (eq vm1 vm2)

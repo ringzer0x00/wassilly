@@ -45,6 +45,14 @@ let joinBit b1 b2 =
 (*(memory.grow (size expression))*)
 let pageconcat (pold : t) (pnew : t) : t = Array.concat [ pold; pnew ]
 let size m = Array.length m / wasm_page_size
+let byte_leq _ _ = failwith ""
+let byte_eq _ _ = failwith ""
+let byte_le _ _ = failwith ""
 
-let leq _ _ = failwith ""
-let eq _ _ = failwith ""
+let leq (lm1 : t) (lm2 : t) =
+  Array.for_all2 (fun fst snd -> byte_leq fst snd) lm1 lm2
+
+let eq (lm1 : t) (lm2 : t) =
+  Array.for_all2 (fun fst snd -> byte_eq fst snd) lm1 lm2
+
+let le lm1 lm2 = leq lm1 lm2 && not (eq lm1 lm2)
