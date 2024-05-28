@@ -9,7 +9,7 @@ let wStack stack ((env1, expr) as call : Call.t) =
       (Stack.Stack.add expr env1 stack, call)
   | true ->
       let env2 = Stack.Stack.find expr stack in
-      if Memory.included env1 env2 then (
+      if Memory.leq env1 env2 then (
         Format.print_string "env in stack is bigger\n";
         Format.print_flush ();
         (stack, (env2, expr)))

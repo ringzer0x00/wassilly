@@ -65,3 +65,6 @@ let join (m1, s1) (m2, s2) =
 let widen (m1, s1) (m2, s2) =
   (*two memories are needed, one for locals and one for globals*)
   List.map2 (fun x y -> jw_operand (m1, x) (m2, y) ival_widen) s1 s2
+
+let leq _ _ = failwith ""
+let eq _ _ = failwith ""

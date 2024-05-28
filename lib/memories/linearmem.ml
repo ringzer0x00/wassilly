@@ -1,7 +1,7 @@
 type bit = Zero | One | Bot | Top
 type byte = bit array
 type page = byte array
-type t = page
+type t = page (*page array really*)
 
 (* a maximim number of pages is defined within the module *)
 
@@ -45,3 +45,6 @@ let joinBit b1 b2 =
 (*(memory.grow (size expression))*)
 let pageconcat (pold : t) (pnew : t) : t = Array.concat [ pold; pnew ]
 let size m = Array.length m / wasm_page_size
+
+let leq _ _ = failwith ""
+let eq _ _ = failwith ""

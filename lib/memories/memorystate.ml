@@ -44,4 +44,19 @@ let filter_glob ms c =
     tab = ms.tab;
   }
 
-let included _ _ = failwith ""
+(*ms1 <= ms2*)
+let leq ms1 ms2 =
+  Stack.leq (ms1.mem, ms1.stk) (ms2.mem, ms2.stk)
+  && Variablememories.leq ms1.mem ms2.mem
+  && Linearmem.leq ms1.mem ms2.mem
+  && Tables.leq ms1.tab ms2.tab
+
+(*ms1 = ms2*)
+let eq ms1 ms2 =
+  Stack.eq (ms1.mem, ms1.stk) (ms2.mem, ms2.stk)
+  && Variablememories.eq ms1.mem ms2.mem
+  && Linearmem.eq ms1.mem ms2.mem
+  && Tables.eq ms1.tab ms2.tab
+
+(*ms1 < ms2 *)
+let lt ms1 ms2 = leq ms1 ms2 && not (eq ms1 ms2)

@@ -19,3 +19,6 @@ let filter_glob ms _ : t = ms
 
 let return_context finished continuation : t =
   { loc = continuation.loc; glob = finished.glob }
+
+let leq _ _ = failwith ""
+let eq _ _ = failwith ""
