@@ -1,5 +1,4 @@
 type t = Zero | One | Bot | Top
-
 (*put here bit operations*)
 
 let join b1 b2 =

@@ -9,9 +9,6 @@ type t = page (*page array really*)
 (* a maximim number of pages is defined within the module *)
 
 let wasm_page_size = 65536
-let bits_in_byte = 8
-
-(*default wasm memory value is 0, shout it be appropriate to make it Top though?*)
 let alloc_page : page = Array.make wasm_page_size AByte.alloc_byte
 
 (*(*(memory.grow (size expression))*)
@@ -30,3 +27,4 @@ let eq (lm1 : t) (lm2 : t) =
   Array.for_all2 (fun fst snd -> AByte.byte_eq fst snd) lm1 lm2
 
 let le (lm1 : t) (lm2 : t) = leq lm1 lm2 && not (eq lm1 lm2)
+let read _ _ _ = failwith "read m-pos for n bytes"
