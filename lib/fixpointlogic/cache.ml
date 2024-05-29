@@ -1,6 +1,6 @@
 (*maps Call (Env, Command) to Stable, Val*)
 
-module Memory = Memories.Memorystate
+module Memory = Memories.Frame
 
 module Cache = struct
   include Map.Make (Call.Call)

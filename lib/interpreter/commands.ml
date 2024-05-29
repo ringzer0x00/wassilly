@@ -1,4 +1,4 @@
-module MS = Memories.Memorystate
+module MS = Memories.Frame
 
 type module_ = Wasm.Ast.module_ (*or ' (?)*)
 type p = Wasm.Ast.instr list
@@ -18,7 +18,7 @@ let (*rec*) fixpoint _module (call, ifb) _cont stack cache =
           match h.it with
           | Binary _bop -> (Binops.eval_binop _bop ms, None)
           | Unary _uop -> (Unops.eval_unop _uop ms, None)
-          | Drop -> (MS.pop ms, None)
+          | Drop -> (MS.pop_operand ms, None)
           | Nop -> (ms, None)
           | Call _i -> failwith "call to fixpoint"
           | _ -> failwith ""

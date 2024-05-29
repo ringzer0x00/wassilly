@@ -1,5 +1,5 @@
 open Call
-module Memory = Memories.Memorystate
+module Memory = Memories.Frame
 
 let wStack stack ((env1, expr) as call : Call.t) =
   match Stack.Stack.expr_in_stack expr stack with

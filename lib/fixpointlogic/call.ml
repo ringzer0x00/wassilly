@@ -5,7 +5,7 @@ module Command = struct
 end
 
 module Call = struct
-  type call = Memories.Memorystate.t * Command.t
+  type call = Memories.Frame.t * Command.t
   type t = call
 
   let compare = compare

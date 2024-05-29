@@ -1,5 +1,5 @@
 module Command = Call.Command
-module Memory = Memories.Memorystate
+module Memory = Memories.Frame
 
 module Stack = struct
   include Map.Make (Command)
