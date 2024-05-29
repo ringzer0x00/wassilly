@@ -1,3 +1,4 @@
+module SK = Datastructures.Liststack
 module LocalVar = Variablemem.LocalVar
 module GlobalVar = Variablemem.GlobalVar
 
@@ -14,20 +15,38 @@ type ctx = {
 type callstack = ctx stack
 type t = callstack
 
-let join _ _ = failwith ""
-let widen _ _ = failwith ""
-let leq _ _ = failwith ""
-let eq _ _ = failwith ""
-let le _ _ = failwith ""
+let peek = SK.peek
+let peek_n = SK.peek_n
+let pop = SK.pop
+let pop_n = SK.pop_n
+let update_topmost = SK.update_topmost
 
-let topmost_ctx = function
-  | [] -> failwith "cannot peek @ topmost"
-  | h :: _ -> h
+let pop_operand cs : t =
+  let tmost = peek cs in
+  update_topmost
+    {
+      ops = tmost.ops |> pop;
+      loc = tmost.loc;
+      glob = tmost.loc;
+      cont = tmost.cont;
+    }
+    cs
 
-let update_topmost h' = function
-  | [] -> failwith "cannot replace topmost"
-  | _ :: t -> h' :: t
+let pop_n_operand cs n : t =
+  let tmost = peek cs in
+  update_topmost
+    {
+      ops = tmost.ops |> pop_n n;
+      loc = tmost.loc;
+      glob = tmost.loc;
+      cont = tmost.cont;
+    }
+    cs
 
-let pop_operand (k : t) = failwith ""
-let peek_operand _ = failwith ""
-let peek_binop _ = failwith ""
+let peek_operand cs = (peek cs).ops |> peek
+let peek_binop cs = (peek cs).ops |> peek_n 2
+let join (_ : t) (_ : t) = failwith ""
+let widen (_ : t) (_ : t) = failwith ""
+let leq (_ : t) (_ : t) = failwith ""
+let eq (_ : t) (_ : t) = failwith ""
+let le (_ : t) (_ : t) = failwith ""
