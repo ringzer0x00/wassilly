@@ -7,8 +7,12 @@ module Cache = Fixpoint.Cache.Cache
 module Stack = Fixpoint.Stack.Stack
 (*fp has wrong typing and parametrization, lacks continuation*)
 
-let (*rec*) fixpoint _module (call, ifb) _cont stack cache =
-  let eval _module call _cont _sk _cache =
+let getfbody (mod_ : module_) idx =
+  let funx = List.nth mod_.it.funcs idx in
+  (funx.it.body, funx.it.locals, funx.it.ftype)
+
+let (*rec*) fixpoint _module (call, ifb) _cstack _cont stack cache =
+  let eval _module call _cstack _cont _sk _cache =
     let (ms : MS.t), (p : p) = call in
     match p with
     | [] -> failwith ""

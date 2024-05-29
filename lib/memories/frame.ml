@@ -68,10 +68,19 @@ let widen (k1 : t) (k2 : t) =
       lsk = k1.lsk;
     }
 
-let leq (_k1 : t) (_k2 : t) = failwith ""
-let eq (_k1 : t) (_k2 : t) = failwith ""
-let le (_k1 : t) (_k2 : t) = failwith ""
+let leq (k1 : t) (k2 : t) =
+  Operandstack.leq (k1.var, k1.ops) (k2.var, k2.ops)
+  && Variablememories.leq k1.var k2.var
+  && Linearmem.leq k1.mem k2.mem
+  && Tables.leq k1.tab k2.tab
+
+let eq (k1 : t) (k2 : t) =
+  Operandstack.eq (k1.var, k1.ops) (k2.var, k2.ops)
+  && Variablememories.eq k1.var k2.var
+  && Linearmem.eq k1.mem k2.mem && Tables.eq k1.tab k2.tab
+
+let le (k1 : t) (k2 : t) = leq k1 k2 && not (eq k1 k2)
 let filter_loc _ctx _c = failwith ""
 (*Variablememories.filter_loc ms.var c*)
 
-let filter_glob _ctx _c = failwith " Variablememories.filter_glob ms.var c"
+let filter_glob _ctx _c = failwith "Variablememories.filter_glob ms.var c"

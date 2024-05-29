@@ -1,5 +1,7 @@
 exception EmptyStack
 
+type 'a stack = 'a list
+
 let peek = function h :: _ -> h | [] -> raise EmptyStack
 let peekn _n _ = failwith ""
 let pop = function _ :: t -> t | [] -> raise EmptyStack
