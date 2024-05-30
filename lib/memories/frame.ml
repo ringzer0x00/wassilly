@@ -1,12 +1,10 @@
 module SK = Datastructures.Liststack
-module LocalVar = Variablemem.LocalVar
-module GlobalVar = Variablemem.GlobalVar
 
 type cont (*probably a program, a wasm instr sequence*)
 
 type t = {
   ops : Operandstack.t;
-  var : Variablememories.t;
+  var : Variablememory.t;
   cont : cont;
   mem : Linearmem.t;
   tab : Tables.t;
@@ -40,7 +38,7 @@ let join (k1 : t) (k2 : t) =
   if k1.cont != k2.cont then failwith "cannot join on different continuations"
   else
     let ops' = Operandstack.join (k1.var, k1.ops) (k2.var, k2.ops) in
-    let var' = Variablememories.join k1.var k2.var in
+    let var' = Variablememory.join k1.var k2.var in
     let mem' = Linearmem.join k1.mem k2.mem in
     let tab' = Tables.join k1.tab k2.tab in
     {
@@ -56,7 +54,7 @@ let widen (k1 : t) (k2 : t) =
   if k1.cont != k2.cont then failwith "cannot widen on different continuations"
   else
     let ops' = Operandstack.widen (k1.var, k1.ops) (k2.var, k2.ops) in
-    let var' = Variablememories.widen k1.var k2.var in
+    let var' = Variablememory.widen k1.var k2.var in
     let mem' = Linearmem.widen k1.mem k2.mem in
     let tab' = Tables.widen k1.tab k2.tab in
     {
@@ -70,13 +68,13 @@ let widen (k1 : t) (k2 : t) =
 
 let leq (k1 : t) (k2 : t) =
   Operandstack.leq (k1.var, k1.ops) (k2.var, k2.ops)
-  && Variablememories.leq k1.var k2.var
+  && Variablememory.leq k1.var k2.var
   && Linearmem.leq k1.mem k2.mem
   && Tables.leq k1.tab k2.tab
 
 let eq (k1 : t) (k2 : t) =
   Operandstack.eq (k1.var, k1.ops) (k2.var, k2.ops)
-  && Variablememories.eq k1.var k2.var
+  && Variablememory.eq k1.var k2.var
   && Linearmem.eq k1.mem k2.mem && Tables.eq k1.tab k2.tab
 
 let le (k1 : t) (k2 : t) = leq k1 k2 && not (eq k1 k2)

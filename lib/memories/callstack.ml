@@ -1,6 +1,4 @@
 module SK = Datastructures.Liststack
-module LocalVar = Variablemem.LocalVar
-module GlobalVar = Variablemem.GlobalVar
 
 type 'a stack = 'a list
 type frame = Frame.t

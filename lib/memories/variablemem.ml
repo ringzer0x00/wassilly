@@ -9,55 +9,82 @@ end
 module VariableMem = struct
   module M = Map.Make (MapKey)
 
+  type gl = Glob | Loc
   type aprondomain = AD.dom
   type apronvar = AD.var
-  type t = apronvar M.t * aprondomain
+  type t = { loc : apronvar M.t; glob : apronvar M.t; ad : aprondomain }
   type binding = M.key
   type expr = AD.expr
   type constr = AD.constr
 
-  let empty d : t = (M.empty, d)
+  let empty d : t = { loc = M.empty; glob = M.empty; ad = d }
 
-  let apronvar_of_binding (b : int32) : AD.var =
+  let apronvar_of_binding (b : M.key) : AD.var =
     Apron.Var.of_string (Int32.to_string b)
 
-  let assign ((ma, ad) : t) b exp : t =
-    let var = M.find_opt b ma in
-    match var with
-    | None -> failwith "assignment failed, cannot find key-var"
-    | Some var -> (ma, AD.assign_expr ad var exp)
+  let assign { loc : apronvar M.t; glob : apronvar M.t; ad : aprondomain } gl b
+      exp : t =
+    let aux b ma =
+      let var = M.find_opt b ma in
+      match var with
+      | None -> failwith "assignment failed, cannot find key-var"
+      | Some var -> (ma, AD.assign_expr ad var exp)
+    in
+    match gl with
+    | Glob ->
+        let glob', ad' = aux b glob in
+        { loc; glob = glob'; ad = ad' }
+    | Loc ->
+        let loc', ad' = aux b loc in
+        { loc = loc'; glob; ad = ad' }
 
-  let bind ((ma, ad) : t) (b : binding) bt (*apron binding type needed*) =
-    let v = apronvar_of_binding b in
-    let ad' = AD.add_var ad bt v in
-    let ma' = M.add b v ma in
-    (ma', ad')
+  let bind { loc : apronvar M.t; glob : apronvar M.t; ad : aprondomain }
+      (b : binding) gl bt (*apron binding type needed*) =
+    let aux b ma =
+      let v = apronvar_of_binding b in
+      let ad' = AD.add_var ad bt v in
+      let ma' = M.add b v ma in
+      (ma', ad')
+    in
+    match gl with
+    | Glob ->
+        let glob', ad' = aux b glob in
+        { loc; glob = glob'; ad = ad' }
+    | Loc ->
+        let loc', ad' = aux b loc in
+        { loc = loc'; glob; ad = ad' }
 
-  let lookup ((ma, ad) : t) (b : binding) : Apronext.Intervalext.t =
+  let lookup { loc : apronvar M.t; glob : apronvar M.t; ad : aprondomain }
+      (b : binding) gl : Apronext.Intervalext.t =
     (*raw interval, would returning ref would be appropriate?*)
-    let v = M.find_opt b ma in
-    match v with None -> failwith "noooo" | Some v -> AD.bound_variable ad v
+    let aux b ma =
+      let v = M.find_opt b ma in
+      match v with None -> failwith "noooo" | Some v -> AD.bound_variable ad v
+    in
+    match gl with Glob -> aux b glob | Loc -> aux b loc
 
-  let widen ((ma1, ad1) : t) ((ma2, ad2) : t) : t =
-    if ma1 = ma2 then
-      let ad' = AD.widen ad1 ad2 in
-      (ma1, ad')
+  let widen (vm1 : t) (vm2 : t) : t =
+    if vm1.glob = vm2.glob && vm2.loc = vm2.loc then
+      let ad' = AD.widen vm1.ad vm2.ad in
+      { glob = vm1.glob; loc = vm1.loc; ad = ad' }
     else failwith "not compatible"
 
-  let join ((ma1, ad1) : t) ((ma2, ad2) : t) : t =
-    if ma1 = ma2 then
-      let ad' = AD.join ad1 ad2 in
-      (ma1, ad')
+  let join (vm1 : t) (vm2 : t) : t =
+    if vm1.glob = vm2.glob && vm2.loc = vm2.loc then
+      let ad' = AD.join vm1.ad vm2.ad in
+      { glob = vm1.glob; loc = vm1.loc; ad = ad' }
     else failwith "not compatible"
 
+  let filter _ _ : t = failwith ""
+  let leq _ _ = failwith ""
+  let eq _ _ = failwith ""
+  let le (vm1 : t) (vm2 : t) = leq vm1 vm2 && not (eq vm1 vm2)
+  (*
   let filter ((ma, ad) : t) cons : t = (ma, AD.filter ad cons)
   let leq ((ma1, ad1) : t) ((ma2, ad2) : t) = ma1 == ma2 && AD.leq ad1 ad2
   let eq ((ma1, ad1) : t) ((ma2, ad2) : t) = ma1 == ma2 && AD.eq ad1 ad2
-  let le (vm1 : t) (vm2 : t) = leq vm1 vm2 && not (eq vm1 vm2)
+  let le (vm1 : t) (vm2 : t) = leq vm1 vm2 && not (eq vm1 vm2)*)
 end
-
-module LocalVar = VariableMem
-module GlobalVar = VariableMem
 
 (* val change_environment : 'a Manager.t -> 'a t -> Environment.t -> bool -> 'a t
 

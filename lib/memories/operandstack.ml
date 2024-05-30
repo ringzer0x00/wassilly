@@ -1,6 +1,5 @@
 module SK = Datastructures.Liststack
-module LocalVar = Variablemem.LocalVar
-module GlobalVar = Variablemem.GlobalVar
+module VariableMem = Variablememory
 
 type aval = Apronext.Intervalext.t
 type operand = Value of aval | LVarRef of int32 | GVarRef of int32
@@ -8,7 +7,7 @@ type operand = Value of aval | LVarRef of int32 | GVarRef of int32
 (*| Label*)
 type stack = operand list
 type t = stack
-type varmemories = Variablememory.t
+type varmemories = VariableMem.t
 
 let empty : stack = []
 let peek = SK.peek
@@ -20,8 +19,8 @@ let append sp s = sp @ s
 let concretize (mem : varmemories) = function
   (*two memories are needed, one for locals and one for globals*)
   | Value a -> a
-  | LVarRef i -> GlobalVar.lookup mem.loc i
-  | GVarRef i -> GlobalVar.lookup mem.glob i
+  | LVarRef i -> VariableMem.lookup mem i VariableMem.Loc
+  | GVarRef i -> VariableMem.lookup mem i VariableMem.Glob
 
 let replace (s : stack) (op : operand) (v : aval) =
   List.map (fun x -> if x = op then Value v else op) s
@@ -64,11 +63,11 @@ let eq_operand m1 (o1 : operand) m2 (o2 : operand) =
   ival_eq (concretize m1 o1) (concretize m2 o2)
 
 let leq (m1, s1) (m2, s2) =
-  Variablememories.leq m1 m2
+  VariableMem.leq m1 m2
   && List.for_all2 (fun fst snd -> leq_operand m1 fst m2 snd) s1 s2
 
 let eq (m1, s1) (m2, s2) =
-  Variablememories.eq m1 m2
+  VariableMem.eq m1 m2
   && List.for_all2 (fun fst snd -> eq_operand m1 fst m2 snd) s1 s2
 
 let le os1 os2 = leq os1 os2 && not (eq os1 os2)

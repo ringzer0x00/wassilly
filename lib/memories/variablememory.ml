@@ -1,5 +1,5 @@
-open Variablemem
-
+include Variablemem.VariableMem
+(*
 type t = { loc : LocalVar.t; glob : GlobalVar.t }
 
 let join vm1 vm2 =
@@ -25,3 +25,4 @@ let leq vm1 vm2 =
 
 let eq vm1 vm2 = LocalVar.eq vm1.loc vm2.loc && GlobalVar.eq vm1.glob vm2.glob
 let le vm1 vm2 = leq vm1 vm2 && not (eq vm1 vm2)
+*)
