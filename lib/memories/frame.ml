@@ -78,7 +78,5 @@ let eq (k1 : t) (k2 : t) =
   && Linearmem.eq k1.mem k2.mem && Tables.eq k1.tab k2.tab
 
 let le (k1 : t) (k2 : t) = leq k1 k2 && not (eq k1 k2)
-let filter_loc _ctx _c = failwith ""
+let filter _ctx _c = failwith ""
 (*Variablememories.filter_loc ms.var c*)
-
-let filter_glob _ctx _c = failwith "Variablememories.filter_glob ms.var c"

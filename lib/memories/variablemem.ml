@@ -75,15 +75,19 @@ module VariableMem = struct
       { glob = vm1.glob; loc = vm1.loc; ad = ad' }
     else failwith "not compatible"
 
-  let filter _ _ : t = failwith ""
-  let leq _ _ = failwith ""
-  let eq _ _ = failwith ""
+  let filter vm cons : t =
+    { glob = vm.glob; loc = vm.loc; ad = AD.filter vm.ad cons }
+
+  let leq vm1 vm2 =
+    if vm1.glob = vm2.glob && vm2.loc = vm2.loc then AD.leq vm1.ad vm2.ad
+    else failwith "not compatible"
+
+  let eq vm1 vm2 =
+    if vm1.glob = vm2.glob && vm2.loc = vm2.loc then AD.eq vm1.ad vm2.ad
+    else failwith "not compatible"
+
   let le (vm1 : t) (vm2 : t) = leq vm1 vm2 && not (eq vm1 vm2)
-  (*
-  let filter ((ma, ad) : t) cons : t = (ma, AD.filter ad cons)
-  let leq ((ma1, ad1) : t) ((ma2, ad2) : t) = ma1 == ma2 && AD.leq ad1 ad2
-  let eq ((ma1, ad1) : t) ((ma2, ad2) : t) = ma1 == ma2 && AD.eq ad1 ad2
-  let le (vm1 : t) (vm2 : t) = leq vm1 vm2 && not (eq vm1 vm2)*)
+  let return_context (_ : t) (_ : t) : t = failwith ""
 end
 
 (* val change_environment : 'a Manager.t -> 'a t -> Environment.t -> bool -> 'a t
