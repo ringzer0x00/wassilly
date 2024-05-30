@@ -10,7 +10,7 @@ type t = {
   cont : cont;
   mem : Linearmem.t;
   tab : Tables.t;
-  lsk : Label.t;
+  lsk : Labelstack.t;
 }
 
 let peek = SK.peek

@@ -8,7 +8,7 @@ type operand = Value of aval | LVarRef of int32 | GVarRef of int32
 (*| Label*)
 type stack = operand list
 type t = stack
-type varmemories = Variablememories.t
+type varmemories = Variablememory.t
 
 let empty : stack = []
 let peek = SK.peek

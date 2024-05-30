@@ -1,7 +1,7 @@
 module AD = Datastructures.Aprondomain
 
 module MapKey = struct
-  type t = Int32.t
+  type t = Int32.t (* * type *)
 
   let compare = compare
 end
@@ -58,3 +58,10 @@ end
 
 module LocalVar = VariableMem
 module GlobalVar = VariableMem
+
+(* val change_environment : 'a Manager.t -> 'a t -> Environment.t -> bool -> 'a t
+
+   Change the environment of the abstract values.
+
+   Variables that are removed are first existentially quantified, and variables that are introduced are unconstrained. The Boolean, if true, adds a projection onto 0-plane for these ones.
+*)

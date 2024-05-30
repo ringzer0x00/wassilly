@@ -3,8 +3,11 @@ module MS = Memories.Frame
 type module_ = Wasm.Ast.module_ (*or ' (?)*)
 type p = Wasm.Ast.instr list
 
-module Cache = Fixpoint.Cache.Cache
-module Stack = Fixpoint.Stack.Stack
+open Fixpoint
+module Cache = Cache.Cache
+module Stack = Stack.Stack
+module SCG = Scg.SCC
+module CallSet = Callset.CallSet
 (*fp has wrong typing and parametrization, lacks continuation*)
 
 let getfbody (mod_ : module_) idx =
@@ -18,13 +21,17 @@ let (*rec*) fixpoint _module (call, ifb) _cstack _cont stack cache =
     | [] -> failwith ""
     | h :: t ->
         let _nat_c = t in
-        let (_ms' : MS.t), _funscalled_to_become_set =
+        let (_ms' : MS.t), _cache, _scg, _called =
           match h.it with
-          | Binary _bop -> (Binops.eval_binop _bop ms, None)
-          | Unary _uop -> (Unops.eval_unop _uop ms, None)
-          | Drop -> (MS.pop_operand ms, None)
-          | Nop -> (ms, None)
-          | Call _i -> failwith "call to fixpoint"
+          | Binary _bop ->
+              (Binops.eval_binop _bop ms, cache, SCG.empty, CallSet.empty)
+          | Unary _uop ->
+              (Unops.eval_unop _uop ms, cache, SCG.empty, CallSet.empty)
+          | Drop -> (MS.pop_operand ms, cache, SCG.empty, CallSet.empty)
+          | Nop -> (ms, cache, SCG.empty, CallSet.empty)
+          | Call _i ->
+              failwith "call to fixpoint"
+              (*before evaluating call push present natcont and other info to callstack*)
           | _ -> failwith ""
         in
         failwith ""

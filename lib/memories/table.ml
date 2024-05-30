@@ -1,9 +1,24 @@
 type t
 
-let set = failwith "(table.set table (pos expression) (val expression))"
-let get = failwith "(table.get table (pos expression))"
+module OInterval = struct
+  type t = Apronext.Intervalext.t
+
+  let compare = Apronext.Intervalext.cmp
+end
+
+(*maps table index to Inverval, representing the range of function indices it might call*)
+module Table = Datastructures.Mapping.Make (Int32) (OInterval)
+
+let set (*for active segments*) = failwith ""
+let get (*for call indirect*) = failwith ""
 
 (*
+
+============================== IMMUTABLE TABLE
+Before 2.0, the only way to use a table was through the call_indirect instruction:
+
+(call_indirect (type $t) (arg1) ... (argn) (index))
+============================
 
 (Updated for Wasm 2.0 in in 2022)
 
