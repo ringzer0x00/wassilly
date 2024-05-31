@@ -16,3 +16,5 @@ let filter = Apronext.Apol.filter_tcons
 let bound_variable = Apronext.Apol.bound_variable
 let leq = Apronext.Apol.is_leq
 let eq = Apronext.Apol.is_eq
+let change_env = Apronext.Apol.change_environment
+let make_env = Apronext.Environmentext.make

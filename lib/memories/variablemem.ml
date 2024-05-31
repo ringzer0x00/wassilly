@@ -2,7 +2,7 @@ module AD = Datastructures.Aprondomain
 module WT = Wasm.Types
 
 module MapKey = struct
-  type t = Int32.t * WT.num_type (* * WasmVarType *)
+  type t = { i : Int32.t; t : WT.num_type } (* * WasmVarType *)
 
   let compare = compare
 end
@@ -30,9 +30,9 @@ module VariableMem = struct
 
   let empty d : t = { loc = M.empty; glob = M.empty; ad = d }
 
-  let apronvar_of_binding (b : M.key) gl : AD.var =
-    let aux b pre =
-      Apron.Var.of_string (pre ^ string_of_nt (snd b) ^ Int32.to_string (fst b))
+  let apronvar_of_binding (b : binding) gl : AD.var =
+    let aux (b : binding) pre =
+      Apron.Var.of_string (pre ^ string_of_nt b.t ^ Int32.to_string b.i)
     in
     match gl with Glob -> aux b "Glob_" | Loc -> aux b "Loc_"
 
@@ -54,8 +54,8 @@ module VariableMem = struct
 
   let bind { loc : apronvar M.t; glob : apronvar M.t; ad : aprondomain }
       (b : binding) gl (*apron binding type needed*) =
-    let add_var ad b v =
-      let bt = aprontype_of_wasmtype (snd b) in
+    let add_var ad (b : binding) v =
+      let bt = aprontype_of_wasmtype b.t in
       AD.add_var ad bt v
     in
     let aux b ma gl =
@@ -106,7 +106,11 @@ module VariableMem = struct
 
   let le (vm1 : t) (vm2 : t) = leq vm1 vm2 && not (eq vm1 vm2)
 
-  let new_context _from (_vars : WT.value_type list) : t =
+  let new_context { loc; glob; ad } (_newlocvars : WT.value_type list) : t =
+    let _typed_to_forget = M.bindings loc
+    in
+    let _ = AD.change_env in
+    let _, _ = (glob, ad) in
     failwith "make a new map, create env on top of that"
 
   let return_context (_in : t) (_to : t) : t =
