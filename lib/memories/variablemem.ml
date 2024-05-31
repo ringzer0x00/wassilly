@@ -1,10 +1,17 @@
 module AD = Datastructures.Aprondomain
+module WT = Wasm.Types
 
 module MapKey = struct
-  type t = Int32.t (* * type *)
+  type t = Int32.t * WT.num_type (* * WasmVarType *)
 
   let compare = compare
 end
+
+let string_of_nt = function
+  | WT.I32Type -> "int32"
+  | WT.I64Type -> "int64"
+  | WT.F32Type -> "float32"
+  | WT.F64Type -> "float64"
 
 module VariableMem = struct
   module M = Map.Make (MapKey)
@@ -19,8 +26,11 @@ module VariableMem = struct
 
   let empty d : t = { loc = M.empty; glob = M.empty; ad = d }
 
-  let apronvar_of_binding (b : M.key) : AD.var =
-    Apron.Var.of_string (Int32.to_string b)
+  let apronvar_of_binding (b : M.key) gl : AD.var =
+    let aux b pre =
+      Apron.Var.of_string (pre ^ string_of_nt (snd b) ^ Int32.to_string (fst b))
+    in
+    match gl with Glob -> aux b "Glob_" | Loc -> aux b "Loc_"
 
   let assign { loc : apronvar M.t; glob : apronvar M.t; ad : aprondomain } gl b
       exp : t =
@@ -40,18 +50,18 @@ module VariableMem = struct
 
   let bind { loc : apronvar M.t; glob : apronvar M.t; ad : aprondomain }
       (b : binding) gl bt (*apron binding type needed*) =
-    let aux b ma =
-      let v = apronvar_of_binding b in
+    let aux b ma gl =
+      let v = apronvar_of_binding b gl in
       let ad' = AD.add_var ad bt v in
       let ma' = M.add b v ma in
       (ma', ad')
     in
     match gl with
     | Glob ->
-        let glob', ad' = aux b glob in
+        let glob', ad' = aux b glob gl in
         { loc; glob = glob'; ad = ad' }
     | Loc ->
-        let loc', ad' = aux b loc in
+        let loc', ad' = aux b loc gl in
         { loc = loc'; glob; ad = ad' }
 
   let lookup { loc : apronvar M.t; glob : apronvar M.t; ad : aprondomain }
@@ -87,7 +97,15 @@ module VariableMem = struct
     else failwith "not compatible"
 
   let le (vm1 : t) (vm2 : t) = leq vm1 vm2 && not (eq vm1 vm2)
-  let return_context (_ : t) (_ : t) : t = failwith ""
+  let new_context _ _ : t = failwith "make a new map, create env on top of that"
+
+  let return_context (_in : t) (_to : t) : t =
+    (*for all globals in _in:
+        - grab apron bindings -> concretize them,
+        - turn them into expressione
+        - assign in _to
+    *)
+    failwith "concretize globals, assign them to the ~ad we're going back to~"
 end
 
 (* val change_environment : 'a Manager.t -> 'a t -> Environment.t -> bool -> 'a t

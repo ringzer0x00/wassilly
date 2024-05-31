@@ -2,7 +2,11 @@ module SK = Datastructures.Liststack
 module VariableMem = Variablememory
 
 type aval = Apronext.Intervalext.t
-type operand = Value of aval | LVarRef of int32 | GVarRef of int32
+
+type operand =
+  | Value of aval
+  | LVarRef of VariableMem.binding
+  | GVarRef of VariableMem.binding
 
 (*| Label*)
 type stack = operand list

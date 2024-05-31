@@ -10,10 +10,12 @@ type t = page (*page array really*)
 
 let wasm_page_size = 65536
 let alloc_page : page = Array.make wasm_page_size AByte.alloc_byte
+let alloc_page_top : page = Array.make wasm_page_size AByte.alloc_byte_top
+let pageconcat (pold : t) (pnew : t) : t = Array.concat [ pold; pnew ]
+let size m = Array.length m / wasm_page_size
+let write_byte d o (m : t) = m.(o) <- d
 
 (*(*(memory.grow (size expression))*)
-  let pageconcat (pold : t) (pnew : t) : t = Array.concat [ pold; pnew ]
-  let size m = Array.length m / wasm_page_size
 *)
 let join (lm1 : t) (lm2 : t) : t =
   Array.map2 (fun fst snd -> AByte.join fst snd) lm1 lm2
