@@ -24,6 +24,10 @@ module VariableMem = struct
   type expr = AD.expr
   type constr = AD.constr
 
+  let aprontype_of_wasmtype = function
+    | WT.I32Type | WT.I64Type -> Apronext.Environmentext.INT
+    | WT.F32Type | WT.F64Type -> Apronext.Environmentext.REAL
+
   let empty d : t = { loc = M.empty; glob = M.empty; ad = d }
 
   let apronvar_of_binding (b : M.key) gl : AD.var =
@@ -51,11 +55,7 @@ module VariableMem = struct
   let bind { loc : apronvar M.t; glob : apronvar M.t; ad : aprondomain }
       (b : binding) gl (*apron binding type needed*) =
     let add_var ad b v =
-      let bt =
-        match snd b with
-        | WT.I32Type | WT.I64Type -> Apronext.Environmentext.INT
-        | WT.F32Type | WT.F64Type -> Apronext.Environmentext.REAL
-      in
+      let bt = aprontype_of_wasmtype (snd b) in
       AD.add_var ad bt v
     in
     let aux b ma gl =
