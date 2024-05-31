@@ -49,10 +49,18 @@ module VariableMem = struct
         { loc = loc'; glob; ad = ad' }
 
   let bind { loc : apronvar M.t; glob : apronvar M.t; ad : aprondomain }
-      (b : binding) gl bt (*apron binding type needed*) =
+      (b : binding) gl (*apron binding type needed*) =
+    let add_var ad b v =
+      let bt =
+        match snd b with
+        | WT.I32Type | WT.I64Type -> Apronext.Environmentext.INT
+        | WT.F32Type | WT.F64Type -> Apronext.Environmentext.REAL
+      in
+      AD.add_var ad bt v
+    in
     let aux b ma gl =
       let v = apronvar_of_binding b gl in
-      let ad' = AD.add_var ad bt v in
+      let ad' = add_var ad b v in
       let ma' = M.add b v ma in
       (ma', ad')
     in
@@ -97,7 +105,9 @@ module VariableMem = struct
     else failwith "not compatible"
 
   let le (vm1 : t) (vm2 : t) = leq vm1 vm2 && not (eq vm1 vm2)
-  let new_context _ _ : t = failwith "make a new map, create env on top of that"
+
+  let new_context _from (_vars : WT.value_type list) : t =
+    failwith "make a new map, create env on top of that"
 
   let return_context (_in : t) (_to : t) : t =
     (*for all globals in _in:
