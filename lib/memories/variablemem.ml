@@ -107,10 +107,21 @@ module VariableMem = struct
   let le (vm1 : t) (vm2 : t) = leq vm1 vm2 && not (eq vm1 vm2)
 
   let new_context { loc; glob; ad } (_newlocvars : WT.value_type list) : t =
-    let _typed_to_forget = M.bindings loc
+    let _typed_to_forget = M.bindings loc in
+    let _typed_to_keep = M.bindings glob in
+    let extract_typed_env_vars (bs : (binding * apronvar) list) =
+      List.fold_left
+        (fun (i, r) (_b : binding * apronvar) ->
+          match (fst _b).t with
+          | WT.I32Type | WT.I64Type -> (snd _b :: i, r)
+          | WT.F32Type | WT.F64Type -> (i, snd _b :: r))
+        ([], []) bs
     in
     let _ = AD.change_env in
-    let _, _ = (glob, ad) in
+    (*example*)
+    let _ = extract_typed_env_vars _typed_to_forget in
+    let _int_avar, _real_avar = extract_typed_env_vars _typed_to_keep in
+    let _ = ad in
     failwith "make a new map, create env on top of that"
 
   let return_context (_in : t) (_to : t) : t =
