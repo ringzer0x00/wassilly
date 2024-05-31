@@ -1,7 +1,9 @@
 module SK = Datastructures.Liststack
 
 type cont
-type label = Label of cont (*type? idk*)
+type typ
+type label = Label of { natcont : cont; brcont : cont; typ : typ }
+(*type? idk*)
 
 (*a label containts:
    - type of output
