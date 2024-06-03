@@ -106,9 +106,9 @@ module VariableMem = struct
 
   let le (vm1 : t) (vm2 : t) = leq vm1 vm2 && not (eq vm1 vm2)
 
-  let new_context { loc; glob; ad } (_newlocvars : WT.value_type list) : t =
-    let _to_forget = M.bindings loc |> List.map snd |> Array.of_list in
-    let ad_forgotten = AD.change_env ad (AD.forget_env ad.env _to_forget) in
+  let new_ { loc; glob; ad } (locs_new : WT.value_type list) : t =
+    let locs_old = M.bindings loc |> List.map snd |> Array.of_list in
+    let ad_forgotten = AD.change_env ad (AD.forget_env ad.env locs_old) in
     (*this has to be forgotten, because variables might collide*)
     let globs = M.bindings glob in
     let extract_typed_env_vars (bs : (binding * apronvar) list) =
@@ -119,8 +119,6 @@ module VariableMem = struct
           | WT.F32Type | WT.F64Type -> (i, snd _b :: r))
         ([], []) bs
     in
-    let _ = AD.change_env in
-    (*example*)
     let loc_binds =
       List.fold_right
         (fun x acc ->
@@ -129,7 +127,7 @@ module VariableMem = struct
               let b : binding = { t; i = Int32.of_int (List.length acc) } in
               (b, apronvar_of_binding b Loc) :: acc
           | _ -> failwith "")
-        _newlocvars []
+        locs_new []
     in
     let loc'_int, loc'_real = extract_typed_env_vars loc_binds in
     let glob_int, glob_real = extract_typed_env_vars globs in
@@ -141,7 +139,11 @@ module VariableMem = struct
     let ad'' = AD.change_env ad_forgotten env' in
     { loc = M.of_seq (List.to_seq loc_binds); glob; ad = ad'' }
 
-  let return_context (_in : t) (_to : t) : t =
+  let return_ (_from : t) (_to : t) : t =
+    let _gs = M.bindings _from.glob |> List.map snd in
+    let _values_globals =
+      List.map (fun x -> x, AD.bound_variable _from.ad x) _gs
+    in
     (*for all globals in _in:
         - grab apron bindings -> concretize them,
         - turn them into expressione
@@ -149,10 +151,3 @@ module VariableMem = struct
     *)
     failwith "concretize globals, assign them to the ~ad we're going back to~"
 end
-
-(* val change_environment : 'a Manager.t -> 'a t -> Environment.t -> bool -> 'a t
-
-   Change the environment of the abstract values.
-
-   Variables that are removed are first existentially quantified, and variables that are introduced are unconstrained. The Boolean, if true, adds a projection onto 0-plane for these ones.
-*)
