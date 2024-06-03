@@ -17,4 +17,7 @@ let bound_variable = Apronext.Apol.bound_variable
 let leq = Apronext.Apol.is_leq
 let eq = Apronext.Apol.is_eq
 let change_env = Apronext.Apol.change_environment
+
+(*env funcs*)
 let make_env = Apronext.Environmentext.make
+let forget_env = Apronext.Environmentext.remove

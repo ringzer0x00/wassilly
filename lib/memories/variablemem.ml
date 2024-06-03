@@ -107,7 +107,9 @@ module VariableMem = struct
   let le (vm1 : t) (vm2 : t) = leq vm1 vm2 && not (eq vm1 vm2)
 
   let new_context { loc; glob; ad } (_newlocvars : WT.value_type list) : t =
-    ignore loc;
+    let _to_forget = M.bindings loc |> List.map snd |> Array.of_list in
+    let _ad_forgotten = AD.change_env ad (AD.forget_env ad.env _to_forget) in
+    (*this has to be forgotten, because variables might collide*)
     let _typed_to_keep = M.bindings glob in
     let extract_typed_env_vars (bs : (binding * apronvar) list) =
       List.fold_left
@@ -121,12 +123,15 @@ module VariableMem = struct
     (*example*)
     let _new_loc_bindings =
       List.fold_right
-        (fun x acc : binding list ->
+        (fun x acc ->
           match x with
-          | WT.NumType t -> { t; i = Int32.of_int (List.length acc) } :: acc
+          | WT.NumType t ->
+              let b : binding = { t; i = Int32.of_int (List.length acc) } in
+              (b, apronvar_of_binding b Loc) :: acc
           | _ -> failwith "")
         _newlocvars []
     in
+    let int_new, real_new = extract_typed_env_vars _new_loc_bindings in
     let _int_avar, _real_avar = extract_typed_env_vars _typed_to_keep in
     (* make list of intvar, realvars from _newlocvars: note that the index number is part of the binding*)
     let _ = ad in
