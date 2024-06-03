@@ -25,6 +25,12 @@
   constant expression defining an offset into that table. A declarative element segment is not available at runtime but merely serves to forward-declare
   references that are formed in code with instructions like ref.func.*)
 
+let interpret_elem_segment (es : Wasm.Ast.elem_segment) _m =
+  let m, _, _ = (es.it.emode, es.it.einit, es.it.etype) in
+  match m.it with
+  | Wasm.Ast.Declarative -> assert false
+  | Wasm.Ast.Passive -> _m
+  | Wasm.Ast.Active { index = _; offset = _offset } -> failwith ""
 (* Data Segments
 
    The initial contents of a memory are zero bytes. Data segments can be used to initialize a range of memory from a static vector of bytes.
@@ -52,8 +58,9 @@ let interpret_data_segment (ds : Wasm.Ast.data_segment) _m =
       match _init with
       | "" | _ ->
           (* index is ignored as there is at most one memory*)
-          failwith "write _init (content) into _idx of _m at _offset.
-          _init is string, figure out how to convert it")
+          failwith
+            "write _init (content) into _idx of _m at _offset.\n\
+            \          _init is string, figure out how to convert it")
 
 let init (_mod : Wasm.Ast.module_) =
   (*always alloc a memory page*)
