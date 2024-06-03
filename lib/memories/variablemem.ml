@@ -1,4 +1,5 @@
 module AD = Datastructures.Aprondomain
+module AExpr = Datastructures.Aexpr
 module WT = Wasm.Types
 
 module MapKey = struct
@@ -139,15 +140,18 @@ module VariableMem = struct
     let ad'' = AD.change_env ad_forgotten env' in
     { loc = M.of_seq (List.to_seq loc_binds); glob; ad = ad'' }
 
-  let return_ (_from : t) (_to : t) : t =
-    let _gs = M.bindings _from.glob |> List.map snd in
-    let _values_globals =
-      List.map (fun x -> x, AD.bound_variable _from.ad x) _gs
+  let return_ (from : t) (to_ : t) : t =
+    let globals = M.bindings from.glob |> List.map snd in
+    let globs_var_expr =
+      List.map
+        (fun x ->
+          (x, AD.bound_variable from.ad x |> AExpr.of_interval_in_ad from.ad))
+        globals
     in
-    (*for all globals in _in:
-        - grab apron bindings -> concretize them,
-        - turn them into expressione
-        - assign in _to
-    *)
-    failwith "concretize globals, assign them to the ~ad we're going back to~"
+    let ad' =
+      List.fold_left
+        (fun a (var, value) -> AD.assign_expr a var value)
+        to_.ad globs_var_expr
+    in
+    { loc = to_.loc; glob = to_.glob; ad = ad' }
 end
