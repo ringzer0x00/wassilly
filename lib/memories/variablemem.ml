@@ -108,9 +108,9 @@ module VariableMem = struct
 
   let new_context { loc; glob; ad } (_newlocvars : WT.value_type list) : t =
     let _to_forget = M.bindings loc |> List.map snd |> Array.of_list in
-    let _ad_forgotten = AD.change_env ad (AD.forget_env ad.env _to_forget) in
+    let ad_forgotten = AD.change_env ad (AD.forget_env ad.env _to_forget) in
     (*this has to be forgotten, because variables might collide*)
-    let _typed_to_keep = M.bindings glob in
+    let globs = M.bindings glob in
     let extract_typed_env_vars (bs : (binding * apronvar) list) =
       List.fold_left
         (fun (i, r) (_b : binding * apronvar) ->
@@ -121,7 +121,7 @@ module VariableMem = struct
     in
     let _ = AD.change_env in
     (*example*)
-    let _new_loc_bindings =
+    let loc_binds =
       List.fold_right
         (fun x acc ->
           match x with
@@ -131,11 +131,15 @@ module VariableMem = struct
           | _ -> failwith "")
         _newlocvars []
     in
-    let int_new, real_new = extract_typed_env_vars _new_loc_bindings in
-    let _int_avar, _real_avar = extract_typed_env_vars _typed_to_keep in
-    (* make list of intvar, realvars from _newlocvars: note that the index number is part of the binding*)
-    let _ = ad in
-    failwith "make a new map, create env on top of that"
+    let loc'_int, loc'_real = extract_typed_env_vars loc_binds in
+    let glob_int, glob_real = extract_typed_env_vars globs in
+    let intvars, realvars =
+      ( loc'_int @ glob_int |> Array.of_list,
+        loc'_real @ glob_real |> Array.of_list )
+    in
+    let env' = AD.make_env intvars realvars in
+    let ad'' = AD.change_env ad_forgotten env' in
+    { loc = M.of_seq (List.to_seq loc_binds); glob; ad = ad'' }
 
   let return_context (_in : t) (_to : t) : t =
     (*for all globals in _in:
