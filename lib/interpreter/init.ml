@@ -1,3 +1,6 @@
+module Tabs = Memories.Tables
+module Tab = Memories.Table
+
 let listnth_i32 l i = List.nth l (Int32.to_int i)
 
 (*type module_ = module_' Source.phrase
@@ -27,6 +30,8 @@ let listnth_i32 l i = List.nth l (Int32.to_int i)
   constant expression defining an offset into that table. A declarative element segment is not available at runtime but merely serves to forward-declare
   references that are formed in code with instructions like ref.func.*)
 
+let cc (c : Wasm.Ast.const) = c.it
+
 let interpret_elem_segment (es : Wasm.Ast.elem_segment) (t : 'a list) =
   let m, _val_to_copy, _type = (es.it.emode, es.it.einit, es.it.etype) in
   let _ = match es.it.einit with [] -> failwith "" | h :: _ -> h.it in
@@ -35,9 +40,14 @@ let interpret_elem_segment (es : Wasm.Ast.elem_segment) (t : 'a list) =
   | Wasm.Ast.Declarative -> assert false
   | Wasm.Ast.Passive -> t
   | Wasm.Ast.Active { index = i; offset = _offset } ->
-      let update x = x in
+      let update _ _ x = x in
       let t' =
-        List.mapi (fun ix x -> if ix = Int32.to_int i.it then update x else x) t
+        List.mapi
+          (fun ix x ->
+            if ix = Int32.to_int i.it then
+              update (i.it, _offset.it) es.it.einit x
+            else x)
+          t
       in
       t'
 (* Data Segments

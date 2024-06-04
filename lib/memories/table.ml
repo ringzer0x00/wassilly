@@ -1,14 +1,18 @@
-type t
-
 module OInterval = struct
-  type t = Apronext.Intervalext.t
+  type t = Apronext.Intervalext.t (*also ref type*)
 
-  let compare = Apronext.Intervalext.cmp
+  let compare = compare
 end
 
-(*maps table index to Inverval, representing the range of function indices it might call*)
-module Table = Datastructures.Mapping.Make (Int32) (OInterval)
+let ( ++ ) = Int32.add
 
+(*maps table index to Inverval, representing the range of function indices it might call*)
+module T = Datastructures.Mapping.Make (Int32) (OInterval)
+
+type t = T.t
+
+let empty = T.empty
+let add (idx, offset) v t : t = T.add (idx ++ offset) v t
 let set (*for active segments*) = failwith ""
 let get (*for call indirect*) = failwith ""
 

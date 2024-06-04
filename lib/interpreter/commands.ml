@@ -21,14 +21,15 @@ let (*rec*) fixpoint _module (call, ifb) _cstack _cont stack cache =
     | [] -> failwith ""
     | h :: t ->
         let _nat_c = t in
-        let (_ms' : MS.t), _cache, _scg, _called =
+        let (_ms' : MS.t), _res, _cache, _scg, _called =
+          (*as opposed to ms this should return a vector of values which is then appended to the ms's operand stack*)
           match h.it with
           | Binary _bop ->
-              (Binops.eval_binop _bop ms, cache, SCG.empty, CallSet.empty)
+              (Binops.eval_binop _bop ms, [ 0 ], cache, SCG.empty, CallSet.empty)
           | Unary _uop ->
-              (Unops.eval_unop _uop ms, cache, SCG.empty, CallSet.empty)
-          | Drop -> (MS.pop_operand ms, cache, SCG.empty, CallSet.empty)
-          | Nop -> (ms, cache, SCG.empty, CallSet.empty)
+              (Unops.eval_unop _uop ms, [ 0 ], cache, SCG.empty, CallSet.empty)
+          | Drop -> (MS.pop_operand ms, [ 0 ], cache, SCG.empty, CallSet.empty)
+          | Nop -> (ms, [], cache, SCG.empty, CallSet.empty)
           | Call _i ->
               failwith "call to fixpoint"
               (*before evaluating call push present natcont and other info to callstack*)
