@@ -31,6 +31,7 @@ let pop_n_operand n k : t = update_operandstack (k.ops |> pop_n n) k
 let peek_operand k = k.ops |> peek
 let peek_binop k = k.ops |> peek_n 2
 let peek_n n k = k.ops |> peek_n n
+let push x k = update_operandstack (x @ k.ops) k
 
 (*join : ops, loc, glob
    check : cont*)
@@ -80,3 +81,5 @@ let eq (k1 : t) (k2 : t) =
 let le (k1 : t) (k2 : t) = leq k1 k2 && not (eq k1 k2)
 let filter _ctx _c = failwith ""
 (*Variablememories.filter_loc ms.var c*)
+
+let bot = failwith ""
