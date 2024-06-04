@@ -1,3 +1,5 @@
+let listnth_i32 l i = List.nth l (Int32.to_int i)
+
 (*type module_ = module_' Source.phrase
   and module_' =
   {
@@ -25,12 +27,19 @@
   constant expression defining an offset into that table. A declarative element segment is not available at runtime but merely serves to forward-declare
   references that are formed in code with instructions like ref.func.*)
 
-let interpret_elem_segment (es : Wasm.Ast.elem_segment) _m =
-  let m, _, _ = (es.it.emode, es.it.einit, es.it.etype) in
+let interpret_elem_segment (es : Wasm.Ast.elem_segment) (t : 'a list) =
+  let m, _val_to_copy, _type = (es.it.emode, es.it.einit, es.it.etype) in
+  let _ = match es.it.einit with [] -> failwith "" | h :: _ -> h.it in
+  (*init is a list because element segment represents a vector of shit copied in table from an offset*)
   match m.it with
   | Wasm.Ast.Declarative -> assert false
-  | Wasm.Ast.Passive -> _m
-  | Wasm.Ast.Active { index = _; offset = _offset } -> failwith ""
+  | Wasm.Ast.Passive -> t
+  | Wasm.Ast.Active { index = i; offset = _offset } ->
+      let update x = x in
+      let t' =
+        List.mapi (fun ix x -> if ix = Int32.to_int i.it then update x else x) t
+      in
+      t'
 (* Data Segments
 
    The initial contents of a memory are zero bytes. Data segments can be used to initialize a range of memory from a static vector of bytes.
@@ -64,7 +73,7 @@ let interpret_data_segment (ds : Wasm.Ast.data_segment) _m =
 
 let init (_mod : Wasm.Ast.module_) =
   (*always alloc a memory page*)
-  let _mem_initialized = Memories.Linearmem.alloc_page_top in
+  let _mem_initialized = [| Memories.Linearmem.alloc_page_top |] in
   let _mem' =
     List.fold_left
       (fun m d -> interpret_data_segment d m)
