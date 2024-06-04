@@ -16,22 +16,19 @@ let getfbody (mod_ : module_) idx =
 
 let (*rec*) fixpoint _module (call, ifb) _cstack _cont stack cache evalf =
   let _ms, _p = call in
-  let _out =
-    match ifb with
-    | false -> evalf _module call stack cache
-    | true -> (
-        match Cache.call_in_cache call cache with
-        | Some cached -> (
-            let stable, _valCached = cached in
-            match stable with
-            | Cache.Stable -> (_valCached, cache, SCG.empty)
-            | Cache.Unstable -> (_valCached, cache, SCG.singleton call))
-        | None -> (
-            match Stack.call_in_stack call stack with
-            | true -> failwith "(Value.bot, cache, SCC.singleton call)"
-            | false -> failwith "iterate funcs call stack cache"))
-  in
-  failwith ""
+  match ifb with
+  | false -> evalf _module call _cstack _cont stack cache
+  | true -> (
+      match Cache.call_in_cache call cache with
+      | Some cached -> (
+          let stable, valCached = cached in
+          match stable with
+          | Cache.Stable -> (valCached, cache, SCG.empty)
+          | Cache.Unstable -> (valCached, cache, SCG.singleton call))
+      | None -> (
+          match Stack.call_in_stack call stack with
+          | true -> failwith "(Value.bot, cache, SCC.singleton call)"
+          | false -> failwith "iterate funcs call stack cache"))
 
 let eval _module call _cstack _cont _sk cache =
   let (ms : MS.t), (p : p) = call in
@@ -42,16 +39,17 @@ let eval _module call _cstack _cont _sk cache =
       let ((_ms' : MS.t), _newsk), cache', scg, called =
         (*as opposed to ms this should return a vector of values which is then appended to the ms's operand stack*)
         match h.it with
-        | Binary _bop ->
-            (Binops.eval_binop _bop ms, cache, SCG.empty, CallSet.empty)
-        | Unary _uop ->
-            (Unops.eval_unop _uop ms, cache, SCG.empty, CallSet.empty)
+        | Const num -> (Alu.const num ms, cache, SCG.empty, CallSet.empty)
+        | Binary bop ->
+            (Binops.eval_binop bop ms, cache, SCG.empty, CallSet.empty)
+        | Unary uop ->
+            (Unops.eval_unop uop ms, cache, SCG.empty, CallSet.empty)
         | Drop -> ((MS.pop_operand ms, []), cache, SCG.empty, CallSet.empty)
         | Nop -> ((ms, []), cache, SCG.empty, CallSet.empty)
         | Call _i ->
             failwith "call to fixpoint"
             (*before evaluating call push present natcont and other info to callstack*)
-        | _ -> failwith ""
+        | _ -> failwith "other commands"
       in
       let ms'' = MS.push _newsk _ms' in
       (ms'', cache', scg, called)

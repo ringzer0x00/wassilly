@@ -13,6 +13,7 @@ type t =
     }
   | Bot
 
+let bot = Bot
 let peek = SK.peek
 let peek_n = SK.peek_n
 let pop = SK.pop
@@ -121,12 +122,10 @@ let eq (k1 : t) (k2 : t) =
   | _, Bot -> false
   | Bot, _ -> false
   | Def k1, Def k2 ->
-  Operandstack.eq (k1.var, k1.ops) (k2.var, k2.ops)
-  && Variablememory.eq k1.var k2.var
-  && Linearmem.eq k1.mem k2.mem && Tables.eq k1.tab k2.tab
+      Operandstack.eq (k1.var, k1.ops) (k2.var, k2.ops)
+      && Variablememory.eq k1.var k2.var
+      && Linearmem.eq k1.mem k2.mem && Tables.eq k1.tab k2.tab
 
 let le (k1 : t) (k2 : t) = leq k1 k2 && not (eq k1 k2)
 let filter _ctx _c = failwith ""
 (*Variablememories.filter_loc ms.var c*)
-
-let bot = Bot
