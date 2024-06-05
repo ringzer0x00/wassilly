@@ -34,18 +34,23 @@ let cc (c : Wasm.Ast.const) = c.it
 
 let interpret_elem_segment (es : Wasm.Ast.elem_segment) (t : 'a list) =
   let m, _val_to_copy, _type = (es.it.emode, es.it.einit, es.it.etype) in
+  let _ =
+    match _type with
+    | ExternRefType -> failwith "stub"
+    | FuncRefType -> failwith ""
+  in
   let _ = match es.it.einit with [] -> failwith "" | h :: _ -> h.it in
   (*init is a list because element segment represents a vector of shit copied in table from an offset*)
   match m.it with
   | Wasm.Ast.Declarative -> assert false
   | Wasm.Ast.Passive -> t
   | Wasm.Ast.Active { index = i; offset = _offset } ->
-      let update _ _ x = x in
+      let update _ (_einit : Wasm.Ast.const list) x = x in
       let t' =
         List.mapi
           (fun ix x ->
             if ix = Int32.to_int i.it then
-              update (i.it, _offset.it) es.it.einit x
+              update (i.it, _offset.it) _val_to_copy x
             else x)
           t
       in
