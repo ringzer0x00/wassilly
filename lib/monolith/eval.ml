@@ -62,15 +62,27 @@ let rec eval funcs call stack cache =
         fixpoint funcs ((env, r), false) stack cache'
       in
       (Math.sub mgr l_val r_val env, cache'', SCC.union _l_scg' _r_scg')
-  (*| If (_c, _t, _e) ->
-      let t_val, _cache', _scgt =
-        fixpoint funcs ((env, _t), false) stack cache
-      in
-      let f_val, _cache'', _scgh =
-        fixpoint funcs ((env, _e), false) stack _cache'
-      in
+  (* | If (tbranch, ebranch) ->
+       (*if-filtered*)
+       let state',_c = pop state
+       in
+       let cons_true, cons_false = Constraint.bexpr_as_tcons _c in
+       let envtrue, envfalse =
+         ( Constraint.filter mgr env cons_true,
+           Constraint.filter mgr env cons_false )
+       in
+       let t_state, _cache', _scgt =
+         if Apron.Abstract1.is_bottom mgr envtrue then
+           (State.bot, cache, SCC.empty)
+         else fixpoint funcs ((envtrue, tbranch), false) stack cache
+       in
+       let f_state, _cache'', _scgh =
+         if Apron.Abstract1.is_bottom mgr envfalse then
+           (State.bot, cache, SCC.empty)
+         else fixpoint funcs ((envfalse, ebranch), false) stack _cache'
+       in
 
-      (Value.lub t_val f_val, _cache'', SCC.union _scgh _scgt)*)
+       (State.lub tstate fstate, _cache'', SCC.union _scgh _scgt)*)
   | If (_c, _t, _e) ->
       (*if-filtered*)
       let cons_true, cons_false = Constraint.bexpr_as_tcons env _c in
@@ -92,10 +104,6 @@ let rec eval funcs call stack cache =
       (Value.lub t_val f_val, _cache'', SCC.union _scgh _scgt)
   | Call (fname, args) ->
       let pars, body = Funcs.find fname funcs in
-
-      (*let val_, cache', _scg =
-          fixpoint funcs ((env, List.nth args 0), false) stack cache
-        in*)
       let vallist, cache', _scg' =
         List.fold_left
           (fun (v, c, g) arg ->
@@ -112,9 +120,6 @@ let rec eval funcs call stack cache =
           pars vallist (*[ val_ ]*)
       in
       let env' = if Memory.Memory.included mgr env' env then env else env' in
-      (*match Cache.Cache.find_opt (env', body) cache' with
-        | Some _ -> failwith "cached?"
-        | None ->*)
       fixpoint funcs ((env', body), true) stack cache'
 
 and iterate funcs call stack cache1 =

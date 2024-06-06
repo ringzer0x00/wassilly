@@ -8,7 +8,6 @@ module Cache = Cache.Cache
 module Stack = Stack.Stack
 module SCG = Scg.SCC
 module CallSet = Callset.CallSet
-(*fp has wrong typing and parametrization, lacks continuation*)
 
 let getfbody (mod_ : module_) idx =
   let funx = List.nth mod_.it.funcs idx in
