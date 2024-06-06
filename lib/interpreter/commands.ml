@@ -1,5 +1,6 @@
 module MS = Memories.Frame
 
+type ans = { nat : MS.t; back : MS.t; forw : MS.t }
 type module_ = Wasm.Ast.module_ (*or ' (?)*)
 type p = Wasm.Ast.instr list
 
@@ -29,13 +30,14 @@ let (*rec*) fixpoint _module (call, ifb) _cstack stack cache evalf =
           | true -> (MS.bot, cache, SCG.singleton call)
           | false -> Iterate.iterate _module call _cstack stack cache evalf))
 
-let eval _module call _cstack _sk cache =
+          (*cache needs to be mapped to ans too!!!
+             *)
+let rec eval _module call _cstack _sk cache : ans * 'a Cache.t * SCG.t =
   let (ms : MS.t), (p : p) = call in
   match p with
   | [] -> failwith "" (*do labek stack stuff*)
   | h :: t ->
-      let _nat_c = t in
-      let ((_ms' : MS.t), _newsk), cache', scg =
+      let ((_ms' : MS.t), _newsk), cache', _scg =
         (*as opposed to ms this should return a vector of values which is then appended to the ms's operand stack*)
         match h.it with
         | Const num -> (Alu.const num ms, cache, SCG.empty)
@@ -49,4 +51,4 @@ let eval _module call _cstack _sk cache =
         | _ -> failwith "other commands"
       in
       let ms'' = MS.push _newsk _ms' in
-      (ms'', cache', scg)
+      fixpoint _module ((ms'', t), false) _cstack _sk cache' eval
