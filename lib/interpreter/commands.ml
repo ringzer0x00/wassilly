@@ -27,13 +27,13 @@ let (*rec*) fixpoint _module (call, ifb) _cstack stack cache evalf =
           | Cache.Unstable -> (valCached, cache, SCG.singleton call))
       | None -> (
           match Stack.call_in_stack call stack with
-          | true -> failwith "(Value.bot, cache, SCC.singleton call)"
+          | true -> (MS.bot, cache, SCG.singleton call)
           | false -> Iterate.iterate _module call _cstack stack cache evalf))
 
 let eval _module call _cstack _sk cache =
   let (ms : MS.t), (p : p) = call in
   match p with
-  | [] -> failwith ""
+  | [] -> failwith "" (*do labek stack stuff*)
   | h :: t ->
       let _nat_c = t in
       let ((_ms' : MS.t), _newsk), cache', scg =
