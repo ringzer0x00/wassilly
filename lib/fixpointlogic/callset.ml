@@ -1,4 +1,3 @@
-(*todo*)
 module Edge = struct
   type f = Int32.t
   type t = f * f
@@ -13,4 +12,5 @@ module CallSet = struct
 
   let add = S.add
   let union = S.union
+  let add_partial s p t = add (p t) s
 end
