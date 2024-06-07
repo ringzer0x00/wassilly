@@ -30,25 +30,37 @@ let (*rec*) fixpoint _module (call, ifb) _cstack stack cache evalf =
           | true -> (MS.bot, cache, SCG.singleton call)
           | false -> Iterate.iterate _module call _cstack stack cache evalf))
 
-          (*cache needs to be mapped to ans too!!!
+(*cache needs to be mapped to ans too!!!
              *)
-let rec eval _module call _cstack _sk cache : ans * 'a Cache.t * SCG.t =
+let (*rec*) eval _module call _cstack _sk cache : ans * 'a Cache.t * SCG.t =
   let (ms : MS.t), (p : p) = call in
   match p with
   | [] -> failwith "" (*do labek stack stuff*)
-  | h :: t ->
-      let ((_ms' : MS.t), _newsk), cache', _scg =
+  | h :: _t ->
+      let _res, _cache', _scg =
         (*as opposed to ms this should return a vector of values which is then appended to the ms's operand stack*)
         match h.it with
-        | Const num -> (Alu.const num ms, cache, SCG.empty)
-        | Binary bop -> (Binops.eval_binop bop ms, cache, SCG.empty)
-        | Unary uop -> (Unops.eval_unop uop ms, cache, SCG.empty)
-        | Drop -> ((MS.pop_operand ms, []), cache, SCG.empty)
-        | Nop -> ((ms, []), cache, SCG.empty)
+        | Const num ->
+            ( { nat = Alu.const num ms; back = MS.Bot; forw = MS.Bot },
+              cache,
+              SCG.empty )
+        | Binary bop ->
+            ( { nat = Binops.eval_binop bop ms; back = MS.Bot; forw = MS.Bot },
+              cache,
+              SCG.empty )
+        | Unary uop ->
+            ( { nat = Unops.eval_unop uop ms; back = MS.Bot; forw = MS.Bot },
+              cache,
+              SCG.empty )
+        | Drop ->
+            ( { nat = MS.pop_operand ms; back = MS.Bot; forw = MS.Bot },
+              cache,
+              SCG.empty )
+        | Nop -> ({ nat = ms; back = MS.Bot; forw = MS.Bot }, cache, SCG.empty)
+        | If (_blocktype, _then, _else) -> failwith "ite - lub dei result"
         | Call _i ->
             failwith "call to fixpoint"
             (*before evaluating call push present natcont and other info to callstack*)
         | _ -> failwith "other commands"
       in
-      let ms'' = MS.push _newsk _ms' in
-      fixpoint _module ((ms'', t), false) _cstack _sk cache' eval
+      failwith "fixpoint _module ((_ms', t), false) _cstack _sk cache' eval"

@@ -9,7 +9,7 @@ let int_binop (_ : Wasm.Ast.IntOp.binop) (_ : MS.t) :
     MS.t * Memories.Operandstack.stack =
   failwith ""
 
-let realop _ _ : 'a = failwith ""
+let realop _ _ : MS.t * Memories.Operandstack.stack = failwith ""
 
 let _const (n : Wasm.Ast.num) (_ : MS.t) =
   let _n_string = Wasm.Values.string_of_num n.it in
@@ -18,7 +18,7 @@ let _const (n : Wasm.Ast.num) (_ : MS.t) =
   | F32Type | F64Type -> failwith "typed"
   | I32Type | I64Type -> failwith "typed"
 
-let const (n : Wasm.Ast.num) (ms : MS.t) : MS.t * Memories.Operandstack.stack =
+let const (n : Wasm.Ast.num) (ms : MS.t) : MS.t =
   let _r =
     match n.it with
     | F32 c ->
@@ -34,4 +34,4 @@ let const (n : Wasm.Ast.num) (ms : MS.t) : MS.t * Memories.Operandstack.stack =
         let c = Wasm.I64.to_int_s c in
         Apronext.Intervalext.of_int c c
   in
-  (ms, [ Value _r ])
+  MS.push [ Value _r ] ms
