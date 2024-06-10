@@ -31,8 +31,7 @@ let (*rec*) fixpoint _module (call, ifb) _cstack stack cache evalf =
           | true -> (MA.bot, cache, SCG.singleton call)
           | false -> Iterate.iterate _module call _cstack stack cache evalf))
 
-(*cache needs to be mapped to ans too!!!
-             *)
+(*eval should not be called recursively*)
 let rec eval _module call _cstack _sk cache : ans * Cache.t * SCG.t =
   let (ms : MS.t), (p : p) = call in
   match p with
@@ -58,8 +57,10 @@ let rec eval _module call _cstack _sk cache : ans * Cache.t * SCG.t =
               cache,
               SCG.empty )
         | Nop -> ({ nat = ms; jmp = MS.Bot; ret = MS.Bot }, cache, SCG.empty)
-        | Block (_bt, _is) -> failwith "push label to stack, call fixpoint"
-        | Loop (_bt, _is) -> failwith "push label to stack, call fixpoint"
+        | Block (_bt, _is) ->
+            failwith "push label to stack, call fixpoint (ifb true)"
+        | Loop (_bt, _is) ->
+            failwith "push label to stack, call fixpoint, (ifb false)"
         | If (_blocktype, _then, _else) ->
             (*
            
