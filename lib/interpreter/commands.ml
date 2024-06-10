@@ -58,10 +58,12 @@ let rec eval _module call _cstack _sk cache : ans * 'a Cache.t * SCG.t =
               cache,
               SCG.empty )
         | Nop -> ({ nat = ms; jmp = MS.Bot; ret = MS.Bot }, cache, SCG.empty)
+        | Block (_bt, _is) -> failwith ""
+        | Loop (_bt, _is) -> failwith ""
         | If (_blocktype, _then, _else) ->
             (*
            
-            INCORRECT, IF BLOCKS SHOULD BE EVALUED AS BLOCKS, BUT FOR NOW ITLL DO
+            INCORRECT, IF BLOCKS SHOULD BE EVALUED LIKE BLOCKS ARE, SO A LABEL SHOULD BE PUSHED INTO THE STACK, BUT FOR NOW ITLL DO
         
         *)
             let ms_t, ms_f = Cflow.ite_condition ms in
