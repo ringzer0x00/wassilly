@@ -33,7 +33,7 @@ let (*rec*) fixpoint _module (call, ifb) _cstack stack cache evalf =
 
 (*cache needs to be mapped to ans too!!!
              *)
-let rec eval _module call _cstack _sk cache : ans * 'a Cache.t * SCG.t =
+let rec eval _module call _cstack _sk cache : ans * Cache.t * SCG.t =
   let (ms : MS.t), (p : p) = call in
   match p with
   | [] -> failwith "" (*do labek stack stuff*)
@@ -58,8 +58,8 @@ let rec eval _module call _cstack _sk cache : ans * 'a Cache.t * SCG.t =
               cache,
               SCG.empty )
         | Nop -> ({ nat = ms; jmp = MS.Bot; ret = MS.Bot }, cache, SCG.empty)
-        | Block (_bt, _is) -> failwith ""
-        | Loop (_bt, _is) -> failwith ""
+        | Block (_bt, _is) -> failwith "push label to stack, call fixpoint"
+        | Loop (_bt, _is) -> failwith "push label to stack, call fixpoint"
         | If (_blocktype, _then, _else) ->
             (*
            

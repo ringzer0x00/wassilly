@@ -1,5 +1,6 @@
 open Call
 module Memory = Memories.Frame
+module Cache = Cache.Cache
 
 let wStack stack ((env1, expr) as call : Call.t) =
   match Stack.Stack.expr_in_stack expr stack with
@@ -20,7 +21,7 @@ let wStack stack ((env1, expr) as call : Call.t) =
         (Stack.Stack.add expr envWidened stack, (envWidened, expr)))
 
 (*let wVal = Memories.Stack.widening (*raw intervals, lets see if it is correct*)*)
-let call_in_cache call cache = Cache.Cache.find_opt call cache
+let call_in_cache call cache = Cache.call_in_cache call cache
 
 let call_in_stack (env, expr) stack =
   match Stack.Stack.find_opt expr stack with
