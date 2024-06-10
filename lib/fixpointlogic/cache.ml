@@ -1,6 +1,6 @@
 (*maps Call (Env, Command) to Stable, Val*)
 
-module Result = Memories.Answer
+module Result = Answer
 
 module Cache = struct
   include Map.Make (Call.Call)

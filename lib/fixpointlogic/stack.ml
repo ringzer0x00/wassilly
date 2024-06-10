@@ -1,4 +1,4 @@
-module Command = Call.Command
+module Command = Command.Command
 module Memory = Memories.Frame
 
 module Stack = struct

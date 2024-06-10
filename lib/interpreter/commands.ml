@@ -1,9 +1,9 @@
 module MS = Memories.Frame
-module MA = Memories.Answer
+module MA = Fixpoint.Answer
 
 type ans = MA.t
 type module_ = Wasm.Ast.module_ (*or ' (?)*)
-type p = Wasm.Ast.instr list
+type p = Fixpoint.Command.Command.t
 
 open Fixpoint
 module Cache = Cache.Cache
@@ -59,8 +59,20 @@ let rec eval _module call _cstack _sk cache : ans * 'a Cache.t * SCG.t =
               SCG.empty )
         | Nop -> ({ nat = ms; jmp = MS.Bot; ret = MS.Bot }, cache, SCG.empty)
         | If (_blocktype, _then, _else) ->
-            let ms_t, _ms_f = Cflow.ite_condition ms in
-            fixpoint _module ((ms_t, _then), false) _cstack _sk cache eval
+            (*
+           
+            INCORRECT, IF BLOCKS SHOULD BE EVALUED AS BLOCKS, BUT FOR NOW ITLL DO
+        
+        *)
+            let ms_t, ms_f = Cflow.ite_condition ms in
+            let _r_t, _c', _scgt =
+              fixpoint _module ((ms_t, _then), false) _cstack _sk cache eval
+            in
+            let _r_e, _c'', _scgf =
+              fixpoint _module ((ms_f, _else), false) _cstack _sk _c' eval
+            in
+            let _r, _scg = (MA.lub _r_t _r_e, SCG.union _scgt _scgf) in
+            (_r, _c'', _scg)
         | Call _i ->
             failwith "call to fixpoint"
             (*before evaluating call push present natcont and other info to callstack*)

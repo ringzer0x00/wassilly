@@ -1,7 +1,7 @@
 let wStack = Stackwidening.wStack
 
 module SCG = Scg.SCC
-module Value = Memories.Answer
+module Value = Answer
 
 let wVal ms1 ms2 = Value.widen ms1 ms2
 

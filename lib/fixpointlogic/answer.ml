@@ -1,5 +1,7 @@
-module MS = Frame
+module MS = Memories.Frame
+module LM = Labelmap.LabelMap
 
+(*jmp map label(corpo) -> MS*)
 type t = { nat : MS.t; jmp : MS.t; ret : MS.t }
 
 let bot : t = { nat = MS.bot; jmp = MS.bot; ret = MS.bot }
