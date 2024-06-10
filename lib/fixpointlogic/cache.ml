@@ -1,6 +1,6 @@
 (*maps Call (Env, Command) to Stable, Val*)
 
-module Memory = Memories.Frame
+module Result = Memories.Answer
 
 module Cache = struct
   include Map.Make (Call.Call)
@@ -8,5 +8,5 @@ module Cache = struct
   type stability = Stable | Unstable
 
   let call_in_cache = find_opt
-  let empty : (stability * Memory.t) t = empty
+  let empty : (stability * Result.t) t = empty
 end

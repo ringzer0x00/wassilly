@@ -1,6 +1,7 @@
 module MS = Memories.Frame
+module MA = Memories.Answer
 
-type ans = { nat : MS.t; back : MS.t; forw : MS.t }
+type ans = MA.t
 type module_ = Wasm.Ast.module_ (*or ' (?)*)
 type p = Wasm.Ast.instr list
 
@@ -27,40 +28,43 @@ let (*rec*) fixpoint _module (call, ifb) _cstack stack cache evalf =
           | Cache.Unstable -> (valCached, cache, SCG.singleton call))
       | None -> (
           match Stack.call_in_stack call stack with
-          | true -> (MS.bot, cache, SCG.singleton call)
+          | true -> (MA.bot, cache, SCG.singleton call)
           | false -> Iterate.iterate _module call _cstack stack cache evalf))
 
 (*cache needs to be mapped to ans too!!!
              *)
-let (*rec*) eval _module call _cstack _sk cache : ans * 'a Cache.t * SCG.t =
+let rec eval _module call _cstack _sk cache : ans * 'a Cache.t * SCG.t =
   let (ms : MS.t), (p : p) = call in
   match p with
   | [] -> failwith "" (*do labek stack stuff*)
   | h :: _t ->
-      let _res, _cache', _scg =
+      let (_res : ans), _cache', _scg =
         (*as opposed to ms this should return a vector of values which is then appended to the ms's operand stack*)
         match h.it with
         | Const num ->
-            ( { nat = Alu.const num ms; back = MS.Bot; forw = MS.Bot },
+            ( { nat = Alu.const num ms; jmp = MS.Bot; ret = MS.Bot },
               cache,
               SCG.empty )
         | Binary bop ->
-            ( { nat = Binops.eval_binop bop ms; back = MS.Bot; forw = MS.Bot },
+            ( { nat = Binops.eval_binop bop ms; jmp = MS.Bot; ret = MS.Bot },
               cache,
               SCG.empty )
         | Unary uop ->
-            ( { nat = Unops.eval_unop uop ms; back = MS.Bot; forw = MS.Bot },
+            ( { nat = Unops.eval_unop uop ms; jmp = MS.Bot; ret = MS.Bot },
               cache,
               SCG.empty )
         | Drop ->
-            ( { nat = MS.pop_operand ms; back = MS.Bot; forw = MS.Bot },
+            ( { nat = MS.pop_operand ms; jmp = MS.Bot; ret = MS.Bot },
               cache,
               SCG.empty )
-        | Nop -> ({ nat = ms; back = MS.Bot; forw = MS.Bot }, cache, SCG.empty)
-        | If (_blocktype, _then, _else) -> failwith "ite - lub dei result"
+        | Nop -> ({ nat = ms; jmp = MS.Bot; ret = MS.Bot }, cache, SCG.empty)
+        | If (_blocktype, _then, _else) ->
+            let ms_t, _ms_f = Cflow.ite_condition ms in
+            fixpoint _module ((ms_t, _then), false) _cstack _sk cache eval
         | Call _i ->
             failwith "call to fixpoint"
             (*before evaluating call push present natcont and other info to callstack*)
         | _ -> failwith "other commands"
       in
-      failwith "fixpoint _module ((_ms', t), false) _cstack _sk cache' eval"
+      (_res, _cache', _scg)
+(*failwith "fixpoint _module ((_ms', t), false) _cstack _sk cache' eval"*)
