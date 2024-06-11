@@ -3,7 +3,7 @@ module MA = Fixpoint.Answer
 
 type ans = MA.t
 type module_ = Wasm.Ast.module_ (*or ' (?)*)
-type p = Fixpoint.Command.Command.t
+type p = Language.Command.Command.t
 
 open Fixpoint
 module Cache = Cache.Cache

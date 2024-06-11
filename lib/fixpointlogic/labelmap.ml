@@ -1,4 +1,4 @@
-module Command = Command.Command
+module Command = Language.Command.Command
 module Memory = Memories.Frame
 
 module LabelMap = struct

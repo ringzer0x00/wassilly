@@ -34,4 +34,4 @@ let const (n : Wasm.Ast.num) (ms : MS.t) : MS.t =
         let c = Wasm.I64.to_int_s c in
         Apronext.Intervalext.of_int c c
   in
-  MS.push [ Value _r ] ms
+  MS.push_operand [ Value _r ] ms

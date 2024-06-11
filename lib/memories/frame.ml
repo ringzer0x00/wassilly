@@ -33,6 +33,20 @@ let update_operandstack ops' (k : t) =
           lsk = k.lsk;
         }
 
+let update_labelstack lsk' (k : t) =
+  match k with
+  | Bot -> failwith ""
+  | Def k ->
+      Def
+        {
+          ops = k.ops;
+          var = k.var;
+          cont = k.cont;
+          mem = k.mem;
+          tab = k.tab;
+          lsk = lsk';
+        }
+
 let pop_operand k : t =
   match k with
   | Bot -> failwith ""
@@ -52,13 +66,16 @@ let peek_binop k =
 let peek_n n k =
   match k with Bot -> failwith "" | Def kx -> kx.ops |> peek_n n
 
-let push x k =
+let push_operand x k =
   match k with
   | Bot -> failwith ""
   | Def kx -> update_operandstack (x @ kx.ops) k
 
-(*join : ops, loc, glob
-   check : cont*)
+let push_label x k =
+  match k with
+  | Bot -> failwith ""
+  | Def kx -> update_labelstack (x :: kx.lsk) k
+
 let join (k1 : t) (k2 : t) =
   match (k1, k2) with
   | Bot, Bot -> Bot

@@ -23,3 +23,5 @@ let filter_cond c ms =
 let ite_condition ms =
   let c, ms' = cond ms in
   filter_cond c ms'
+
+let enter_label ms _l = ms
