@@ -7,6 +7,7 @@ module LabelMap = struct
   type t = Memory.t M.t
 
   let empty : t = M.empty
+  let bot = empty
   let add c ms lm : t = M.add c ms lm
 
   let lub _lm1 _lm2 : t =
@@ -14,4 +15,8 @@ module LabelMap = struct
 
   let widen _lm1 _lm2 : t =
     M.union (fun _key m1 m2 -> Some (Memory.widen m1 m2)) _lm1 _lm2
+
+  let leq _ _ = failwith ""
+  let eq _ _ = failwith ""
+  let le lm1 lm2 = leq lm1 lm2 && not (eq lm1 lm2)
 end

@@ -16,16 +16,14 @@ type t = Def of ms | Bot
 let return x = Def x
 let bind x op = match x with Bot -> Bot | Def a -> op a
 let ( >>= ) = bind
-
-let bind_peek x op : Operandstack.operand list =
-  match x with Bot -> failwith "" | Def a -> op a
-
+let bind_peek x op = match x with Bot -> failwith "" | Def a -> op a
 let ( >== ) = bind_peek
 let bot = Bot
 let peek = SK.peek
 let peek_n = SK.peek_n
 let pop = SK.pop
 let pop_n = SK.pop_n
+let peek_nth_label = Labelstack.peek_nth
 
 let update_operandstack ops' (k : t) =
   k >>= fun a ->
@@ -56,9 +54,11 @@ let pop_operand k : t = k >>= fun a -> update_operandstack (a.ops |> pop) k
 let pop_n_operand n k : t =
   k >>= fun a -> update_operandstack (a.ops |> pop_n n) k
 
-let peek_operand k = k >== fun a -> a.ops |> peek_n 1
-let peek_binop k = k >== fun a -> a.ops |> peek_n 2
-let peek_n n k = k >== fun a -> a.ops |> peek_n n
+let pop_n_labels k n = k >== fun a -> update_labelstack (a.lsk |> pop_n n) k
+let peek_n_operand n k = k >== fun a -> a.ops |> peek_n n
+let peek_operand k = peek_n_operand 1 k
+let peek_binop k = peek_n_operand 2 k
+let peek_nth_label k n = k >== fun a -> a.lsk |> peek_nth_label n
 let push_operand x k = k >>= fun a -> update_operandstack (x @ a.ops) k
 let push_label x k = k >>= fun a -> update_labelstack (x :: a.lsk) k
 

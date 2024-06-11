@@ -1,4 +1,5 @@
 module MS = Memories.Frame
+module LM = Fixpoint.Labelmap.LabelMap
 module MA = Fixpoint.Answer
 
 type ans = MA.t
@@ -32,7 +33,7 @@ let (*rec*) fixpoint _module (call, ifb) _cstack stack cache evalf =
           | false -> Iterate.iterate _module call _cstack stack cache evalf))
 
 (*eval should not be called recursively*)
-let rec eval _module call _cstack _sk cache : ans * Cache.t * SCG.t =
+let rec step _module call _cstack _sk cache : ans * Cache.t * SCG.t =
   let (ms : MS.t), (p : p) = call in
   match p with
   | [] -> failwith "" (*do labek stack stuff*)
@@ -41,59 +42,75 @@ let rec eval _module call _cstack _sk cache : ans * Cache.t * SCG.t =
         (*as opposed to ms this should return a vector of values which is then appended to the ms's operand stack*)
         match h.it with
         | Const num ->
-            ( { nat = Alu.const num ms; jmp = MS.Bot; ret = MS.Bot },
+            ( { nat = Alu.const num ms; jmp = LM.bot; ret = MS.Bot },
               cache,
               SCG.empty )
         | Binary bop ->
-            ( { nat = Binops.eval_binop bop ms; jmp = MS.Bot; ret = MS.Bot },
+            ( { nat = Binops.eval_binop bop ms; jmp = LM.bot; ret = MS.Bot },
               cache,
               SCG.empty )
         | Unary uop ->
-            ( { nat = Unops.eval_unop uop ms; jmp = MS.Bot; ret = MS.Bot },
+            ( { nat = Unops.eval_unop uop ms; jmp = LM.bot; ret = MS.Bot },
               cache,
               SCG.empty )
         | Drop ->
-            ( { nat = MS.pop_operand ms; jmp = MS.Bot; ret = MS.Bot },
+            ( { nat = MS.pop_operand ms; jmp = LM.bot; ret = MS.Bot },
               cache,
               SCG.empty )
-        | Nop -> ({ nat = ms; jmp = MS.Bot; ret = MS.Bot }, cache, SCG.empty)
-        | Br _ ->
-            failwith
-              "peek nth label, pop n+1 labels, call fixpoint with present \
-               state and brcont as program"
+        | Nop -> ({ nat = ms; jmp = LM.bot; ret = MS.Bot }, cache, SCG.empty)
+        | Br i -> (
+            let idx = i.it |> Int32.to_int in
+            let _l = MS.peek_nth_label ms idx in
+            let _ms' = MS.pop_n_labels ms (idx + 1) in
+            (*unsure if corret calling fixpoint here*)
+            match _l with
+            | BlockLabel _b ->
+                ( {
+                    nat = MS.Bot;
+                    jmp =
+                      LM.bot
+                      (*
+                       not correct, add label instro to new map and perform LUB computation
+                       ...*);
+                    ret = MS.Bot;
+                  },
+                  cache,
+                  SCG.empty )
+            | LoopLabel _l -> failwith ""
+            (*failwith
+                "peek nth label, pop n+1 labels, call fixpoint with present \
+              | BrIf _ -> failwith "weird ass instruction"
+                state and brcont as program"*))
         | Block (_bt, _is) ->
-            let _lab =
-              Memories.Labelstack.block { natcont = _t; brcont = _t; typ = _bt }
+            let l =
+              Memories.Labelstack.block
+                { natcont = _t; brcont = _t; typ = _bt; cmd = [ h ] }
             in
-            let ms' = Cflow.enter_label _lab ms in
-            fixpoint _module ((ms', _is), false) _cstack _sk cache eval
+            let ms' = Cflow.enter_label l ms in
+            fixpoint _module ((ms', _is), false) _cstack _sk cache step
         | Loop (_bt, _is) ->
             let _lab =
-              Memories.Labelstack.loop { natcont = _t; brcont = _is; typ = _bt }
+              Memories.Labelstack.loop
+                { natcont = _t; brcont = h :: _t; typ = _bt; cmd = [ h ] }
             in
             let ms' = Cflow.enter_label _lab ms in
-            fixpoint _module ((ms', _is), true) _cstack _sk cache eval
+            fixpoint _module ((ms', _is), true) _cstack _sk cache step
         | If (_blocktype, _then, _else) ->
-            (*
-           
-            INCORRECT, IF BLOCKS SHOULD BE EVALUED LIKE BLOCKS ARE, SO A LABEL SHOULD BE PUSHED INTO THE STACK, BUT FOR NOW ITLL DO
-        
-        *)
-            let lab =
+            let l =
               Memories.Labelstack.block
-                { natcont = _t; brcont = _t; typ = _blocktype }
+                { natcont = _t; brcont = _t; typ = _blocktype; cmd = [ h ] }
             in
-            let ms' = Cflow.enter_label lab ms in
+            let ms' = Cflow.enter_label l ms in
             let ms_t, ms_f = Cflow.ite_condition ms' in
             (*check for bottoms before calling fix*)
-            let _r_t, _c', _scgt =
-              fixpoint _module ((ms_t, _then), false) _cstack _sk cache eval
+            let a_true, c', _scgt =
+              fixpoint _module ((ms_t, _then), false) _cstack _sk cache step
             in
-            let _r_e, _c'', _scgf =
-              fixpoint _module ((ms_f, _else), false) _cstack _sk _c' eval
+            let a_false, c'', _scgf =
+              fixpoint _module ((ms_f, _else), false) _cstack _sk c' step
             in
-            let _r, _scg = (MA.lub _r_t _r_e, SCG.union _scgt _scgf) in
-            (_r, _c'', _scg)
+            let a, scg = (MA.lub a_true a_false, SCG.union _scgt _scgf) in
+            (a, c'', scg)
         | Call _i ->
             failwith "call to fixpoint"
             (*before evaluating call push present natcont and other info to callstack*)
