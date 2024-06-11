@@ -2,23 +2,17 @@ module SK = Datastructures.Liststack
 
 type cont (*probably a program, a wasm instr sequence*)
 
-type ms = {
-  ops : Operandstack.t;
-  var : Variablememory.t;
-  cont : cont;
-  mem : Linearmem.t;
-  tab : Tables.t;
-  lsk : Labelstack.t;
-}
+type t =
+  | Def of {
+      ops : Operandstack.t;
+      var : Variablememory.t;
+      cont : cont;
+      mem : Linearmem.t;
+      tab : Tables.t;
+      lsk : Labelstack.t;
+    }
+  | Bot
 
-type t = Def of ms | Bot
-
-let return (x : ms) : t = Def x
-
-let bind (x : t) (op : ms -> t) : t =
-  match x with Bot -> failwith "" (*Bot*) | Def a -> op a
-
-let ( >>= ) = bind
 let bot = Bot
 let peek = SK.peek
 let peek_n = SK.peek_n
@@ -26,28 +20,32 @@ let pop = SK.pop
 let pop_n = SK.pop_n
 
 let update_operandstack ops' (k : t) =
-  k >>= fun a ->
-  return
-    {
-      ops = ops';
-      var = a.var;
-      cont = a.cont;
-      mem = a.mem;
-      tab = a.tab;
-      lsk = a.lsk;
-    }
+  match k with
+  | Bot -> failwith ""
+  | Def k ->
+      Def
+        {
+          ops = ops';
+          var = k.var;
+          cont = k.cont;
+          mem = k.mem;
+          tab = k.tab;
+          lsk = k.lsk;
+        }
 
 let update_labelstack lsk' (k : t) =
-  k >>= fun a ->
-  return
-    {
-      ops = a.ops;
-      var = a.var;
-      cont = a.cont;
-      mem = a.mem;
-      tab = a.tab;
-      lsk = lsk';
-    }
+  match k with
+  | Bot -> failwith ""
+  | Def k ->
+      Def
+        {
+          ops = k.ops;
+          var = k.var;
+          cont = k.cont;
+          mem = k.mem;
+          tab = k.tab;
+          lsk = lsk';
+        }
 
 let pop_operand k : t =
   match k with
