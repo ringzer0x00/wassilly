@@ -1,0 +1,3 @@
+(library
+ (name segalang)
+ (libraries apron apron.polkaMPQ))
