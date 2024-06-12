@@ -60,23 +60,19 @@ let rec step _module call _cstack _sk cache : ans * Cache.t * SCG.t =
         | Nop -> ({ nat = ms; jmp = LM.bot; ret = MS.Bot }, cache, SCG.empty)
         | Br i -> (
             let idx = i.it |> Int32.to_int in
-            let _l = MS.peek_nth_label ms idx in
-            let _ms' = MS.pop_n_labels ms (idx + 1) in
-            (*unsure if corret calling fixpoint here*)
-            match _l with
-            | BlockLabel _b ->
-                ( {
-                    nat = MS.Bot;
-                    jmp =
-                      LM.bot
-                      (*
-                       not correct, add label instro to new map and perform LUB computation
-                       ...*);
-                    ret = MS.Bot;
-                  },
-                  cache,
-                  SCG.empty )
-            | LoopLabel _l -> failwith ""
+            let l = MS.peek_nth_label ms idx in
+            let ms' : MS.t = MS.pop_n_labels ms (idx + 1) in
+            match l with
+            | Some (BlockLabel b) ->
+                (*check if labelstack is empty, if so it is treated as a return*)
+                if not (MS.is_lsk_empty ms') then
+                  ( { nat = MS.Bot; jmp = LM.singleton b.cmd ms'; ret = MS.Bot },
+                    cache,
+                    SCG.empty )
+                else
+                  ({ nat = MS.Bot; jmp = LM.bot; ret = ms' }, cache, SCG.empty)
+            | Some (LoopLabel _l) -> failwith ""
+            | None -> failwith "Invalid Br depth"
             (*failwith
                 "peek nth label, pop n+1 labels, call fixpoint with present \
               | BrIf _ -> failwith "weird ass instruction"
