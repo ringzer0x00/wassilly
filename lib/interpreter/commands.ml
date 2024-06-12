@@ -35,29 +35,31 @@ let (*rec*) fixpoint _module (call, ifb) _cstack stack cache stepf =
 (*eval should not be called recursively*)
 let rec step _module call _cstack _sk cache : ans * Cache.t * SCG.t =
   let (ms : MS.t), (p : p) = call in
+
   match p with
   | [] -> failwith "" (*do labek stack stuff*)
-  | h :: _t ->
+  | head :: tail ->
+      let fixnext_helper ms' =
+        fixpoint _module ((ms', tail), false) _cstack _sk cache step
+      in
       let (_res : ans), _cache', _scg =
         (*as opposed to ms this should return a vector of values which is then appended to the ms's operand stack*)
-        match h.it with
+        match head.it with
         | Const num ->
-            ( { nat = Alu.const num ms; jmp = LM.bot; ret = MS.Bot },
-              cache,
-              SCG.empty )
+            let ms' = Alu.const num ms in
+            fixnext_helper ms'
         | Binary bop ->
-            ( { nat = Binops.eval_binop bop ms; jmp = LM.bot; ret = MS.Bot },
-              cache,
-              SCG.empty )
+            let ms' = Binops.eval_binop bop ms in
+            fixnext_helper ms'
         | Unary uop ->
-            ( { nat = Unops.eval_unop uop ms; jmp = LM.bot; ret = MS.Bot },
-              cache,
-              SCG.empty )
+            let ms' = Unops.eval_unop uop ms in
+            fixnext_helper ms'
         | Drop ->
-            ( { nat = MS.pop_operand ms; jmp = LM.bot; ret = MS.Bot },
-              cache,
-              SCG.empty )
-        | Nop -> ({ nat = ms; jmp = LM.bot; ret = MS.Bot }, cache, SCG.empty)
+            let ms' = MS.pop_operand ms in
+            fixnext_helper ms'
+        | Nop ->
+            let ms' = ms in
+            fixnext_helper ms'
         | Return ->
             failwith
               "flush labels, get function type and return memorystate with the \
@@ -79,26 +81,37 @@ let rec step _module call _cstack _sk cache : ans * Cache.t * SCG.t =
             | None -> failwith "Invalid Br depth"
             (*failwith
                 "peek nth label, pop n+1 labels, call fixpoint with present \
-              | BrIf _ -> failwith "weird ass instruction"
+
                 state and brcont as program"*))
+        | BrIf _ -> failwith "weird ass instruction"
         | Block (_bt, _is) ->
             let l =
               Memories.Labelstack.block
-                { natcont = _t; brcont = _t; typ = _bt; cmd = [ h ] }
+                { natcont = tail; brcont = tail; typ = _bt; cmd = [ head ] }
             in
             let ms' = Cflow.enter_label l ms in
             fixpoint _module ((ms', _is), false) _cstack _sk cache step
         | Loop (_bt, _is) ->
             let _lab =
               Memories.Labelstack.loop
-                { natcont = _t; brcont = h :: _t; typ = _bt; cmd = [ h ] }
+                {
+                  natcont = tail;
+                  brcont = head :: tail;
+                  typ = _bt;
+                  cmd = [ head ];
+                }
             in
             let ms' = Cflow.enter_label _lab ms in
             fixpoint _module ((ms', _is), true) _cstack _sk cache step
         | If (_blocktype, _then, _else) ->
             let l =
               Memories.Labelstack.block
-                { natcont = _t; brcont = _t; typ = _blocktype; cmd = [ h ] }
+                {
+                  natcont = tail;
+                  brcont = tail;
+                  typ = _blocktype;
+                  cmd = [ head ];
+                }
             in
             let ms' = Cflow.enter_label l ms in
             let ms_t, ms_f = Cflow.ite_condition ms' in
