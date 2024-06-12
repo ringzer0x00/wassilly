@@ -16,10 +16,10 @@ let getfbody (mod_ : module_) idx =
   let funx = List.nth mod_.it.funcs idx in
   (funx.it.body, funx.it.locals, funx.it.ftype)
 
-let (*rec*) fixpoint _module (call, ifb) _cstack stack cache evalf =
+let (*rec*) fixpoint _module (call, ifb) _cstack stack cache stepf =
   let _ms, _p = call in
   match ifb with
-  | false -> evalf _module call _cstack stack cache
+  | false -> stepf _module call _cstack stack cache
   | true -> (
       match Cache.call_in_cache call cache with
       | Some cached -> (
@@ -30,7 +30,7 @@ let (*rec*) fixpoint _module (call, ifb) _cstack stack cache evalf =
       | None -> (
           match Stack.call_in_stack call stack with
           | true -> (MA.bot, cache, SCG.singleton call)
-          | false -> Iterate.iterate _module call _cstack stack cache evalf))
+          | false -> Iterate.iterate _module call _cstack stack cache stepf))
 
 (*eval should not be called recursively*)
 let rec step _module call _cstack _sk cache : ans * Cache.t * SCG.t =
@@ -58,6 +58,10 @@ let rec step _module call _cstack _sk cache : ans * Cache.t * SCG.t =
               cache,
               SCG.empty )
         | Nop -> ({ nat = ms; jmp = LM.bot; ret = MS.Bot }, cache, SCG.empty)
+        | Return ->
+            failwith
+              "flush labels, get function type and return memorystate with the \
+               first n values top of the stack,"
         | Br i -> (
             let idx = i.it |> Int32.to_int in
             let l = MS.peek_nth_label ms idx in
