@@ -1,10 +1,9 @@
 module Command = Command.Language
 module Memory = Memory.Memory
+include Map.Make (Command)
 
-module Stack = struct
-  include Map.Make (Command)
+type tt = Memory.t t
+type t = tt
 
-  let empty : Memory.t t = empty
-  let expr_in_stack e s = exists (fun xpr _ -> e = xpr) s
-
-end
+let empty : t = empty
+let expr_in_stack e s = exists (fun xpr _ -> e = xpr) s
