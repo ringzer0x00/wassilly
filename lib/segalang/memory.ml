@@ -1,9 +1,9 @@
 module VarMemory = Varmemory.VarMemory
-module OpStrack = Operandstack
+module OpStack = Operandstack
 
 module Memory = struct
   module VM = VarMemory
-  module OS = OpStrack
+  module OS = OpStack
 
   type t = { vm : VM.t; opsk : OS.t }
 end

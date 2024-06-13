@@ -5,13 +5,14 @@ module Language = struct
   type uop = val_ -> val_
   type fid = string
   type var = string
-  type label = int
+  type depth = int
+  type type_ 
 
   type stmt = cmd list
 
   and cmd =
-    | Block of label * stmt
-    | Loop of label * stmt
+    | Block of type_ * stmt
+    | Loop of type_ * stmt
     | MemRead of var
     | MemWrite of var
     | Val of int32
@@ -19,7 +20,7 @@ module Language = struct
     | Unop of uop
     | If of stmt * stmt
     | Call of fid
-    | Br of label
+    | Br of depth
 
   type t = stmt
 
