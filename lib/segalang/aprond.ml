@@ -1,15 +1,23 @@
-open Apron
+type dom = Apronext.Apol.t
+type var = Apron.Var.t
+type expr = Apronext.Texprext.t
+type constr = Apronext.Tconsext.t
 
-let new_mgr mgr =
-  let m =
-    match mgr with
-    | "polystrict" -> Polka.manager_alloc_strict () |> Polka.manager_of_polka
-    (*| "interval" -> Box.manager_alloc () |> Box.manager_of_box*)
-    | _ -> failwith "alloc"
-  in
-  m
+let join = Apronext.Apol.join
 
-let new_aenv int real = Environment.make int real
-let new_memory m env = Abstract1.top m env
-let join mgr m1 m2 = Abstract1.join mgr m1 m2
-let widening mgr m1 m2 = Abstract1.widening mgr m1 m2
+let widen ad1 ad2 =
+  let ad' = Apronext.Apol.widening ad1 ad2 in
+  let ad'' = Apronext.Apol.widening ad2 ad1 in
+  join ad' ad''
+
+let add_var = Apronext.Apol.add_var
+let assign_expr = Apronext.Apol.assign_texpr
+let filter = Apronext.Apol.filter_tcons
+let bound_variable = Apronext.Apol.bound_variable
+let leq = Apronext.Apol.is_leq
+let eq = Apronext.Apol.is_eq
+let change_env = Apronext.Apol.change_environment
+
+(*env funcs*)
+let make_env = Apronext.Environmentext.make
+let forget_env = Apronext.Environmentext.remove

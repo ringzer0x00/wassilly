@@ -1,4 +1,4 @@
-module VM = Varmemory.VarMemory
+module VM = Varmemory
 module OS = Operandstack
 module LS = Labelstack
 
@@ -18,11 +18,11 @@ let ( >>= ) = bind
 
 (*lowlevel ops*)
 let lowlevel_widen m1 m2 =
-  { vm = m1.vm; opsk = OS.widen m1.opsk m2.opsk; lsk = m1.lsk }
+  { vm = VM.widen m1.vm m2.vm; opsk = OS.widen m1.opsk m2.opsk; lsk = m1.lsk }
 (*lsk is assumed to be the same on flow merges*)
 
 let lowlevel_lub m1 m2 =
-  { vm = m1.vm; opsk = OS.lub m1.opsk m2.opsk; lsk = m1.lsk }
+  { vm = VM.join m1.vm m2.vm; opsk = OS.lub m1.opsk m2.opsk; lsk = m1.lsk }
 (*lsk is assumed to be the same on flow merges*)
 
 (*magic*)
