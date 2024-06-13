@@ -1,9 +1,11 @@
+type val_ = Value.value
+
 module Language = struct
-  type bop = int32 -> int32 -> int32
-  type uop = int32 -> int32
+  type bop = val_ -> val_ -> val_
+  type uop = val_ -> val_
   type fid = string
   type var = string
-  type label = string
+  type label = int
 
   type stmt = cmd list
 
@@ -18,4 +20,17 @@ module Language = struct
     | If of stmt * stmt
     | Call of fid
     | Br of label
+
+  type t = stmt
+
+  let compare = compare
+end
+
+module Funcs = struct
+  include Map.Make (String)
+
+  type tt = (string list * Language.t) t
+  type t = tt
+
+  let empty : t = empty
 end
