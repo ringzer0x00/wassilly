@@ -20,6 +20,22 @@ let pop_n n s =
   in
   aux s n
 
-(*abstract value operations*)
+(*semantics*)
+let unop s f =
+  let operand, s = (peek_n 1 s, pop_n 1 s) in
+  let operand = List.nth operand 0 in
+  let res = f operand in
+  push_ops [ res ] s
+
+let binop s f =
+  let operand, s = (peek_n 2 s, pop_n 2 s) in
+  let l, r = (List.nth operand 0, List.nth operand 1) in
+  let res = f l r in
+  push_ops [ res ] s
+
+(*abstract domain operations*)
 let lub s1 s2 = List.map2 (fun x y -> Operand.lub x y) s1 s2
 let widen s1 s2 = List.map2 (fun x y -> Operand.widen x y) s1 s2
+let leq s1 s2 = List.for_all2 (fun fst snd -> Operand.leq fst snd) s1 s2
+let eq s1 s2 = List.for_all2 (fun fst snd -> Operand.eq fst snd) s1 s2
+let le os1 os2 = leq os1 os2 && not (eq os1 os2)
