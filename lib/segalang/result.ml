@@ -1,2 +1,3 @@
-type mem = Memory.Memory.t
-type t = { nat : mem; return : mem }
+type mem = Memory.t
+type lmap = Labelmap.t
+type t = { nat : mem; br : lmap; return : mem }

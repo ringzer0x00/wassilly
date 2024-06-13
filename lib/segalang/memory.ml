@@ -1,12 +1,8 @@
-module VarMemory = Varmemory.VarMemory
-module OpStack = Operandstack
+module VM = Varmemory.VarMemory
+module OS = Operandstack
+module LS = Labelstack
 
-module Memory = struct
-  module VM = VarMemory
-  module OS = OpStack
+type t = { vm : VM.t; opsk : OS.t; lsk : LS.t }
 
-  type t = { vm : VM.t; opsk : OS.t }
-
-  let widen _ _ = failwith ""
-  let join _ _ = failwith ""
-end
+let widen _ _ = failwith ""
+let join _ _ = failwith ""

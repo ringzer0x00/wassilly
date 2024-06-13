@@ -1,5 +1,4 @@
 module Command = Command.Language
-module Memory = Memory.Memory
 include Map.Make (Command)
 
 type tt = Memory.t t
