@@ -6,13 +6,13 @@ module Language = struct
   type fid = string
   type var = string
   type depth = int
-  type type_ 
+  type arity = int
 
   type stmt = cmd list
 
   and cmd =
-    | Block of type_ * stmt
-    | Loop of type_ * stmt
+    | Block of arity * stmt
+    | Loop of arity * stmt
     | MemRead of var
     | MemWrite of var
     | Val of int32
