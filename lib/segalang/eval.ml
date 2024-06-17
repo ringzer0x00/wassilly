@@ -12,19 +12,32 @@ let fixpoint funcs (((_env, _expr) as call), _ifb) stack cache pres eval =
   | true -> failwith ""
 
 let rec eval (funcs : funcs) (call : call) (_stack : stack) (_cache : cache)
-    ({ br; return } : partial_result) : result * cache * scg =
+    ({ br; return } as pres : partial_result) : result * cache * scg =
   let prec, prog = call in
   match prog with
   | [] -> failwith ""
   | c1 :: c2 ->
       let (res1, cache', scg_h) : result * cache * scg =
         match c1 with
-        | Block (_res_arity, _stmt) -> failwith ""
+        | Block (_res_arity, block_body) ->
+            let _b_prec = prec in
+            let _b_call = (_b_prec, block_body) in
+            let _, _, _ =
+              fixpoint funcs (_b_call, false) _stack _cache pres eval
+            in
+            failwith
+              "next = JOIN(next, br(lab)) , br = br, return = JOIN(brMAXDEPTH, \
+               return)"
+        | Loop (_res_arity, _stmt) ->
+            failwith
+              "next = JOIN(next, br(lab)) , br = br, return = JOIN(brMAXDEPTH, \
+               return)"
         | Sub | Sum | Mul -> ({ nat = prec; br; return }, _cache, Scg.empty)
         | Neg -> ({ nat = prec; br; return }, _cache, Scg.empty)
         | Br _ ->
+            (*br semantics*)
             failwith "({ nat = BOT; br = ... ; return }, _cache, Scg.empty)"
-        | If (_res_arity, _stmt_true, _stmt_false) -> failwith ""
+        | If (_res_arity, _stmt_true, _stmt_false) -> failwith "p2p join"
         | Binop _bop ->
             failwith " ({ nat = prec; br; return }, _cache, Scg.empty)"
         | Unop _uop ->
