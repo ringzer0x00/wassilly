@@ -14,6 +14,11 @@ let lub _lm1 _lm2 : t =
 let widen _lm1 _lm2 : t =
   M.union (fun _key m1 m2 -> Some (Memory.widen m1 m2)) _lm1 _lm2
 
+let res_label l lm =
+  let r = M.find_opt l lm in
+  match r with None -> Memory.Bot | Some r -> r
+
+let remove l lm = M.remove l lm
 let add_lub c ms lm = lub (M.singleton c ms) lm
 let leq _ _ = failwith ""
 let eq _ _ = failwith ""

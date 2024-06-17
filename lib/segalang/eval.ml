@@ -22,16 +22,17 @@ let rec eval (funcs : funcs) (call : call) (_stack : stack) (_cache : cache)
         | Block (_res_arity, block_body) ->
             let _b_prec = prec in
             let _b_call = (_b_prec, block_body) in
-            let _, _, _ =
+            let r_b, cache_b, scg_b =
               fixpoint funcs (_b_call, false) _stack _cache pres eval
             in
-            failwith
-              "next = JOIN(next, br(lab)) , br = br, return = JOIN(brMAXDEPTH, \
-               return)"
-        | Loop (_res_arity, _stmt) ->
-            failwith
-              "next = JOIN(next, br(lab)) , br = br, return = JOIN(brMAXDEPTH, \
-               return)"
+            ( {
+                nat = Memory.join r_b.nat (Labelmap.res_label block_body r_b.br);
+                br = Labelmap.remove block_body r_b.br;
+                return = r_b.return;
+              },
+              cache_b,
+              scg_b )
+        | Loop (_res_arity, _stmt) -> failwith "see block"
         | Sub | Sum | Mul -> ({ nat = prec; br; return }, _cache, Scg.empty)
         | Neg -> ({ nat = prec; br; return }, _cache, Scg.empty)
         | Br _ ->
