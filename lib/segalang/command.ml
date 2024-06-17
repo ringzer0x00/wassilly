@@ -17,8 +17,12 @@ module Language = struct
     | MemWrite of var
     | Val of int32
     | Binop of bop
+    | Sub
+    | Sum
+    | Mul
+    | Neg
     | Unop of uop
-    | If of stmt * stmt
+    | If of arity * stmt * stmt
     | Call of fid
     | Br of depth
 
