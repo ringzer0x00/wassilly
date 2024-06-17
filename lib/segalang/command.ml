@@ -25,6 +25,8 @@ module Language = struct
     | If of arity * stmt * stmt
     | Call of fid
     | Br of depth
+    | BrIf of depth
+
 
   type t = stmt
 

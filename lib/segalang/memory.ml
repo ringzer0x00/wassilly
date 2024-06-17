@@ -5,6 +5,8 @@ module LS = Labelstack
 type ms = { vm : VM.t; opsk : OS.t; lsk : LS.t }
 type t = Def of ms | Bot
 
+let is_bot = function Bot -> true | Def _ -> false
+
 (*monadic operators*)
 let return x = Def x
 
