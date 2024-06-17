@@ -7,3 +7,5 @@ type tt = (stability * Value.value) t
 type t = tt
 
 let empty : t = empty
+
+let call_in_cache _ _ = failwith ""
