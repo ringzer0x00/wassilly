@@ -4,6 +4,8 @@ type t = { nat : mem; br : lmap; return : mem }
 type partial_result = { br : lmap; return : mem }
 
 let pres_of_result (r : t) = { br = r.br; return = r.return }
+let bot = { return = Memory.Bot; br = Labelmap.empty; nat = Memory.Bot }
+let is_bot_result r = r = bot
 
 let join r1 r2 =
   {
@@ -18,3 +20,6 @@ let widen r1 r2 =
     br = Labelmap.widen r1.br r2.br;
     nat = Memory.widen r1.nat r2.nat;
   }
+
+let leq _ _ = failwith ""
+let le _ _ = failwith ""
