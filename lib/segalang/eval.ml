@@ -29,7 +29,12 @@ let rec eval (funcs : funcs) (call : call) (_stack : stack) (cache : cache) pres
   | c1 :: c2 ->
       let (res1, cache', scg_h) : result * cache * scg =
         match c1 with
-        | Val _ -> failwith "val"
+        | Val v ->
+            ( Resultsemantics.simplecmd_result
+                (Instructions.const_val v prec)
+                pres,
+              cache,
+              Scg.empty )
         | Block (_res_arity, block_body) ->
             let label =
               Label.block { natcont = c2; brcont = c2; typ = _res_arity }
