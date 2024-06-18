@@ -27,9 +27,22 @@ let lowlevel_lub m1 m2 =
   { vm = VM.join m1.vm m2.vm; opsk = OS.lub m1.opsk m2.opsk; lsk = m1.lsk }
 (*lsk is assumed to be the same on flow merges*)
 
+let lowlevel_leq m1 m2 =
+  match (m1, m2) with
+  | Bot, Bot -> true
+  | Bot, Def _ -> true
+  | Def _, Bot -> true
+  | Def m1, Def m2 -> VM.leq m1.vm m2.vm && OS.leq m1.opsk m2.opsk
+
+let lowlevel_eq m1 m2 =
+  match (m1, m2) with
+  | Bot, Bot -> true
+  | Bot, _ | _, Bot -> false
+  | Def m1, Def m2 -> VM.eq m1.vm m2.vm && OS.eq m1.opsk m2.opsk
+
 (*magic*)
 let widen m1 m2 = (m1, m2) >>= fun a b -> return (lowlevel_widen a b)
 let join m1 m2 = (m1, m2) >>= fun a b -> return (lowlevel_lub a b)
-let leq _ _ : bool = failwith ""
-let eq _ _ : bool = failwith ""
+let leq m1 m2 : bool = lowlevel_leq m1 m2
+let eq m1 m2 : bool = lowlevel_eq m1 m2
 let le m1 m2 = leq m1 m2 && not (eq m1 m2)
