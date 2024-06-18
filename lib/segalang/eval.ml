@@ -11,8 +11,8 @@ let fixpoint funcs (((_env, _expr) as call), _ifb) stack cache pres eval =
   | false -> eval funcs call stack cache pres
   | true -> failwith ""
 
-let rec eval (funcs : funcs) (call : call) (_stack : stack) (_cache : cache)
-    ({ br; return } as pres : partial_result) : result * cache * scg =
+let rec eval (funcs : funcs) (call : call) (_stack : stack) (cache : cache) pres
+    : result * cache * scg =
   let prec, prog = call in
   match prog with
   | [] -> failwith ""
@@ -22,14 +22,14 @@ let rec eval (funcs : funcs) (call : call) (_stack : stack) (_cache : cache)
         | Block (_res_arity, block_body) ->
             let _b_prec = prec in
             let _b_call = (_b_prec, block_body) in
-            let r_b, cache_b, scg_b =
-              fixpoint funcs (_b_call, false) _stack _cache pres eval
+            let r_b, cache', scg_b =
+              fixpoint funcs (_b_call, false) _stack cache pres eval
             in
-            (Result.block_result r_b block_body, cache_b, scg_b)
+            (Resultsemantics.block_result r_b block_body, cache', scg_b)
         | Loop (_res_arity, _stmt) -> failwith "see block"
         | Sub | Sum | Mul ->
-            (Result.return { nat = prec; br; return }, _cache, Scg.empty)
-        | Neg -> (Result.return { nat = prec; br; return }, _cache, Scg.empty)
+            (Resultsemantics.simplecmd_result prec pres, cache, Scg.empty)
+        | Neg -> (Resultsemantics.simplecmd_result prec pres, cache, Scg.empty)
         | Br _ ->
             (*br semantics*)
             failwith "({ nat = BOT; br = ... ; return }, _cache, Scg.empty)"
@@ -50,16 +50,5 @@ let rec eval (funcs : funcs) (call : call) (_stack : stack) (_cache : cache)
               (Result.pres_of_result res1)
               eval
       in
-      let r =
-        match (res2, res1) with
-        | Bot, _ -> Result.Bot
-        | _, Bot -> failwith "should be impossible"
-        | Def res1, Def res2 ->
-            Result.return
-              {
-                nat = res2.nat;
-                br = Labelmap.lub res1.br res2.br;
-                return = Memory.join res1.return res2.return;
-              }
-      in
+      let r = Resultsemantics.seq_result res1 res2 in
       (r, cache'', Scg.union scg_h scg_t)
