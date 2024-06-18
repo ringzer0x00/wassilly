@@ -18,7 +18,16 @@ let bind (x, y) op =
 
 let ( >>= ) = bind
 
+let empty =
+  return
+    {
+      vm = VM.empty (Apronext.Apol.top (Apronext.Environmentext.make [||] [||]));
+      opsk = [];
+      lsk = Labelstack.empty;
+    }
+
 (*lowlevel ops*)
+
 let lowlevel_widen m1 m2 =
   { vm = VM.widen m1.vm m2.vm; opsk = OS.widen m1.opsk m2.opsk; lsk = m1.lsk }
 (*lsk is assumed to be the same on flow merges*)

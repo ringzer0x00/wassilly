@@ -25,13 +25,17 @@ let rec eval (funcs : funcs) (call : call) (_stack : stack) (cache : cache) pres
     : result * cache * scg =
   let prec, prog = call in
   match prog with
-  | [] -> failwith ""
+  | [] -> failwith "Instructions.end_of_block prec"
   | c1 :: c2 ->
       let (res1, cache', scg_h) : result * cache * scg =
         match c1 with
+        | Val _ -> failwith "val"
         | Block (_res_arity, block_body) ->
-            let _b_prec = prec in
-            let _b_call = (_b_prec, block_body) in
+            let label =
+              Label.block { natcont = c2; brcont = c2; typ = _res_arity }
+            in
+            let b_prec = Instructions.enter_block label prec in
+            let _b_call = (b_prec, block_body) in
             let r_b, cache', scg_b =
               fixpoint funcs (_b_call, false) _stack cache pres eval
             in

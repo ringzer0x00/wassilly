@@ -2,6 +2,7 @@ exception EmptyStack
 
 type t = Label.t list
 
+let empty = []
 let peek_nth nth l = List.nth_opt l nth
 
 let pop_n n s =

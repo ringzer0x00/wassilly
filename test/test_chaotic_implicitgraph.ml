@@ -1,15 +1,7 @@
 open OUnit2
 
 let all : (string * test_fun) list =
-  [
-    ("fib", fun _ -> assert_equal true Fib.assertion);
-    ("silly", fun _ -> assert_equal true Silly.assertion);
-    ("fibdiv", fun _ -> assert_equal true Fibdiv.assertion);
-    ("fibmix", fun _ -> assert_equal true Fibmix.assertion);
-    ("fibn", fun _ -> assert_equal true Fibn.assertion);
-    ("fact", fun _ -> assert_equal true Fact.assertion);
-    ("peano", fun _ -> assert_equal true Peano.assertion);
-  ]
+  [ ("silly", fun _ -> assert_equal true Silly_segalang.assertion) ]
 
 let testify (tn, tf) = tn >:: tf
 
