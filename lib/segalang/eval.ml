@@ -25,7 +25,10 @@ let rec eval (funcs : funcs) (call : call) (_stack : stack) (cache : cache) pres
     : result * cache * scg =
   let prec, prog = call in
   match prog with
-  | [] -> failwith "Instructions.end_of_block prec"
+  | [] ->
+      ( Resultsemantics.simplecmd_result (Instructions.end_of_block prec) pres,
+        cache,
+        Scg.empty )
   | c1 :: c2 ->
       let (res1, cache', scg_h) : result * cache * scg =
         match c1 with

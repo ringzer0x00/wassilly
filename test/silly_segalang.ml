@@ -1,7 +1,9 @@
 open Segalang
 open Command
 
-let body : Language.t = [ Language.Val 1l; Language.Val 2l; Language.Mul ]
+let body : Language.t =
+  [ Language.Block (1, [ Language.Val 1l; Language.Val 2l; Language.Mul ]) ]
+
 let funs = Funcs.add "silly" ([], body) Funcs.empty
 let mem = Memory.empty
 let call = (Memory.empty, body)
