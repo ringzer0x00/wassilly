@@ -7,4 +7,4 @@ type tt = (stability * Result.t) t
 type t = tt
 
 let empty : t = empty
-let call_in_cache _ _ = failwith ""
+let call_in_cache = find_opt

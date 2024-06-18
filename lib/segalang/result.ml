@@ -35,19 +35,24 @@ let lowlevel_widen r1 r2 =
     nat = Memory.widen r1.nat r2.nat;
   }
 
-let block_result r_b block_body =
-  match r_b with
-  | Bot -> Bot
-  | Def r_b ->
-      return
-        {
-          nat = Memory.join r_b.nat (Labelmap.res_label block_body r_b.br);
-          br = Labelmap.remove block_body r_b.br;
-          return = r_b.return;
-        }
-
 (*magic*)
 let widen m1 m2 = (m1, m2) >>= fun a b -> return (lowlevel_widen a b)
 let join m1 m2 = (m1, m2) >>= fun a b -> return (lowlevel_join a b)
-let leq _ _ = failwith ""
-let le _ _ = failwith ""
+
+let leq m1 m2 =
+  match (m1, m2) with
+  | Bot, Bot | Bot, Def _ -> true
+  | Def _, Bot -> false
+  | Def m1, Def m2 ->
+      Memory.leq m1.nat m2.nat && Labelmap.leq m1.br m2.br
+      && Memory.leq m1.return m2.return
+
+let eq m1 m2 =
+  match (m1, m2) with
+  | Bot, Bot -> true
+  | Bot, Def _ | Def _, Bot -> false
+  | Def m1, Def m2 ->
+      Memory.eq m1.nat m2.nat && Labelmap.eq m1.br m2.br
+      && Memory.eq m1.return m2.return
+
+let le m1 m2 = leq m1 m2 && not (eq m1 m2)

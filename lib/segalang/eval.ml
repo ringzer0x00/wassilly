@@ -6,18 +6,18 @@ type partial_result = Result.partial_result
 type cache = Cache.t
 type scg = Scg.t
 
-let fixpoint funcs (((_env, _expr) as call), loopable) stack cache pres eval =
+let fixpoint funcs (((_, expr) as call), loopable) stack cache pres eval =
   match loopable with
   | false -> eval funcs call stack cache pres
   | true -> (
       match Cache.call_in_cache call cache with
       | Some cached -> (
-          let _stable, _resCached = cached in
-          match _stable with
-          | Cache.Stable -> (_resCached, cache, Scg.empty)
-          | Cache.Unstable -> (_resCached, cache, Scg.singleton call))
+          let stable, resCached = cached in
+          match stable with
+          | Cache.Stable -> (resCached, cache, Scg.empty)
+          | Cache.Unstable -> (resCached, cache, Scg.singleton call))
       | None -> (
-          match Stack.expr_in_stack _expr stack with
+          match Stack.expr_in_stack expr stack with
           | true -> (Result.bot, cache, Scg.singleton call)
           | false -> Iterate.iterate funcs call stack cache pres eval))
 
