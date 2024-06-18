@@ -25,16 +25,11 @@ let rec eval (funcs : funcs) (call : call) (_stack : stack) (_cache : cache)
             let r_b, cache_b, scg_b =
               fixpoint funcs (_b_call, false) _stack _cache pres eval
             in
-            ( {
-                nat = Memory.join r_b.nat (Labelmap.res_label block_body r_b.br);
-                br = Labelmap.remove block_body r_b.br;
-                return = r_b.return;
-              },
-              cache_b,
-              scg_b )
+            (Result.block_result r_b block_body, cache_b, scg_b)
         | Loop (_res_arity, _stmt) -> failwith "see block"
-        | Sub | Sum | Mul -> ({ nat = prec; br; return }, _cache, Scg.empty)
-        | Neg -> ({ nat = prec; br; return }, _cache, Scg.empty)
+        | Sub | Sum | Mul ->
+            (Result.return { nat = prec; br; return }, _cache, Scg.empty)
+        | Neg -> (Result.return { nat = prec; br; return }, _cache, Scg.empty)
         | Br _ ->
             (*br semantics*)
             failwith "({ nat = BOT; br = ... ; return }, _cache, Scg.empty)"
@@ -46,20 +41,25 @@ let rec eval (funcs : funcs) (call : call) (_stack : stack) (_cache : cache)
         | _ -> failwith ""
       in
       let (res2, cache'', scg_t) : result * cache * scg =
-        match Memory.is_bot res1.nat with
-        | true -> (res1, cache', Scg.empty)
-        | false ->
+        match res1 with
+        | Bot -> (res1, cache', Scg.empty)
+        | Def res1 ->
             fixpoint funcs
               ((res1.nat, c2), false)
               _stack cache'
               (Result.pres_of_result res1)
               eval
       in
-      let r : result =
-        {
-          nat = res2.nat;
-          br = Labelmap.lub res1.br res2.br;
-          return = Memory.join res1.return res2.return;
-        }
+      let r =
+        match (res2, res1) with
+        | Bot, _ -> Result.Bot
+        | _, Bot -> failwith "should be impossible"
+        | Def res1, Def res2 ->
+            Result.return
+              {
+                nat = res2.nat;
+                br = Labelmap.lub res1.br res2.br;
+                return = Memory.join res1.return res2.return;
+              }
       in
       (r, cache'', Scg.union scg_h scg_t)
