@@ -10,20 +10,15 @@ let call = (Memory.empty, body)
 let output = Apron.Interval.of_int 2 2
 let pres : Eval.partial_result = { br = Labelmap.empty; return = Memory.Bot }
 
-let _v, _, _ =
+let result, _, _ =
   Eval.fixpoint funs (call, true) Stack.empty Cache.empty pres Eval.eval
 
+let bind_result x f = match x with Result.Bot -> false | Result.Def o -> f o
+let ( >>= ) = bind_result
+let bind_mem x f = match x with Memory.Bot -> false | Memory.Def o -> f o
+let ( >>=^ ) = bind_mem
+
 let assertion =
-  let res =
-    match _v with
-    | Bot -> None
-    | Def d -> (
-        match d.nat with
-        | Bot -> None
-        | Memory.Def m -> (
-            match m.opsk with
-            | [] -> None
-            | _h :: [] -> Some _h
-            | _h :: _ -> None))
-  in
-  match res with None -> false | Some v -> v = output
+  result >>= fun d ->
+  d.nat >>=^ fun m ->
+  match m.opsk with [] -> false | _h :: [] -> _h = output | _h :: _ -> false
