@@ -4,6 +4,7 @@ let bot = Apron.Interval.bottom
 let pinf = Apron.Scalar.of_infty 1
 let ninf = Apron.Scalar.of_infty (-1)
 let makeval inf sup = Apron.Interval.of_scalar inf sup
+let of_int32 i = makeval (Apron.Scalar.of_int (Int32.to_int i)) (Apron.Scalar.of_int (Int32.to_int i))
 
 let max x y =
   let comp = Apron.Scalar.cmp x y >= 0 in
