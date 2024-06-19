@@ -49,7 +49,11 @@ let rec eval (funcs : funcs) (call : call) (_stack : stack) (cache : cache) pres
             in
             (Resultsemantics.block_result r_b block_body, cache', scg_b)
         | Loop (_res_arity, _stmt) -> failwith "see block"
-        | Sub | Sum | Mul ->
+        | Mul ->
+            ( Resultsemantics.simplecmd_result (Instructions.mul prec) pres,
+              cache,
+              Scg.empty )
+        | Sub | Sum ->
             (Resultsemantics.simplecmd_result prec pres, cache, Scg.empty)
         | Neg -> (Resultsemantics.simplecmd_result prec pres, cache, Scg.empty)
         | Br _ ->

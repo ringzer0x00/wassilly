@@ -13,4 +13,17 @@ let pres : Eval.partial_result = { br = Labelmap.empty; return = Memory.Bot }
 let _v, _, _ =
   Eval.fixpoint funs (call, true) Stack.empty Cache.empty pres Eval.eval
 
-let assertion = 1 = 1
+let assertion =
+  let res =
+    match _v with
+    | Bot -> None
+    | Def d -> (
+        match d.nat with
+        | Bot -> None
+        | Memory.Def m -> (
+            match m.opsk with
+            | [] -> None
+            | _h :: [] -> Some _h
+            | _h :: _ -> None))
+  in
+  match res with None -> false | Some v -> v = output
