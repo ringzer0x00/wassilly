@@ -6,6 +6,8 @@ type partial_result = Result.partial_result
 type cache = Cache.t
 type scg = Scg.t
 
+let cmd_result = Resultsemantics.simplecmd_result
+
 let fixpoint funcs (((_, expr) as call), loopable) stack cache pres eval =
   match loopable with
   | false -> eval funcs call stack cache pres
@@ -25,19 +27,12 @@ let rec eval (funcs : funcs) (call : call) (_stack : stack) (cache : cache) pres
     : result * cache * scg =
   let prec, prog = call in
   match prog with
-  | [] ->
-      ( Resultsemantics.simplecmd_result (Instructions.end_of_block prec) pres,
-        cache,
-        Scg.empty )
+  | [] -> (cmd_result (Instructions.end_of_block prec) pres, cache, Scg.empty)
   | c1 :: c2 ->
       let (res1, cache', scg_h) : result * cache * scg =
         match c1 with
         | Val v ->
-            ( Resultsemantics.simplecmd_result
-                (Instructions.const_val v prec)
-                pres,
-              cache,
-              Scg.empty )
+            (cmd_result (Instructions.const_val v prec) pres, cache, Scg.empty)
         | Block (_res_arity, block_body) ->
             let label =
               Label.block { natcont = c2; brcont = c2; typ = _res_arity }
@@ -48,27 +43,47 @@ let rec eval (funcs : funcs) (call : call) (_stack : stack) (cache : cache) pres
               fixpoint funcs (_b_call, false) _stack cache pres eval
             in
             (Resultsemantics.block_result r_b block_body, cache', scg_b)
-        | Loop (_res_arity, _stmt) -> failwith "see block"
-        | Mul ->
-            ( Resultsemantics.simplecmd_result (Instructions.mul prec) pres,
-              cache,
-              Scg.empty )
-        | Sub ->
-            ( Resultsemantics.simplecmd_result (Instructions.sub prec) pres,
-              cache,
-              Scg.empty )
-        | Sum ->
-            ( Resultsemantics.simplecmd_result (Instructions.add prec) pres,
-              cache,
-              Scg.empty )
-        | Neg ->
-            ( Resultsemantics.simplecmd_result (Instructions.neg prec) pres,
-              cache,
-              Scg.empty )
-        | Br _ ->
+        | Loop (_res_arity, loop_body) ->
+            let label =
+              Label.loop { natcont = c2; brcont = c1 :: c2; typ = _res_arity }
+            in
+            let b_prec = Instructions.enter_block label prec in
+            let _b_call = (b_prec, loop_body) in
+            let r_b, cache', scg_b =
+              fixpoint funcs (_b_call, true) _stack cache pres eval
+            in
+            (Resultsemantics.block_result r_b loop_body, cache', scg_b)
+        | Mul -> (cmd_result (Instructions.mul prec) pres, cache, Scg.empty)
+        | Sub -> (cmd_result (Instructions.sub prec) pres, cache, Scg.empty)
+        | Sum -> (cmd_result (Instructions.add prec) pres, cache, Scg.empty)
+        | Neg -> (cmd_result (Instructions.neg prec) pres, cache, Scg.empty)
+        | Br _depth ->
             (*br semantics*)
             failwith "({ nat = BOT; br = ... ; return }, _cache, Scg.empty)"
-        | If (_res_arity, _stmt_true, _stmt_false) -> failwith "p2p join"
+        | BrIf _ ->
+            (*br semantics*)
+            failwith "({ nat = BOT; br = ... ; return }, _cache, Scg.empty)"
+        | If (_res_arity, stmt_true, stmt_false) ->
+            Printf.printf "ALERT - IF: manca pop e valutazione booleana";
+            let label =
+              Label.block { natcont = c2; brcont = c2; typ = _res_arity }
+            in
+            let t_prec, f_prec =
+              ( Instructions.enter_block label prec,
+                Instructions.enter_block label prec )
+            in
+            let t_call, f_call = ((t_prec, stmt_true), (f_prec, stmt_false)) in
+            let t_b, cache', scg_t =
+              fixpoint funcs (t_call, false) _stack cache pres eval
+            in
+            let f_b, cache'', scg_f =
+              fixpoint funcs (f_call, false) _stack cache' pres eval
+            in
+            let t_res, f_res =
+              ( Resultsemantics.block_result t_b stmt_true,
+                Resultsemantics.block_result f_b stmt_false )
+            in
+            (Result.join t_res f_res, cache'', Scg.union scg_t scg_f)
         | Binop _bop ->
             failwith " ({ nat = prec; br; return }, _cache, Scg.empty)"
         | Unop _uop ->
@@ -77,7 +92,7 @@ let rec eval (funcs : funcs) (call : call) (_stack : stack) (cache : cache) pres
       in
       let (res2, cache'', scg_t) : result * cache * scg =
         match res1 with
-        | Bot -> (res1, cache', Scg.empty)
+        | Bot -> (Bot, cache', Scg.empty)
         | Def res1 ->
             fixpoint funcs
               ((res1.nat, c2), false)

@@ -1,7 +1,10 @@
 open OUnit2
 
 let all : (string * test_fun) list =
-  [ ("silly", fun _ -> assert_equal true Silly_segalang.assertion) ]
+  [
+    ("silly", fun _ -> assert_equal true Silly_segalang.assertion);
+    ("silly", fun _ -> assert_equal true If_segalang.assertion);
+  ]
 
 let testify (tn, tf) = tn >:: tf
 
