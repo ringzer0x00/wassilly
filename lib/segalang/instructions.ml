@@ -20,7 +20,7 @@ let end_of_block prec =
 
 let brpeek prec n =
   match prec with
-  | Bot -> failwith "cannot peek on bot"
+  | Bot -> raise Labelstack.EmptyStack
   | Def d -> Labelstack.peek_nth n d.lsk
 
 let br prec n =
@@ -30,7 +30,7 @@ let br prec n =
       vm = d.vm;
       opsk = d.opsk;
       lsk =
-        (if Labelstack.is_empty d.lsk then d.lsk
+        (if Labelstack.is_empty d.lsk then raise Labelstack.EmptyStack
          else Labelstack.pop_n (n + 1) d.lsk);
     }
 

@@ -26,4 +26,4 @@ let assertion =
   | _h :: [] ->
       Apronext.Intervalext.print Format.std_formatter _h;
       Apronext.Intervalext.equal _h output
-  | _h :: _ -> false
+  | _h :: _ -> Apronext.Intervalext.print Format.std_formatter _h; false

@@ -34,4 +34,7 @@ let ( >>=^ ) = bind_mem
 let assertion =
   result >>= fun d ->
   d.nat >>=^ fun m ->
-  match m.opsk with [] -> false | _h :: [] -> _h = output | _h :: _ -> false
+  match m.opsk with
+  | [] -> false
+  | _h :: [] -> Apronext.Intervalext.equal _h output
+  | _h :: _ -> false

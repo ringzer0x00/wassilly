@@ -58,8 +58,8 @@ let rec eval (funcs : funcs) (call : call) (_stack : stack) (cache : cache) pres
         | Sum -> (cmd_result (Instructions.add prec) pres, cache, Scg.empty)
         | Neg -> (cmd_result (Instructions.neg prec) pres, cache, Scg.empty)
         | Br _depth ->
-            let _stack_popped, target_label =
-              (Instructions.br prec _depth, Instructions.brpeek prec _depth)
+            let target_label, _stack_popped =
+              (Instructions.brpeek prec _depth, Instructions.br prec _depth)
             in
             let _br' =
               match target_label with
