@@ -2,12 +2,12 @@ open Segalang
 open Command
 
 let body : Language.t =
-  [ Language.Block (1, [ Language.Val 1l; Language.Val 2l; Language.Mul ]) ]
+  [ Language.Block (1, [ Language.Val (-1l); Language.Val 3l; Language.Mul ]) ]
 
 let funs = Funcs.add "silly" ([], body) Funcs.empty
 let mem = Memory.empty
 let call = (Memory.empty, body)
-let output = Apron.Interval.of_int 2 2
+let output = Apron.Interval.of_int (-3) (-3)
 let pres : Eval.partial_result = { br = Labelmap.empty; return = Memory.Bot }
 
 let result, _, _ =
