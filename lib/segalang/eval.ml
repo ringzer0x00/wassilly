@@ -58,10 +58,18 @@ let rec eval (funcs : funcs) (call : call) (_stack : stack) (cache : cache) pres
         | Sum -> (cmd_result (Instructions.add prec) pres, cache, Scg.empty)
         | Neg -> (cmd_result (Instructions.neg prec) pres, cache, Scg.empty)
         | Br _depth ->
-            (*br semantics*)
-            failwith
-              "({ nat = BOT; br = (set the new value!) ; return }, _cache, \
-               Scg.empty)"
+            let _stack_popped, target_label =
+              (Instructions.br prec _depth, Instructions.brpeek prec _depth)
+            in
+            let _br' =
+              match target_label with
+              | None -> pres.br
+              | Some _l ->
+                  Labelmap.add_lub (Label.brcont _l) _stack_popped pres.br
+            in
+            ( Result.return { nat = Memory.Bot; br = _br'; return = pres.return },
+              cache,
+              Scg.empty )
         | BrIf _ ->
             let _prec, _op_to_check = Instructions.intbool prec in
             (*br semantics*)

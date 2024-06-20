@@ -5,3 +5,4 @@ type t = BlockLabel of labelcontent | LoopLabel of labelcontent
 
 let block l = BlockLabel l
 let loop l = LoopLabel l
+let brcont = function BlockLabel lc | LoopLabel lc -> lc.brcont

@@ -18,6 +18,22 @@ let end_of_block prec =
         (if Labelstack.is_empty d.lsk then d.lsk else Labelstack.pop_n 1 d.lsk);
     }
 
+let brpeek prec n =
+  match prec with
+  | Bot -> failwith "cannot peek on bot"
+  | Def d -> Labelstack.peek_nth n d.lsk
+
+let br prec n =
+  prec >>= fun d ->
+  return
+    {
+      vm = d.vm;
+      opsk = d.opsk;
+      lsk =
+        (if Labelstack.is_empty d.lsk then d.lsk
+         else Labelstack.pop_n (n + 1) d.lsk);
+    }
+
 let const_val _v prec =
   prec >>= fun d ->
   return
