@@ -53,9 +53,18 @@ let rec eval (funcs : funcs) (call : call) (_stack : stack) (cache : cache) pres
             ( Resultsemantics.simplecmd_result (Instructions.mul prec) pres,
               cache,
               Scg.empty )
-        | Sub | Sum ->
-            (Resultsemantics.simplecmd_result prec pres, cache, Scg.empty)
-        | Neg -> (Resultsemantics.simplecmd_result prec pres, cache, Scg.empty)
+        | Sub ->
+            ( Resultsemantics.simplecmd_result (Instructions.sub prec) pres,
+              cache,
+              Scg.empty )
+        | Sum ->
+            ( Resultsemantics.simplecmd_result (Instructions.add prec) pres,
+              cache,
+              Scg.empty )
+        | Neg ->
+            ( Resultsemantics.simplecmd_result (Instructions.neg prec) pres,
+              cache,
+              Scg.empty )
         | Br _ ->
             (*br semantics*)
             failwith "({ nat = BOT; br = ... ; return }, _cache, Scg.empty)"

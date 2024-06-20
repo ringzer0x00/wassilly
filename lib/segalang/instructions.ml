@@ -36,6 +36,46 @@ let mul_expr (ad : VM.aprondomain) (l : Value.value) (r : Value.value) =
 
 let mul prec =
   prec >>= fun d ->
-  let mul = mul_expr d.vm.ad in
-  let opsk' = Operandstack.binop d.opsk mul in
+  let opsk' = Operandstack.binop d.opsk (fun x y -> mul_expr d.vm.ad x y) in
+  return { vm = d.vm; lsk = d.lsk; opsk = opsk' }
+
+let add_expr (ad : VM.aprondomain) (l : Value.value) (r : Value.value) =
+  let exp =
+    Apronext.Texprext.binary Apronext.Texprext.Add
+      (Apronext.Texprext.cst ad.env (Apron.Coeff.Interval l))
+      (Apronext.Texprext.cst ad.env (Apron.Coeff.Interval r))
+  in
+  Apronext.Abstractext.bound_texpr Apronext.Apol.man ad exp
+
+let add prec =
+  prec >>= fun d ->
+  let add = add_expr d.vm.ad in
+  let opsk' = Operandstack.binop d.opsk add in
+  return { vm = d.vm; lsk = d.lsk; opsk = opsk' }
+
+let sub_expr (ad : VM.aprondomain) (l : Value.value) (r : Value.value) =
+  let exp =
+    Apronext.Texprext.binary Apronext.Texprext.Sub
+      (Apronext.Texprext.cst ad.env (Apron.Coeff.Interval l))
+      (Apronext.Texprext.cst ad.env (Apron.Coeff.Interval r))
+  in
+  Apronext.Abstractext.bound_texpr Apronext.Apol.man ad exp
+
+let sub prec =
+  prec >>= fun d ->
+  let sub = sub_expr d.vm.ad in
+  let opsk' = Operandstack.binop d.opsk sub in
+  return { vm = d.vm; lsk = d.lsk; opsk = opsk' }
+
+let neg_expr (ad : VM.aprondomain) (v : Value.value) =
+  let exp =
+    Apronext.Texprext.unary Apronext.Texprext.Neg
+      (Apronext.Texprext.cst ad.env (Apron.Coeff.Interval v))
+  in
+  Apronext.Abstractext.bound_texpr Apronext.Apol.man ad exp
+
+let neg prec =
+  prec >>= fun d ->
+  let neg = neg_expr d.vm.ad in
+  let opsk' = Operandstack.unop d.opsk neg in
   return { vm = d.vm; lsk = d.lsk; opsk = opsk' }
