@@ -59,7 +59,9 @@ let rec eval (funcs : funcs) (call : call) (_stack : stack) (cache : cache) pres
         | Neg -> (cmd_result (Instructions.neg prec) pres, cache, Scg.empty)
         | Br _depth ->
             (*br semantics*)
-            failwith "({ nat = BOT; br = ... ; return }, _cache, Scg.empty)"
+            failwith
+              "({ nat = BOT; br = (set the new value!) ; return }, _cache, \
+               Scg.empty)"
         | BrIf _ ->
             (*br semantics*)
             failwith "({ nat = BOT; br = ... ; return }, _cache, Scg.empty)"
