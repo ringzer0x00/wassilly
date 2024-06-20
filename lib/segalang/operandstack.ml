@@ -21,6 +21,11 @@ let pop_n n s =
   aux s n
 
 (*semantics*)
+let intbool s =
+  let operand, s = (peek_n 1 s, pop_n 1 s) in
+  let operand = List.nth operand 0 in
+  (operand, s)
+
 let unop s f =
   let operand, s = (peek_n 1 s, pop_n 1 s) in
   let operand = List.nth operand 0 in

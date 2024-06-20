@@ -46,3 +46,10 @@ let neg prec =
   prec >>= fun d ->
   let opsk' = Operandstack.unop d.opsk (fun x -> neg_expr d.vm.ad x) in
   return { vm = d.vm; lsk = d.lsk; opsk = opsk' }
+
+let intbool prec =
+  match prec with
+  | Bot -> failwith "come on pls leave me alone fucking io monad"
+  | Def d ->
+      let v, opsk' = Operandstack.intbool d.opsk in
+      (Def { vm = d.vm; lsk = d.lsk; opsk = opsk' }, v)

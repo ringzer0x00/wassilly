@@ -6,16 +6,14 @@ let body : Language.t =
     Language.Block
       ( 1,
         [
+          Language.Val 0l;
           Language.If
             ( 1,
               [
                 Language.Block
                   (1, [ Language.Val (-1l); Language.Val 3l; Language.Mul ]);
               ],
-              [
-                Language.Block
-                  (1, [ Language.Val 8l;]);
-              ] );
+              [ Language.Block (1, [ Language.Val 8l ]) ] );
         ] );
   ]
 

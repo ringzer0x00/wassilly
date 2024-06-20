@@ -63,10 +63,11 @@ let rec eval (funcs : funcs) (call : call) (_stack : stack) (cache : cache) pres
               "({ nat = BOT; br = (set the new value!) ; return }, _cache, \
                Scg.empty)"
         | BrIf _ ->
+            let _prec, _op_to_check = Instructions.intbool prec in
             (*br semantics*)
             failwith "({ nat = BOT; br = ... ; return }, _cache, Scg.empty)"
         | If (_res_arity, stmt_true, stmt_false) ->
-            Printf.printf "ALERT - IF: manca pop e valutazione booleana";
+            let prec, _op_to_check = Instructions.intbool prec in
             let label =
               Label.block { natcont = c2; brcont = c2; typ = _res_arity }
             in
