@@ -2,4 +2,4 @@
  (public_name chaotic_implicitgraph)
  (name main)
  (modes byte exe)
- (libraries chaotic_implicitgraph))
+ (libraries chaotic_implicitgraph segalang))

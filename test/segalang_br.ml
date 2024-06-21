@@ -13,9 +13,14 @@ let pres : Eval.partial_result = { br = Labelmap.empty; return = Memory.Bot }
 let result, _, _ =
   Eval.fixpoint funs (call, true) Stack.empty Cache.empty pres Eval.eval
 
-let bind_result x f = match x with Result.Bot -> false | Result.Def o -> f o
+let bind_result x f =
+  match x with Result.Bot -> failwith "BotRes" | Result.Def o -> f o
+
 let ( >>= ) = bind_result
-let bind_mem x f = match x with Memory.Bot -> false | Memory.Def o -> f o
+
+let bind_mem x f =
+  match x with Memory.Bot -> failwith "BotMem" | Memory.Def o -> f o
+
 let ( >>=^ ) = bind_mem
 
 let assertion =
@@ -26,4 +31,6 @@ let assertion =
   | _h :: [] ->
       Apronext.Intervalext.print Format.std_formatter _h;
       Apronext.Intervalext.equal _h output
-  | _h :: _ -> Apronext.Intervalext.print Format.std_formatter _h; false
+  | _h :: _ ->
+      Apronext.Intervalext.print Format.std_formatter _h;
+      false

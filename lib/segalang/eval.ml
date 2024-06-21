@@ -35,7 +35,7 @@ let rec eval (funcs : funcs) (call : call) (_stack : stack) (cache : cache) pres
             (cmd_result (Instructions.const_val v prec) pres, cache, Scg.empty)
         | Block (_res_arity, block_body) ->
             let label =
-              Label.block { natcont = c2; brcont = c2; typ = _res_arity }
+              Label.block { body = block_body; brcont = c2; typ = _res_arity }
             in
             let b_prec = Instructions.enter_block label prec in
             let _b_call = (b_prec, block_body) in
@@ -45,7 +45,8 @@ let rec eval (funcs : funcs) (call : call) (_stack : stack) (cache : cache) pres
             (Resultsemantics.block_result r_b block_body, cache', scg_b)
         | Loop (_res_arity, loop_body) ->
             let label =
-              Label.loop { natcont = c2; brcont = c1 :: c2; typ = _res_arity }
+              Label.loop
+                { body = loop_body; brcont = c1 :: c2; typ = _res_arity }
             in
             let b_prec = Instructions.enter_block label prec in
             let _b_call = (b_prec, loop_body) in
@@ -57,15 +58,17 @@ let rec eval (funcs : funcs) (call : call) (_stack : stack) (cache : cache) pres
         | Sub -> (cmd_result (Instructions.sub prec) pres, cache, Scg.empty)
         | Sum -> (cmd_result (Instructions.add prec) pres, cache, Scg.empty)
         | Neg -> (cmd_result (Instructions.neg prec) pres, cache, Scg.empty)
-        | Br _depth ->
+        | Br depth ->
             let target_label, _stack_popped =
-              (Instructions.brpeek prec _depth, Instructions.br prec _depth)
+              (Instructions.brpeek prec depth, Instructions.br prec depth)
             in
             let _br' =
               match target_label with
-              | None -> pres.br
+              | None ->
+                  Printf.printf "target_label non c'è!!!";
+                  pres.br
               | Some _l ->
-                  Labelmap.add_lub (Label.brcont _l) _stack_popped pres.br
+                  Labelmap.add_lub (Label.body _l) _stack_popped pres.br
             in
             ( Result.return { nat = Memory.Bot; br = _br'; return = pres.return },
               cache,
@@ -76,12 +79,14 @@ let rec eval (funcs : funcs) (call : call) (_stack : stack) (cache : cache) pres
             failwith "({ nat = BOT; br = ... ; return }, _cache, Scg.empty)"
         | If (_res_arity, stmt_true, stmt_false) ->
             let prec, _op_to_check = Instructions.intbool prec in
-            let label =
-              Label.block { natcont = c2; brcont = c2; typ = _res_arity }
+            let label_t, label_f =
+              ( Label.block { body = stmt_true; brcont = c2; typ = _res_arity },
+                Label.block { body = stmt_false; brcont = c2; typ = _res_arity }
+              )
             in
             let t_prec, f_prec =
-              ( Instructions.enter_block label prec,
-                Instructions.enter_block label prec )
+              ( Instructions.enter_block label_t prec,
+                Instructions.enter_block label_f prec )
             in
             let t_call, f_call = ((t_prec, stmt_true), (f_prec, stmt_false)) in
             let t_b, cache', scg_t =

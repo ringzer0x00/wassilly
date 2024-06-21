@@ -23,7 +23,7 @@ let brpeek prec n =
   | Bot -> raise Labelstack.EmptyStack
   | Def d -> Labelstack.peek_nth n d.lsk
 
-let br prec n =
+let br prec depth =
   prec >>= fun d ->
   return
     {
@@ -31,7 +31,7 @@ let br prec n =
       opsk = d.opsk;
       lsk =
         (if Labelstack.is_empty d.lsk then raise Labelstack.EmptyStack
-         else Labelstack.pop_n (n + 1) d.lsk);
+         else Labelstack.pop_n (depth + 1) d.lsk);
     }
 
 let const_val _v prec =
