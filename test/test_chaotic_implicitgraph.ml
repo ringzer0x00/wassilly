@@ -5,6 +5,7 @@ let all : (string * test_fun) list =
     ("segalang_silly", fun _ -> assert_equal true Silly_segalang.assertion);
     ("segalang_if", fun _ -> assert_equal true If_segalang.assertion);
     ("segalang_br", fun _ -> assert_equal true Segalang_br.assertion);
+    ("segalang_br_harder", fun _ -> assert_equal true Segalang_br_harder.assertion);
 
   ]
 
