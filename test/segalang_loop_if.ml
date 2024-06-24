@@ -3,12 +3,17 @@ open Command
 
 let body : Language.t =
   [
-    
+    Language.Val 1l;
+    Language.Loop
+      ( 0,
+        [
+          Language.Val 0l; Language.If (0, [ Language.Br 1 ], []);
+        ] );
   ]
 
 let funs = Funcs.add "silly" ([ "loc" ], body) Funcs.empty
 let mem = Memory.empty
-let call = (Memory.empty, [ Language.Call "silly" ])
+let call = (Memory.empty, (*[ Language.Call "silly" ]*) body)
 let output = Apron.Interval.of_int 1 1
 let pres : Eval.partial_result = { br = Labelmap.empty; return = Memory.Bot }
 
