@@ -3,13 +3,7 @@ open Command
 
 let body : Language.t =
   [
-    Language.Block
-      ( 1,
-        [
-          Language.Block
-            (1, [ Language.Val 1l; Language.Br 1; Language.Val 666l ]);
-          Language.Val 666l;
-        ] );
+    
   ]
 
 let funs = Funcs.add "silly" ([ "loc" ], body) Funcs.empty

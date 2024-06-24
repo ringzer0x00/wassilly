@@ -126,7 +126,7 @@ let new_ { loc; glob; ad } (locs_new : WT.value_type list) : t =
         | WT.NumType t ->
             let b : binding = { t; i = Int32.of_int (List.length acc) } in
             (b, apronvar_of_binding b Loc) :: acc
-        | _ -> failwith "")
+        | _ -> failwith "idk what this is")
       locs_new []
   in
   let loc'_int, loc'_real = extract_typed_env_vars loc_binds in

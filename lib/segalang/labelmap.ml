@@ -20,6 +20,6 @@ let res_label l lm =
 
 let remove l lm = M.remove l lm
 let add_lub c ms lm = lub (M.singleton c ms) lm
-let leq _ _ = failwith ""
-let eq _ _ = failwith ""
+let leq m1 m2 = M.equal (fun x y -> Memory.leq x y) m1 m2
+let eq m1 m2 = M.equal (fun x y -> Memory.eq x y) m1 m2
 let le lm1 lm2 = leq lm1 lm2 && not (eq lm1 lm2)

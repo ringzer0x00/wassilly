@@ -87,12 +87,44 @@ let rec eval (funcs : funcs) (call : call) (_stack : stack) (cache : cache) pres
                     fixpoint funcs
                       ((_stack_popped, lc.brcont), true)
                       _stack cache pres eval))
-        | BrIf _ ->
-            let _prec, _op_to_check = Instructions.intbool prec in
-            (*br semantics*)
-            failwith
-              "({ nat = deve fare la valutazione; br = semantica di br! ; \
-               return }, _cache, Scg.empty)"
+        | BrIf depth ->
+            let prec, _op_to_check = Instructions.intbool prec in
+
+            let target_label, _stack_popped =
+              (Instructions.brpeek prec depth, Instructions.br prec depth)
+            in
+            let res_nat : result =
+              Result.return { nat = prec; br = pres.br; return = pres.return }
+            in
+            let res_br, c'', scg =
+              match target_label with
+              | None ->
+                  Printf.printf
+                    "target_label non c'è!!! credo dovrei sollevare exn";
+                  ( Result.return
+                      { nat = Memory.Bot; br = pres.br; return = pres.return },
+                    cache,
+                    Scg.empty )
+              | Some _l -> (
+                  match _l with
+                  | BlockLabel _ ->
+                      ( Result.return
+                          {
+                            nat = prec;
+                            br =
+                              Labelmap.add_lub (Label.body _l) _stack_popped
+                                pres.br;
+                            return = pres.return;
+                          },
+                        cache,
+                        Scg.empty )
+                  | LoopLabel lc ->
+                      (*compute natc and perform join*)
+                      fixpoint funcs
+                        ((_stack_popped, lc.brcont), true)
+                        _stack cache pres eval)
+            in
+            (Result.join res_nat res_br, c'', scg)
         | If (_res_arity, stmt_true, stmt_false) ->
             let prec, _op_to_check = Instructions.intbool prec in
             let label_t, label_f =
@@ -120,7 +152,7 @@ let rec eval (funcs : funcs) (call : call) (_stack : stack) (cache : cache) pres
             failwith " ({ nat = prec; br; return }, _cache, Scg.empty)"
         | Unop _uop ->
             failwith "({ nat = prec; br; return }, _cache, Scg.empty)"
-        | _ -> failwith ""
+        | _ -> failwith "idk this instr"
       in
       let (res2, cache'', scg_t) : result * cache * scg =
         match res1 with
