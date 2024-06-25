@@ -2,33 +2,42 @@ open Segalang
 open Command
 
 let body : Language.t =
-  [ Language.Block (1, [ Language.Val 1l; Language.Br 0 ]) ]
+  [
+    Language.Val 1l;
+    Language.Loop
+      ( 0,
+        [
+          Language.Val 0l; Language.If (0, [ Language.Br 1 ], []);
+        ] );
+  ]
 
-let funs = Funcs.add "silly" ([], body) Funcs.empty
-let call = (Memory.empty, body)
+let funs = Funcs.add "silly" ([ "loc" ], body) Funcs.empty
+let mem = Memory.empty
+let call = (Memory.empty, (*[ Language.Call "silly" ]*) body)
 let output = Apron.Interval.of_int 1 1
 let pres : Eval.partial_result = { br = Labelmap.empty; return = Memory.Bot }
 
 let result, _, _ =
   Eval.fixpoint funs (call, true) Stack.empty Cache.empty pres Eval.eval
 
-let bind_result x f = match x with Result.Bot -> failwith "BotRes" | Result.Def o -> f o
+let bind_result x f =
+  match x with Result.Bot -> failwith "BotRes" | Result.Def o -> f o
+
 let ( >>= ) = bind_result
-let bind_mem x f = match x with Memory.Bot -> failwith "BotMem" | Memory.Def o -> f o
+
+let bind_mem x f =
+  match x with Memory.Bot -> failwith "BotMem" | Memory.Def o -> f o
+
 let ( >>=^ ) = bind_mem
 
-let _ =
-  Printf.printf "MIAOOOOOOOOOOOO";
+let assertion =
   result >>= fun d ->
   d.nat >>=^ fun m ->
   match m.opsk with
-  | [] -> Printf.printf "MIAOOOOOOOOOOOO vuotooooooo"; false
+  | [] -> false
   | _h :: [] ->
-      Printf.printf "MIAOOOOOOOOOOOO Res:";
       Apronext.Intervalext.print Format.std_formatter _h;
-      Printf.printf "MIAOOOOOOOOOOOO finitooo";
       Apronext.Intervalext.equal _h output
   | _h :: _ ->
       Apronext.Intervalext.print Format.std_formatter _h;
-      Printf.printf "MIAOOOOOOOOOOOO altroooo";
       false

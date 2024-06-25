@@ -1,4 +1,4 @@
 (test
  (name test_chaotic_implicitgraph)
  (modes exe)
- (libraries chaotic_implicitgraph monolith ounit2))
+ (libraries chaotic_implicitgraph monolith segalang ounit2))
