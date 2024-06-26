@@ -72,11 +72,18 @@ let rec step _module call _cstack _sk cache : ans * Cache.t * SCG.t =
             | Some (BlockLabel b) ->
                 (*check if labelstack is empty, if so it is treated as a return*)
                 if not (MS.is_lsk_empty ms') then
-                  ( { nat = MS.Bot; jmp = LM.singleton b.cmd ms'; ret = MS.Bot },
+                  ( Def
+                      {
+                        nat = MS.Bot;
+                        br = LM.singleton b.cmd ms';
+                        return = MS.Bot;
+                      },
                     cache,
                     SCG.empty )
                 else
-                  ({ nat = MS.Bot; jmp = LM.bot; ret = ms' }, cache, SCG.empty)
+                  ( Def { nat = MS.Bot; br = LM.bot; return = ms' },
+                    cache,
+                    SCG.empty )
             | Some (LoopLabel _l) -> failwith ""
             | None -> failwith "Invalid Br depth"
             (*failwith
