@@ -12,7 +12,8 @@ let bot = Bot
 
 (*monadic operators*)
 let return x = Def x
-let _bind x op = match x with Bot -> Bot | Def a -> op a
+let bind x op = match x with Bot -> Bot | Def a -> op a
+let ( >>= ) = bind
 
 let lowlevel_join r1 r2 =
   {
@@ -40,14 +41,6 @@ let w x y =
   | Def _a, Bot -> failwith "widening with bottom @ w @ result.ml"
   | Bot, Def a -> Def a
   | Def a, Def b -> return (lowlevel_widen a b)
-
-let bind (x, y) op =
-  match (x, y) with
-  | Bot, Bot -> Bot
-  | Def a, Bot | Bot, Def a -> Def a
-  | Def a, Def b -> op a b
-
-let ( >>= ) = bind
 
 (*magic*)
 let widen m1 m2 = w m1 m2

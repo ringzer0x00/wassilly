@@ -3,9 +3,8 @@ module LM = Labelmap.LabelMap
 open Datastructures.Monad
 
 (*jmp map label(corpo) -> MS*)
+type partial_answer = { p_br : LM.t; p_return : MS.t }
 type res = { nat : MS.t; br : LM.t; return : MS.t }
-type r = res t
-type t = r
 
 let bot = Bot
 
@@ -54,3 +53,20 @@ let eq m1 m2 =
       MS.eq d1.nat d2.nat && LM.eq d1.br d2.br && MS.eq d1.return d2.return
 
 let le a1 a2 = leq a1 a2 && not (eq a1 a2)
+
+let simplecmd_answer r pres =
+  return { nat = r; br = pres.p_br; return = pres.p_return }
+
+let pans_of_answer { nat; br; return } =
+  ignore nat;
+  { p_br = br; p_return = return }
+
+let seq_answer r1 r2 =
+  r1 >>= fun res1 ->
+  r2 >>= fun res2 ->
+  return
+    {
+      nat = res2.nat;
+      br = LM.lub res1.br res2.br;
+      return = MS.join res1.return res2.return;
+    }
