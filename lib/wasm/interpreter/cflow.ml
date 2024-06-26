@@ -1,4 +1,6 @@
+open Datastructures.Monad
 module MS = Memories.Frame
+module SCG = Fixpoint.Scg
 
 type abool = Datastructures.Abstractbit.t
 
@@ -25,3 +27,6 @@ let ite_condition ms =
   filter_cond c ms'
 
 let enter_label l ms = MS.push_label l ms
+
+let monad_step c1 ca f =
+  match c1 with Bot -> (Bot, ca, SCG.SCC.empty) | Def d -> f d

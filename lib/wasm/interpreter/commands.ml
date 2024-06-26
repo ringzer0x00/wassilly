@@ -39,12 +39,12 @@ let fixpoint _module (call, ifb) _cstack stack cache pres stepf =
           ))
 
 (*eval should not be called recursively*)
-let rec step _module call _cstack _sk cache pres : ans * Cache.t * SCG.t =
+let rec step _module call _cstack _sk cache p_ans : ans * Cache.t * SCG.t =
   let (ms : MS.t), (p : p) = call in
 
   match p with
   | [] -> failwith "" (*do labek stack stuff*)
-  | c1 :: tail ->
+  | c1 :: c2 ->
       (*let fixnext_helper ms' =
           fixpoint _module ((ms', tail), false) _cstack _sk cache step
         in*)
@@ -53,19 +53,19 @@ let rec step _module call _cstack _sk cache pres : ans * Cache.t * SCG.t =
         match c1.it with
         | Const num ->
             let ms' = Alu.const num ms in
-            (cmd_result ms' pres, cache, SCG.empty)
+            (cmd_result ms' p_ans, cache, SCG.empty)
         | Binary bop ->
             let ms' = Binops.eval_binop bop ms in
-            (cmd_result ms' pres, cache, SCG.empty)
+            (cmd_result ms' p_ans, cache, SCG.empty)
         | Unary uop ->
             let ms' = Unops.eval_unop uop ms in
-            (cmd_result ms' pres, cache, SCG.empty)
+            (cmd_result ms' p_ans, cache, SCG.empty)
         | Drop ->
             let ms' = MS.pop_operand ms in
-            (cmd_result ms' pres, cache, SCG.empty)
+            (cmd_result ms' p_ans, cache, SCG.empty)
         | Nop ->
             let ms' = ms in
-            (cmd_result ms' pres, cache, SCG.empty)
+            (cmd_result ms' p_ans, cache, SCG.empty)
         | Return ->
             failwith
               "flush labels, get function type and return memorystate with the \
@@ -100,26 +100,21 @@ let rec step _module call _cstack _sk cache pres : ans * Cache.t * SCG.t =
         | Block (_bt, _is) ->
             let l =
               Memories.Labelstack.block
-                { natcont = tail; brcont = tail; typ = _bt; cmd = [ c1 ] }
+                { natcont = c2; brcont = c2; typ = _bt; cmd = [ c1 ] }
             in
             let ms' = Cflow.enter_label l ms in
-            fixpoint _module ((ms', _is), false) _cstack _sk cache pres step
+            fixpoint _module ((ms', _is), false) _cstack _sk cache p_ans step
         | Loop (_bt, _is) ->
             let _lab =
               Memories.Labelstack.loop
-                { natcont = tail; brcont = c1 :: tail; typ = _bt; cmd = [ c1 ] }
+                { natcont = c2; brcont = c1 :: c2; typ = _bt; cmd = [ c1 ] }
             in
             let ms' = Cflow.enter_label _lab ms in
-            fixpoint _module ((ms', _is), true) _cstack _sk cache pres step
+            fixpoint _module ((ms', _is), true) _cstack _sk cache p_ans step
         | If (_blocktype, _then, _else) ->
             let l =
               Memories.Labelstack.block
-                {
-                  natcont = tail;
-                  brcont = tail;
-                  typ = _blocktype;
-                  cmd = [ c1 ];
-                }
+                { natcont = c2; brcont = c2; typ = _blocktype; cmd = [ c1 ] }
             in
             let ms' = Cflow.enter_label l ms in
             let ms_t, ms_f = Cflow.ite_condition ms' in
@@ -127,10 +122,10 @@ let rec step _module call _cstack _sk cache pres : ans * Cache.t * SCG.t =
             let a_true, c', _scgt =
               fixpoint _module
                 ((ms_t, _then), false)
-                _cstack _sk cache pres step
+                _cstack _sk cache p_ans step
             in
             let a_false, c'', _scgf =
-              fixpoint _module ((ms_f, _else), false) _cstack _sk c' pres step
+              fixpoint _module ((ms_f, _else), false) _cstack _sk c' p_ans step
             in
             let a, scg = (MA.lub a_true a_false, SCG.union _scgt _scgf) in
             (a, c'', scg)
@@ -140,11 +135,18 @@ let rec step _module call _cstack _sk cache pres : ans * Cache.t * SCG.t =
         | _ -> failwith "other commands"
       in
       let res2, cache'', scg_t =
+        Cflow.monad_step res1 cache' (fun x ->
+            fixpoint _module
+              ((x.nat, c2), false)
+              _cstack _sk cache' (pans_of_answer x) step)
+      in
+      (*
+      let res2, cache'', scg_t =
         match res1 with
         | Bot -> (Bot, cache', SCG.empty)
         | Def dres ->
             fixpoint _module
-              ((dres.nat, tail), false)
+              ((dres.nat, c2), false)
               _cstack _sk cache' (pans_of_answer dres) step
-      in
+      in*)
       (seq_result res1 res2, cache'', SCG.union scg_h scg_t)
