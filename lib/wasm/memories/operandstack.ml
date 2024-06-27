@@ -14,11 +14,12 @@ type t = stack
 type varmemories = VariableMem.t
 
 let empty : stack = []
-let peek = SK.peek
-let peek_binop os = SK.peek_n 2 os
+let peek_n = SK.peek_n
+let pop_n = SK.pop_n
 let pop = function _ :: t -> t | [] -> failwith "empty"
 let push x s = x :: s
 let append sp s = sp @ s
+let push_ops = append
 
 let concretize (mem : varmemories) = function
   (*two memories are needed, one for locals and one for globals*)
@@ -75,3 +76,15 @@ let eq (m1, s1) (m2, s2) =
   && List.for_all2 (fun fst snd -> eq_operand m1 fst m2 snd) s1 s2
 
 let le os1 os2 = leq os1 os2 && not (eq os1 os2)
+
+let unop s f =
+  let operand, s = (peek_n 1 s, pop_n 1 s) in
+  let operand = List.nth operand 0 in
+  let res = f operand in
+  push_ops [ res ] s
+
+let binop s f =
+  let operand, s = (peek_n 2 s, pop_n 2 s) in
+  let l, r = (List.nth operand 0, List.nth operand 1) in
+  let res = f l r in
+  push_ops [ res ] s

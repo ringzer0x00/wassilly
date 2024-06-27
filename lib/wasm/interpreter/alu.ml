@@ -1,5 +1,7 @@
 module MS = Memories.Frame
-open Wasm.Types
+open Memories.Operandstack
+
+type ad = Memories.Variablememory.aprondomain
 
 let int_unop (_ : Wasm.Ast.IntOp.unop) (_ : MS.t) :
     MS.t * Memories.Operandstack.stack =
@@ -11,15 +13,8 @@ let int_binop (_ : Wasm.Ast.IntOp.binop) (_ : MS.t) :
 
 let realop _ _ : MS.t * Memories.Operandstack.stack = failwith ""
 
-let _const (n : Wasm.Ast.num) (_ : MS.t) =
-  let _n_string = Wasm.Values.string_of_num n.it in
-  let t = Wasm.Values.type_of_num n.it in
-  match t with
-  | F32Type | F64Type -> failwith "typed"
-  | I32Type | I64Type -> failwith "typed"
-
-let const (n : Wasm.Ast.num) (ms : MS.t) : MS.t =
-  let _r =
+let const (n : Wasm.Ast.num) =
+  let v =
     match n.it with
     | F32 c ->
         let c = Wasm.F32.to_float c in
@@ -34,4 +29,13 @@ let const (n : Wasm.Ast.num) (ms : MS.t) : MS.t =
         let c = Wasm.I64.to_int_s c in
         Apronext.Intervalext.of_int c c
   in
-  MS.push_operand [ Value _r ] ms
+  [ Value v ]
+
+let mul_expr (_ : ad) l r =
+  let _exp = Apronext.Texprext.binary Apronext.Texprext.Mul l r in
+  failwith "exp"
+
+let div_expr _ _ _ = failwith ""
+let add_expr _ _ _ = failwith ""
+let sub_expr _ (*ad*) _ _ (*operands*) = failwith ""
+let neg_expr _ (*ad*) _ (*operand*) = failwith ""

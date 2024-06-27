@@ -1,5 +1,7 @@
 module SK = Datastructures.Liststack
 
+exception EmptyStack
+
 type cont = Language.Command.Command.t
 type block_type = Language.Typing.block_type
 

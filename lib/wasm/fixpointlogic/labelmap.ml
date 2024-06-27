@@ -21,4 +21,10 @@ module LabelMap = struct
   let leq _ _ = failwith ""
   let eq _ _ = failwith ""
   let le lm1 lm2 = leq lm1 lm2 && not (eq lm1 lm2)
+
+  let res_label l lm =
+    let r = M.find_opt l lm in
+    match r with None -> Memory.Bot | Some r -> r
+
+  let remove = M.remove
 end

@@ -54,19 +54,7 @@ let eq m1 m2 =
 
 let le a1 a2 = leq a1 a2 && not (eq a1 a2)
 
-let simplecmd_answer r pres =
-  return { nat = r; br = pres.p_br; return = pres.p_return }
-
 let pans_of_answer { nat; br; return } =
   ignore nat;
   { p_br = br; p_return = return }
 
-let seq_answer r1 r2 =
-  r1 >>= fun res1 ->
-  r2 >>= fun res2 ->
-  return
-    {
-      nat = res2.nat;
-      br = LM.lub res1.br res2.br;
-      return = MS.join res1.return res2.return;
-    }
