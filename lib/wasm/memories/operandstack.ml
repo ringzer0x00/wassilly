@@ -21,29 +21,31 @@ let push x s = x :: s
 let append sp s = sp @ s
 let push_ops = append
 
-let concretize (mem : varmemories) op =
-  let conc =
-    match op with
-    | Expression a ->
-        Apronext.Abstractext.bound_texpr Apronext.Apol.man mem.ad a
-    | LVarRef i -> VariableMem.lookup mem i VariableMem.Loc
-    | GVarRef i -> VariableMem.lookup mem i VariableMem.Glob
-  in
-  Apronext.Texprext.cst mem.ad.env (Apronext.Coeffext.Interval conc)
+let const_expr (mem : varmemories) inter =
+  Apronext.Texprext.cst mem.ad.env (Apronext.Coeffext.Interval inter)
 
-let replace (s : stack) (op : operand) (v : aval) =
-  List.map (fun x -> if x = op then Expression v else op) s
+let concretize (mem : varmemories) op =
+  match op with
+  | Expression a -> Apronext.Abstractext.bound_texpr Apronext.Apol.man mem.ad a
+  | LVarRef i -> VariableMem.lookup mem i VariableMem.Loc
+  | GVarRef i -> VariableMem.lookup mem i VariableMem.Glob
+
+let concretize_in_exp (mem : varmemories) op =
+  concretize mem op |> const_expr mem
+
+let replace (s : stack) (op : operand) exp =
+  List.map (fun x -> if x = op then exp else op) s
 
 let concretize_assignment (s : stack) (mem : varmemories) ref =
   match ref with
   | Expression _ -> failwith "must be reference... for now"
   | LVarRef _ | GVarRef _ ->
-      let v = concretize mem ref in
-      replace s ref v
+      let v_expr = concretize_in_exp mem ref in
+      replace s ref (Expression v_expr)
 
-let ival_join i1 i2 : aval = Apronext.Intervalext.join i1 i2
+let ival_join i1 i2 : Apronext.Intervalext.t = Apronext.Intervalext.join i1 i2
 
-let ival_widen i1 i2 : aval =
+let ival_widen i1 i2 =
   Apronext.Intervalext.join i1 i2 (*to be replaced with widening*)
 
 let ival_leq = Apronext.Intervalext.is_leq
@@ -53,9 +55,8 @@ let jw_operand (mem1, o1) (mem2, o2) operation =
   (*two memories are needed, one for locals and one for globals*)
   if o1 = o2 then o1
   else
-    match (o1, o2) with
-    | Expression v1, Expression v2 -> Expression (operation v1 v2)
-    | _ -> Expression (operation (concretize mem1 o1) (concretize mem2 o2))
+    Expression
+      (const_expr mem1 (operation (concretize mem1 o1) (concretize mem2 o2)))
 
 let join (m1, s1) (m2, s2) =
   (*two memories are needed, one for locals and one for globals*)

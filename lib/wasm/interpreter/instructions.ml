@@ -51,7 +51,7 @@ let const_val v prec =
   prec >>= fun d ->
   return
     {
-      ops = (fun v sk -> OS.append (Alu.const v) sk) v d.ops;
+      ops = (fun v sk -> OS.append (Alu.const v d.var) sk) v d.ops;
       var = d.var;
       mem = d.mem;
       tab = d.tab;
