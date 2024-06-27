@@ -94,14 +94,20 @@ let rec step modul_ call cstack sk cache p_ans : ans * Cache.t * SCG.t =
                 { natcont = c2; brcont = c2; typ = _bt; cmd = [ c1 ] }
             in
             let ms' = Cflow.enter_label l ms in
-            fixpoint modul_ ((ms', _is), false) cstack sk cache p_ans step
-        | Loop (_bt, _is) ->
+            let a, c, g =
+              fixpoint modul_ ((ms', _is), false) cstack sk cache p_ans step
+            in
+            (Cflow.block_result a [ c1 ], c, g)
+        | Loop (_bt, lbody) ->
             let _lab =
               Memories.Labelstack.loop
                 { natcont = c2; brcont = c1 :: c2; typ = _bt; cmd = [ c1 ] }
             in
             let ms' = Cflow.enter_label _lab ms in
-            fixpoint modul_ ((ms', _is), true) cstack sk cache p_ans step
+            let a, c, g =
+              fixpoint modul_ ((ms', lbody), true) cstack sk cache p_ans step
+            in
+            (Cflow.block_result a [ c1 ], c, g)
         | If (_blocktype, _then, _else) ->
             let l =
               Memories.Labelstack.block
