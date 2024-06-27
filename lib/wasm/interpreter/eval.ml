@@ -49,20 +49,13 @@ let rec step modul_ call cstack sk cache p_ans : ans * Cache.t * SCG.t =
         (*as opposed to ms this should return a vector of values which is then appended to the ms's operand stack*)
         match c1.it with
         | Const num ->
-            let ms' = Instructions.const_val num ms in
-            (cmd_result ms' p_ans, cache, SCG.empty)
+            (cmd_result (Instructions.const_val num ms) p_ans, cache, SCG.empty)
         | Binary bop ->
-            let ms' = Binops.eval_binop bop ms in
-            (cmd_result ms' p_ans, cache, SCG.empty)
+            (cmd_result (Binops.eval_binop bop ms) p_ans, cache, SCG.empty)
         | Unary uop ->
-            let ms' = Unops.eval_unop uop ms in
-            (cmd_result ms' p_ans, cache, SCG.empty)
-        | Drop ->
-            let ms' = MS.pop_operand ms in
-            (cmd_result ms' p_ans, cache, SCG.empty)
-        | Nop ->
-            let ms' = ms in
-            (cmd_result ms' p_ans, cache, SCG.empty)
+            (cmd_result (Unops.eval_unop uop ms) p_ans, cache, SCG.empty)
+        | Drop -> (cmd_result (MS.pop_operand ms) p_ans, cache, SCG.empty)
+        | Nop -> (cmd_result ms p_ans, cache, SCG.empty)
         | Return ->
             failwith
               "flush labels, get function type and return memorystate with the \
