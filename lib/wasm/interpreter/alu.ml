@@ -15,7 +15,7 @@ let realop _ _ : MS.t * Memories.Operandstack.stack = failwith ""
 
 let const (n : Wasm.Ast.num) =
   let v =
-    match n.it with
+    (match n.it with
     | F32 c ->
         let c = Wasm.F32.to_float c in
         Apronext.Intervalext.of_float c c
@@ -27,9 +27,9 @@ let const (n : Wasm.Ast.num) =
         Apronext.Intervalext.of_int c c
     | I64 c ->
         let c = Wasm.I64.to_int_s c in
-        Apronext.Intervalext.of_int c c
+        Apronext.Intervalext.of_int c c) 
   in
-  [ Value v ]
+  [ Expression v ]
 
 let mul_expr (_ : ad) l r =
   let _exp = Apronext.Texprext.binary Apronext.Texprext.Mul l r in

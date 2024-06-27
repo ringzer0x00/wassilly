@@ -1,10 +1,10 @@
 module SK = Datastructures.Liststack
 module VariableMem = Variablememory
 
-type aval = Apronext.Intervalext.t
+type aval = Apronext.Texprext.t (*this has to b*)
 
 type operand =
-  | Value of aval
+  | Expression of aval
   | LVarRef of VariableMem.binding
   | GVarRef of VariableMem.binding
 
@@ -21,18 +21,22 @@ let push x s = x :: s
 let append sp s = sp @ s
 let push_ops = append
 
-let concretize (mem : varmemories) = function
-  (*two memories are needed, one for locals and one for globals*)
-  | Value a -> a
-  | LVarRef i -> VariableMem.lookup mem i VariableMem.Loc
-  | GVarRef i -> VariableMem.lookup mem i VariableMem.Glob
+let concretize (mem : varmemories) op =
+  let conc =
+    match op with
+    | Expression a ->
+        Apronext.Abstractext.bound_texpr Apronext.Apol.man mem.ad a
+    | LVarRef i -> VariableMem.lookup mem i VariableMem.Loc
+    | GVarRef i -> VariableMem.lookup mem i VariableMem.Glob
+  in
+  Apronext.Texprext.cst mem.ad.env (Apronext.Coeffext.Interval conc)
 
 let replace (s : stack) (op : operand) (v : aval) =
-  List.map (fun x -> if x = op then Value v else op) s
+  List.map (fun x -> if x = op then Expression v else op) s
 
 let concretize_assignment (s : stack) (mem : varmemories) ref =
   match ref with
-  | Value _ -> failwith "must be reference"
+  | Expression _ -> failwith "must be reference... for now"
   | LVarRef _ | GVarRef _ ->
       let v = concretize mem ref in
       replace s ref v
@@ -50,8 +54,8 @@ let jw_operand (mem1, o1) (mem2, o2) operation =
   if o1 = o2 then o1
   else
     match (o1, o2) with
-    | Value v1, Value v2 -> Value (operation v1 v2)
-    | _ -> Value (operation (concretize mem1 o1) (concretize mem2 o2))
+    | Expression v1, Expression v2 -> Expression (operation v1 v2)
+    | _ -> Expression (operation (concretize mem1 o1) (concretize mem2 o2))
 
 let join (m1, s1) (m2, s2) =
   (*two memories are needed, one for locals and one for globals*)
