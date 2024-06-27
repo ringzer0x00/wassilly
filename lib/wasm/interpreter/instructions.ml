@@ -60,20 +60,20 @@ let const_val v prec =
 
 let mul prec =
   prec >>= fun d ->
-  let opsk' = OS.binop d.ops (fun x y -> Alu.mul_expr d.var.ad x y) in
+  let opsk' = OS.binop d.ops (fun x y -> Alu.mul_expr d.var x y) in
   return { ops = opsk'; var = d.var; mem = d.mem; tab = d.tab; lsk = d.lsk }
 
 let add prec =
   prec >>= fun d ->
-  let opsk' = OS.binop d.ops (fun x y -> Alu.add_expr d.var.ad x y) in
+  let opsk' = OS.binop d.ops (fun x y -> Alu.add_expr d.var x y) in
   return { ops = opsk'; var = d.var; mem = d.mem; tab = d.tab; lsk = d.lsk }
 
 let sub prec =
   prec >>= fun d ->
-  let opsk' = OS.binop d.ops (fun x y -> Alu.sub_expr d.var.ad x y) in
+  let opsk' = OS.binop d.ops (fun x y -> Alu.sub_expr d.var x y) in
   return { ops = opsk'; var = d.var; mem = d.mem; tab = d.tab; lsk = d.lsk }
 
 let neg prec =
   prec >>= fun d ->
-  let opsk' = OS.unop d.ops (fun x -> Alu.neg_expr d.var.ad x) in
+  let opsk' = OS.unop d.ops (fun x -> Alu.neg_expr d.var x) in
   return { ops = opsk'; var = d.var; mem = d.mem; tab = d.tab; lsk = d.lsk }

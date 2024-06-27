@@ -24,6 +24,12 @@ let push_ops = append
 let const_expr (mem : varmemories) inter =
   Apronext.Texprext.cst mem.ad.env (Apronext.Coeffext.Interval inter)
 
+let operand_to_expr (_mem : varmemories) op =
+  match op with
+  | Expression a -> a
+  | LVarRef _i -> failwith ""
+  | GVarRef _i -> failwith ""
+
 let concretize (mem : varmemories) op =
   match op with
   | Expression a -> Apronext.Abstractext.bound_texpr Apronext.Apol.man mem.ad a
