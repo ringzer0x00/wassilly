@@ -72,8 +72,8 @@ let rec step modul_ call cstack sk cache p_ans : ans * Cache.t * SCG.t =
                   ( Def
                       {
                         nat = MS.Bot;
-                        br = LM.singleton b.cmd ms';
-                        return = MS.Bot;
+                        br = LM.add_raw b.cmd ms' p_ans.p_br;
+                        return = p_ans.p_return;
                         (*errore here*)
                       },
                     cache,
