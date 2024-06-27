@@ -1,6 +1,7 @@
 open Memories.Frame
+open Memories.Operandstack
 module LS = Memories.Labelstack
-module OS = Memories.Operandstack
+open Exprs_math
 (*{
     ops : Memories.Operandstack.t;
     var : Memories.Variablememory.t;
@@ -51,7 +52,7 @@ let const_val v prec =
   prec >>= fun d ->
   return
     {
-      ops = (fun v sk -> OS.append (Alu.const v d.var) sk) v d.ops;
+      ops = (fun v sk -> append (const v d.var) sk) v d.ops;
       var = d.var;
       mem = d.mem;
       tab = d.tab;
@@ -60,20 +61,25 @@ let const_val v prec =
 
 let mul prec =
   prec >>= fun d ->
-  let opsk' = OS.binop d.ops (fun x y -> Alu.mul_expr d.var x y) in
+  let opsk' = binop d.ops (fun x y -> mul_expr d.var x y) in
+  return { ops = opsk'; var = d.var; mem = d.mem; tab = d.tab; lsk = d.lsk }
+
+let divs prec =
+  prec >>= fun d ->
+  let opsk' = binop d.ops (fun x y -> divs_expr d.var x y) in
   return { ops = opsk'; var = d.var; mem = d.mem; tab = d.tab; lsk = d.lsk }
 
 let add prec =
   prec >>= fun d ->
-  let opsk' = OS.binop d.ops (fun x y -> Alu.add_expr d.var x y) in
+  let opsk' = binop d.ops (fun x y -> add_expr d.var x y) in
   return { ops = opsk'; var = d.var; mem = d.mem; tab = d.tab; lsk = d.lsk }
 
 let sub prec =
   prec >>= fun d ->
-  let opsk' = OS.binop d.ops (fun x y -> Alu.sub_expr d.var x y) in
+  let opsk' = binop d.ops (fun x y -> sub_expr d.var x y) in
   return { ops = opsk'; var = d.var; mem = d.mem; tab = d.tab; lsk = d.lsk }
 
 let neg prec =
   prec >>= fun d ->
-  let opsk' = OS.unop d.ops (fun x -> Alu.neg_expr d.var x) in
+  let opsk' = unop d.ops (fun x -> neg_expr d.var x) in
   return { ops = opsk'; var = d.var; mem = d.mem; tab = d.tab; lsk = d.lsk }
