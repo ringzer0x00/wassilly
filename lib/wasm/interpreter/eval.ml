@@ -43,7 +43,9 @@ let rec step modul_ call cstack sk cache p_ans : ans * Cache.t * SCG.t =
   let (ms : MS.t), (p : p) = call in
 
   match p with
-  | [] -> (cmd_result (Instructions.end_of_block ms) p_ans, cache, SCG.empty)
+  | [] ->
+      if MS.is_lsk_empty ms then failwith "end of function case"
+      else (cmd_result (Instructions.end_of_block ms) p_ans, cache, SCG.empty)
   | c1 :: c2 ->
       let (res1 : ans), cache', scg_h =
         (*as opposed to ms this should return a vector of values which is then appended to the ms's operand stack*)
@@ -56,10 +58,6 @@ let rec step modul_ call cstack sk cache p_ans : ans * Cache.t * SCG.t =
             (cmd_result (Unops.eval_unop uop ms) p_ans, cache, SCG.empty)
         | Drop -> (cmd_result (MS.pop_operand ms) p_ans, cache, SCG.empty)
         | Nop -> (cmd_result ms p_ans, cache, SCG.empty)
-        | Return ->
-            failwith
-              "flush labels, get function type and return memorystate with the \
-               first n values top of the stack,"
         | Br i -> (
             (*check this br, its probably wrong*)
             let idx = i.it |> Int32.to_int in
@@ -89,7 +87,6 @@ let rec step modul_ call cstack sk cache p_ans : ans * Cache.t * SCG.t =
                     },
                   cache,
                   SCG.empty ))
-        | BrIf _ -> failwith "weird ass instruction"
         | Block (_bt, bbody) ->
             let l =
               Memories.Labelstack.block
@@ -128,8 +125,15 @@ let rec step modul_ call cstack sk cache p_ans : ans * Cache.t * SCG.t =
             let a_false = Cflow.block_result a_false [ c1 ] in
             let a, scg = (MA.lub a_true a_false, SCG.union _scgt _scgf) in
             (a, c'', scg)
+        | BrIf _ -> failwith "weird ass instruction"
+        | Return ->
+            failwith
+              "flush labels, get function type and return memorystate with the \
+               first n values top of the stack, collapse the state in cstack \
+               with the present one. rewrite globals with the present one and \
+               return state"
         | Call _i ->
-            failwith "call to fixpoint"
+            failwith "add c2 and ms to callstack, call to fixpoint"
             (*before evaluating call push present natcont and other info to callstack*)
         | _ -> failwith "other commands"
       in
