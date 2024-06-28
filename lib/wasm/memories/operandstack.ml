@@ -46,9 +46,15 @@ let concretize_in_exp (mem : varmemories) op =
 let replace (s : stack) (op : operand) exp =
   List.map (fun x -> if x = op then exp else op) s
 
+let replace_var_in_exp _ (ref : operand) =
+  match ref with
+  | Expression _ -> failwith "take refs only"
+  | GVarRef _ -> failwith ""
+  | LVarRef _ -> failwith ""
+
 let concretize_assignment (s : stack) (mem : varmemories) ref =
   match ref with
-  | Expression _ -> failwith "must be reference... for now"
+  | Expression exp -> replace_var_in_exp exp ref
   | LVarRef _ | GVarRef _ ->
       let v_expr = concretize_in_exp mem ref in
       replace s ref (Expression v_expr)

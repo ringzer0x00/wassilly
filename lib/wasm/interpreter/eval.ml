@@ -50,6 +50,10 @@ let rec step modul_ call cstack sk cache p_ans : ans * Cache.t * SCG.t =
       let (res1 : ans), cache', scg_h =
         (*as opposed to ms this should return a vector of values which is then appended to the ms's operand stack*)
         match c1.it with
+        | LocalSet _ -> failwith "concretize in stack + set"
+        | GlobalSet _ -> failwith "concretize in stack + set"
+        | LocalGet _ -> failwith "return Lref"
+        | GlobalGet _ -> failwith "return Gref"
         | Const num ->
             (cmd_result (Instructions.const_val num ms) p_ans, cache, SCG.empty)
         | Binary bop ->
