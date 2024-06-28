@@ -67,36 +67,38 @@ let rec step modul_ call cstack sk cache p_ans : ans * Cache.t * SCG.t =
             let ms' : MS.t = MS.pop_n_labels ms (idx + 1) in
             match l with
             | Some (BlockLabel b) ->
-                (*check if labelstack is empty, if so it is treated as a return*)
-                if not (MS.is_lsk_empty ms') then
-                  ( Def
-                      {
-                        nat = MS.Bot;
-                        br = LM.add_raw b.cmd ms' p_ans.p_br;
-                        return = p_ans.p_return;
-                        (*errore here*)
-                      },
-                    cache,
-                    SCG.empty )
-                else
-                  ( Def { nat = MS.Bot; br = LM.bot; return = ms' },
-                    cache,
-                    SCG.empty )
+                ( Def
+                    {
+                      nat = MS.Bot;
+                      br = LM.add_raw b.cmd ms' p_ans.p_br;
+                      return = p_ans.p_return;
+                    },
+                  cache,
+                  SCG.empty )
             | Some (LoopLabel _l) -> failwith ""
-            | None -> failwith "Invalid Br depth"
+            | None ->
+                (*return-like case*)
+                ( Def
+                    {
+                      nat = MS.Bot;
+                      br = p_ans.p_br;
+                      return = MS.join p_ans.p_return ms';
+                    },
+                  cache,
+                  SCG.empty )
             (*failwith
                 "peek nth label, pop n+1 labels, call fixpoint with present \
 
                 state and brcont as program"*))
         | BrIf _ -> failwith "weird ass instruction"
-        | Block (_bt, _is) ->
+        | Block (_bt, bbody) ->
             let l =
               Memories.Labelstack.block
                 { natcont = c2; brcont = c2; typ = _bt; cmd = [ c1 ] }
             in
             let ms' = Cflow.enter_label l ms in
             let a, c, g =
-              fixpoint modul_ ((ms', _is), false) cstack sk cache p_ans step
+              fixpoint modul_ ((ms', bbody), false) cstack sk cache p_ans step
             in
             (Cflow.block_result a [ c1 ], c, g)
         | Loop (_bt, lbody) ->
@@ -110,6 +112,9 @@ let rec step modul_ call cstack sk cache p_ans : ans * Cache.t * SCG.t =
             in
             (Cflow.block_result a [ c1 ], c, g)
         | If (_blocktype, _then, _else) ->
+            let _rewritten : Wasm.Ast.instr =
+              { it = Wasm.Ast.Block (_blocktype, _then); at = c1.at }
+            in
             let l =
               Memories.Labelstack.block
                 { natcont = c2; brcont = c2; typ = _blocktype; cmd = [ c1 ] }
@@ -120,9 +125,11 @@ let rec step modul_ call cstack sk cache p_ans : ans * Cache.t * SCG.t =
             let a_true, c', _scgt =
               fixpoint modul_ ((ms_t, _then), false) cstack sk cache p_ans step
             in
+            let a_true = Cflow.block_result a_true [ c1 ] in
             let a_false, c'', _scgf =
               fixpoint modul_ ((ms_f, _else), false) cstack sk c' p_ans step
             in
+            let a_false = Cflow.block_result a_false [ c1 ] in
             let a, scg = (MA.lub a_true a_false, SCG.union _scgt _scgf) in
             (a, c'', scg)
         | Call _i ->
