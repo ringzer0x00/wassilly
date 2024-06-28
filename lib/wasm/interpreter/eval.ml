@@ -75,7 +75,10 @@ let rec step modul_ call cstack sk cache p_ans : ans * Cache.t * SCG.t =
                     },
                   cache,
                   SCG.empty )
-            | Some (LoopLabel _l) -> failwith ""
+            | Some (LoopLabel l) ->
+                fixpoint modul_
+                  ((ms', l.brcont), true)
+                  cstack sk cache p_ans step
             | None ->
                 (*return-like case*)
                 ( Def
@@ -85,11 +88,7 @@ let rec step modul_ call cstack sk cache p_ans : ans * Cache.t * SCG.t =
                       return = MS.join p_ans.p_return ms';
                     },
                   cache,
-                  SCG.empty )
-            (*failwith
-                "peek nth label, pop n+1 labels, call fixpoint with present \
-
-                state and brcont as program"*))
+                  SCG.empty ))
         | BrIf _ -> failwith "weird ass instruction"
         | Block (_bt, bbody) ->
             let l =
