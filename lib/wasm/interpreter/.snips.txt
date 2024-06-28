@@ -1,0 +1,3 @@
+            let _rewritten : Wasm.Ast.instr =
+              { it = Wasm.Ast.Block (_blocktype, _then); at = c1.at }
+            in

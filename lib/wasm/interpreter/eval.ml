@@ -111,9 +111,6 @@ let rec step modul_ call cstack sk cache p_ans : ans * Cache.t * SCG.t =
             in
             (Cflow.block_result a [ c1 ], c, g)
         | If (_blocktype, _then, _else) ->
-            let _rewritten : Wasm.Ast.instr =
-              { it = Wasm.Ast.Block (_blocktype, _then); at = c1.at }
-            in
             let l =
               Memories.Labelstack.block
                 { natcont = c2; brcont = c2; typ = _blocktype; cmd = [ c1 ] }
