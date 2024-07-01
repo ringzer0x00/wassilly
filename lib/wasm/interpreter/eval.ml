@@ -21,10 +21,10 @@ let getfbody (mod_ : module_) idx =
   let funx = List.nth mod_.it.funcs idx in
   (funx.it.body, funx.it.locals, funx.it.ftype)
 
-let fixpoint _module (call, ifb) _cstack stack cache pres stepf =
+let fixpoint _module (call, ifb) stack cache pres stepf =
   let _ms, _p = call in
   match ifb with
-  | false -> stepf _module call _cstack stack cache pres
+  | false -> stepf _module call stack cache pres
   | true -> (
       match Cache.call_in_cache call cache with
       | Some cached -> (
@@ -35,11 +35,10 @@ let fixpoint _module (call, ifb) _cstack stack cache pres stepf =
       | None -> (
           match Stack.call_in_stack call stack with
           | true -> (MA.bot, cache, SCG.singleton call)
-          | false -> Iterate.iterate _module call _cstack stack cache pres stepf
-          ))
+          | false -> Iterate.iterate _module call stack cache pres stepf))
 
 (*eval should not be called recursively*)
-let rec step modul_ call cstack sk cache p_ans : ans * Cache.t * SCG.t =
+let rec step modul_ call sk cache p_ans : ans * Cache.t * SCG.t =
   let (ms : MS.t), (p : p) = call in
 
   match p with
@@ -78,9 +77,7 @@ let rec step modul_ call cstack sk cache p_ans : ans * Cache.t * SCG.t =
                   cache,
                   SCG.empty )
             | Some (LoopLabel l) ->
-                fixpoint modul_
-                  ((ms', l.brcont), true)
-                  cstack sk cache p_ans step
+                fixpoint modul_ ((ms', l.brcont), true) sk cache p_ans step
             | None ->
                 (*return-like case*)
                 ( Def
@@ -98,7 +95,7 @@ let rec step modul_ call cstack sk cache p_ans : ans * Cache.t * SCG.t =
             in
             let ms' = Cflow.enter_label l ms in
             let a, c, g =
-              fixpoint modul_ ((ms', bbody), false) cstack sk cache p_ans step
+              fixpoint modul_ ((ms', bbody), false) sk cache p_ans step
             in
             (Cflow.block_result a [ c1 ], c, g)
         | Loop (_bt, lbody) ->
@@ -108,7 +105,7 @@ let rec step modul_ call cstack sk cache p_ans : ans * Cache.t * SCG.t =
             in
             let ms' = Cflow.enter_label _lab ms in
             let a, c, g =
-              fixpoint modul_ ((ms', lbody), true) cstack sk cache p_ans step
+              fixpoint modul_ ((ms', lbody), true) sk cache p_ans step
             in
             (Cflow.block_result a [ c1 ], c, g)
         | If (_blocktype, _then, _else) ->
@@ -120,11 +117,11 @@ let rec step modul_ call cstack sk cache p_ans : ans * Cache.t * SCG.t =
             let ms_t, ms_f = Cflow.ite_condition ms' in
             (*check for bottoms before calling fix*)
             let a_true, c', _scgt =
-              fixpoint modul_ ((ms_t, _then), false) cstack sk cache p_ans step
+              fixpoint modul_ ((ms_t, _then), false) sk cache p_ans step
             in
             let a_true = Cflow.block_result a_true [ c1 ] in
             let a_false, c'', _scgf =
-              fixpoint modul_ ((ms_f, _else), false) cstack sk c' p_ans step
+              fixpoint modul_ ((ms_f, _else), false) sk c' p_ans step
             in
             let a_false = Cflow.block_result a_false [ c1 ] in
             let a, scg = (MA.lub a_true a_false, SCG.union _scgt _scgf) in
@@ -145,6 +142,6 @@ let rec step modul_ call cstack sk cache p_ans : ans * Cache.t * SCG.t =
         Cflow.monad_step res1 cache' (fun x ->
             fixpoint modul_
               ((x.nat, c2), false)
-              cstack sk cache' (pans_of_answer x) step)
+              sk cache' (pans_of_answer x) step)
       in
       (seq_result res1 res2, cache'', SCG.union scg_h scg_t)
