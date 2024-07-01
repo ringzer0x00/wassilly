@@ -2,8 +2,8 @@ module SK = Datastructures.Liststack
 
 type 'a stack = 'a list
 type frame = Frame.t
-type context = frame stack
-type t = context
+type cs = frame stack
+type t = cs
 
 let peek : t -> frame = SK.peek
 let pop : t -> t = SK.pop
