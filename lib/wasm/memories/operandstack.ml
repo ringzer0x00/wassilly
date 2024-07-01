@@ -26,6 +26,12 @@ let const_expr (mem : varmemories) inter =
 
 let var_expr (mem : varmemories) inter = Apronext.Texprext.var mem.ad.env inter
 
+let ref_to_apronvar op =
+  match op with
+  | LVarRef i -> VariableMem.apronvar_of_binding i VariableMem.Loc
+  | GVarRef i -> VariableMem.apronvar_of_binding i VariableMem.Glob
+  | Expression _ -> failwith ""
+
 let operand_to_expr (mem : varmemories) op =
   match op with
   | Expression a -> a
@@ -46,15 +52,29 @@ let concretize_in_exp (mem : varmemories) op =
 let replace (s : stack) (op : operand) exp =
   List.map (fun x -> if x = op then exp else op) s
 
-let replace_var_in_exp _ (ref : operand) =
-  match ref with
-  | Expression _ -> failwith "take refs only"
-  | GVarRef _ -> failwith ""
-  | LVarRef _ -> failwith ""
+let rec replace_var_in_exp destr (ref : operand) (mem : varmemories) =
+  match destr with
+  | Apronext.Texprext.Cst _ -> destr
+  | Var var ->
+      let av_ref = ref_to_apronvar ref in
+      if av_ref = var then failwith "" else destr
+  | Unop (_op, _e, _t, _r) -> Unop (_op, replace_var_in_exp _e ref mem, _t, _r)
+  | Binop (_op, _el, _er, _t, _r) ->
+      Binop
+        ( _op,
+          replace_var_in_exp _el ref mem,
+          replace_var_in_exp _er ref mem,
+          _t,
+          _r )
 
 let concretize_assignment (s : stack) (mem : varmemories) ref =
   match ref with
-  | Expression exp -> replace_var_in_exp exp ref
+  | Expression exp ->
+      let v =
+        Apronext.Texprext.of_expr mem.ad.env
+          (replace_var_in_exp (Apronext.Texprext.to_expr exp) ref mem)
+      in
+      replace s ref (Expression v)
   | LVarRef _ | GVarRef _ ->
       let v_expr = concretize_in_exp mem ref in
       replace s ref (Expression v_expr)
