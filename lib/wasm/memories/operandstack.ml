@@ -1,5 +1,5 @@
 module SK = Datastructures.Liststack
-module VariableMem = Variablememory
+module VariableMem = Variablemem.VariableMem
 
 type aval = Apronext.Texprext.t (*this has to b*)
 
@@ -35,10 +35,8 @@ let ref_to_apronvar op =
 let operand_to_expr (mem : varmemories) op =
   match op with
   | Expression a -> a
-  | LVarRef i ->
-      VariableMem.apronvar_of_binding i VariableMem.Loc |> var_expr mem
-  | GVarRef i ->
-      VariableMem.apronvar_of_binding i VariableMem.Glob |> var_expr mem
+  | LVarRef _ as r -> ref_to_apronvar r |> var_expr mem
+  | GVarRef _ as r -> ref_to_apronvar r |> var_expr mem
 
 let concretize (mem : varmemories) op =
   match op with

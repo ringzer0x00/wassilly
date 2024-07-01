@@ -1,7 +1,8 @@
 module MS = Memories.Frame
 module OS = Memories.Operandstack
+module VM = Memories.Variablemem.VariableMem
 
-type ad = Memories.Variablememory.aprondomain
+type ad = VM.aprondomain
 
 let int_unop (_u : Wasm.Ast.IntOp.unop) (_ : MS.t) = failwith ""
 

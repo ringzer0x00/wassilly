@@ -1,10 +1,11 @@
 module SK = Datastructures.Liststack
+module VariableMem = Variablemem.VariableMem
 
 type cont (*probably a program, a wasm instr sequence*)
 
 type ms = {
   ops : Operandstack.t;
-  var : Variablememory.t;
+  var : VariableMem.t;
   mem : Linearmem.t;
   tab : Tables.t;
   lsk : Labelstack.t;
@@ -55,7 +56,7 @@ let join (k1 : t) (k2 : t) =
   | _, Bot -> k1
   | Def k1, Def k2 ->
       let ops' = Operandstack.join (k1.var, k1.ops) (k2.var, k2.ops) in
-      let var' = Variablememory.join k1.var k2.var in
+      let var' = VariableMem.join k1.var k2.var in
       let mem' = Linearmem.join k1.mem k2.mem in
       let tab' = Tables.join k1.tab k2.tab in
       Def { ops = ops'; var = var'; tab = tab'; mem = mem'; lsk = k1.lsk }
@@ -67,7 +68,7 @@ let widen (k1 : t) (k2 : t) =
   | _, Bot -> k1
   | Def k1, Def k2 ->
       let ops' = Operandstack.widen (k1.var, k1.ops) (k2.var, k2.ops) in
-      let var' = Variablememory.widen k1.var k2.var in
+      let var' = VariableMem.widen k1.var k2.var in
       let mem' = Linearmem.widen k1.mem k2.mem in
       let tab' = Tables.widen k1.tab k2.tab in
       Def { ops = ops'; var = var'; tab = tab'; mem = mem'; lsk = k1.lsk }
@@ -79,7 +80,7 @@ let leq (k1 : t) (k2 : t) =
   | Bot, _ -> true
   | Def k1, Def k2 ->
       Operandstack.leq (k1.var, k1.ops) (k2.var, k2.ops)
-      && Variablememory.leq k1.var k2.var
+      && VariableMem.leq k1.var k2.var
       && Linearmem.leq k1.mem k2.mem
       && Tables.leq k1.tab k2.tab
 
@@ -90,7 +91,7 @@ let eq (k1 : t) (k2 : t) =
   | Bot, _ -> false
   | Def k1, Def k2 ->
       Operandstack.eq (k1.var, k1.ops) (k2.var, k2.ops)
-      && Variablememory.eq k1.var k2.var
+      && VariableMem.eq k1.var k2.var
       && Linearmem.eq k1.mem k2.mem && Tables.eq k1.tab k2.tab
 
 let le (k1 : t) (k2 : t) = leq k1 k2 && not (eq k1 k2)
