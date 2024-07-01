@@ -57,7 +57,9 @@ let rec replace_var_in_exp destr (ref : operand) (mem : varmemories) =
   | Apronext.Texprext.Cst _ -> destr
   | Var var ->
       let av_ref = ref_to_apronvar ref in
-      if av_ref = var then failwith "" else destr
+      if av_ref = var then
+        Apronext.Texprext.Cst (Apronext.Coeffext.Interval (concretize mem ref))
+      else destr
   | Unop (_op, _e, _t, _r) -> Unop (_op, replace_var_in_exp _e ref mem, _t, _r)
   | Binop (_op, _el, _er, _t, _r) ->
       Binop
