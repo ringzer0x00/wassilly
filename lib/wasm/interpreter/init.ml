@@ -95,13 +95,15 @@ let init (_mod : Wasm.Ast.module_) : Memories.Frame.t =
       (fun m d -> interpret_data_segment d m)
       _mem_initialized _mod.it.datas*)
   in
+  let vmem_init =
+    Memories.Variablemem.VariableMem.empty
+      (Apronext.Apol.top (Datastructures.Aprondomain.make_env [||] [||]))
+  in
   Def
     {
       ops = [];
       mem = mem_init;
-      var =
-        Memories.Variablemem.VariableMem.empty
-          (Apronext.Apol.top (Datastructures.Aprondomain.make_env [||] [||]));
+      var = vmem_init;
       tab = [ Memories.Table.empty ];
       lsk = [];
     }
