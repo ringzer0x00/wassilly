@@ -86,12 +86,22 @@ let interpret_data_segment (ds : Wasm.Ast.data_segment) _m =
             "write _init (content) into _idx of _m at _offset.\n\
             \          _init is string, figure out how to convert it")
 
-let init (_mod : Wasm.Ast.module_) =
+let init (_mod : Wasm.Ast.module_) : Memories.Frame.t =
   (*always alloc a memory page*)
-  let _mem_initialized = [| Memories.Linearmem.alloc_page_top |] in
-  let _mem' =
-    List.fold_left
+  let _mem_initialized = Memories.Linearmem.alloc_page_top in
+  let mem_init =
+    _mem_initialized
+    (*List.fold_left
       (fun m d -> interpret_data_segment d m)
-      _mem_initialized _mod.it.datas
+      _mem_initialized _mod.it.datas*)
   in
-  failwith ""
+  Def
+    {
+      ops = [];
+      mem = mem_init;
+      var =
+        Memories.Variablemem.VariableMem.empty
+          (Apronext.Apol.top (Datastructures.Aprondomain.make_env [||] [||]));
+      tab = [ Memories.Table.empty ];
+      lsk = [];
+    }
