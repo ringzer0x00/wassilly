@@ -32,6 +32,22 @@ let listnth_i32 l i = List.nth l (Int32.to_int i)
 
 let cc (c : Wasm.Ast.const) = c.it
 
+let rec init_globals (g : Wasm.Ast.global list) s =
+  match g with
+  | [] -> s
+  | _h :: t ->
+      let _pppp = _h.it in
+      (*
+      type global = global' Source.phrase
+      and global' =
+      {
+        gtype : global_type; -> type global_type = GlobalType of value_type * mutability
+        ginit : const;
+      }*)
+      let s' = s in
+
+      init_globals t s'
+
 let interpret_elem_segment (es : Wasm.Ast.elem_segment) (t : 'a list) =
   let m, _val_to_copy, _type = (es.it.emode, es.it.einit, es.it.etype) in
   let _ =
