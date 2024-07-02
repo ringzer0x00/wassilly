@@ -1,5 +1,7 @@
 module Tabs = Memories.Tables
 module Tab = Memories.Table
+module VM = Memories.Variablemem.VariableMem
+module VMKey = Memories.Variablemem.MapKey
 
 let listnth_i32 l i = List.nth l (Int32.to_int i)
 
@@ -32,21 +34,31 @@ let listnth_i32 l i = List.nth l (Int32.to_int i)
 
 let cc (c : Wasm.Ast.const) = c.it
 
-let rec init_globals (g : Wasm.Ast.global list) s =
-  match g with
-  | [] -> s
-  | _h :: t ->
-      let _pppp = _h.it in
-      (*
-      type global = global' Source.phrase
-      and global' =
-      {
-        gtype : global_type; -> type global_type = GlobalType of value_type * mutability
-        ginit : const;
-      }*)
-      let s' = s in
-
-      init_globals t s'
+let init_globals g (s : Memories.Frame.ms) =
+  let prepped = List.mapi (fun x y -> (Int32.of_int x, y)) g in
+  let rec aux (gs_idx : (int32 * Wasm.Ast.global) list) s =
+    match gs_idx with
+    | [] -> Memories.Frame.Def s
+    | (i, gl) :: t ->
+        let ty_val = match gl.it.gtype with GlobalType (t, _) -> t in
+        let nty =
+          match ty_val with
+          | NumType n -> n
+          | _ -> failwith "cannot handle these now @init"
+        in
+        let _init_val_instrlist = gl.it.ginit.it in
+        let _binding : VMKey.t = { i; t = nty } in
+        let _vars' = VM.bind s.var _binding Glob in
+        let s' : Memories.Frame.ms =
+          { lsk = s.lsk; var = _vars'; ops = s.ops; mem = s.mem; tab = s.tab }
+        in
+        let s'' =
+          failwith "VM.assign s' Glob _binding (const_to_texpr init_val)"
+        in
+        (*to perform assignment*)
+        aux t s''
+  in
+  aux prepped s
 
 let interpret_elem_segment (es : Wasm.Ast.elem_segment) (t : 'a list) =
   let m, _val_to_copy, _type = (es.it.emode, es.it.einit, es.it.etype) in
@@ -111,15 +123,17 @@ let init (_mod : Wasm.Ast.module_) : Memories.Frame.t =
       (fun m d -> interpret_data_segment d m)
       _mem_initialized _mod.it.datas*)
   in
-  let vmem_init =
-    Memories.Variablemem.VariableMem.empty
-      (Apronext.Apol.top (Datastructures.Aprondomain.make_env [||] [||]))
+  let vmem_empty =
+    VM.empty (Apronext.Apol.top (Datastructures.Aprondomain.make_env [||] [||]))
   in
-  Def
+  let def : Memories.Frame.ms =
     {
       ops = [];
       mem = mem_init;
-      var = vmem_init;
+      var = vmem_empty;
       tab = [ Memories.Table.empty ];
       lsk = [];
     }
+  in
+  let vmem_init = init_globals _mod.it.globals def in
+  vmem_init
