@@ -49,13 +49,19 @@ let rec step modul_ call sk cache p_ans : ans * Cache.t * SCG.t =
       let (res1 : ans), cache', scg_h =
         (*as opposed to ms this should return a vector of values which is then appended to the ms's operand stack*)
         match c1.it with
-        | LocalSet _ -> failwith "peek, pop, concretize in stack + set"
-        | GlobalSet _v ->
-            let _val, _ms' =
+        | LocalSet var ->
+            let val_, ms' =
               (MS.peek_operand ms |> List.hd, MS.pop_operand ms)
             in
-            let _b = failwith "" in
-            let ms' = MS.assign_var _ms' Glob _b _val in
+            let b = MS.get_var_binding ms' Loc var.it in
+            let ms' = MS.assign_var ms' Loc b val_ in
+            (cmd_result ms' p_ans, cache, SCG.empty)
+        | GlobalSet var ->
+            let val_, ms' =
+              (MS.peek_operand ms |> List.hd, MS.pop_operand ms)
+            in
+            let b = MS.get_var_binding ms' Glob var.it in
+            let ms' = MS.assign_var ms' Glob b val_ in
             (cmd_result ms' p_ans, cache, SCG.empty)
         | LocalGet _ -> failwith "return Lref"
         | GlobalGet _ -> failwith "return Gref"

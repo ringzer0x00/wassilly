@@ -83,6 +83,13 @@ let assign_var k gl b e =
       mem = a.mem;
     }
 
+let get_var_binding k gl idx =
+  match k with
+  | Bot -> failwith "varbinding cannot work here"
+  | Def a ->
+      VariableMem.find_in_map a.var idx gl
+      |> VariableMem.M.bindings |> List.hd |> fst
+
 (* abstract domain operations *)
 let join (k1 : t) (k2 : t) =
   match (k1, k2) with

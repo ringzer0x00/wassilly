@@ -31,6 +31,11 @@ module VariableMem = struct
 
   let empty d : t = { loc = M.empty; glob = M.empty; ad = d }
 
+  let find_in_map vm k gl =
+    match gl with
+    | Glob -> M.filter (fun x _ -> x.i = k) vm.glob
+    | Loc -> M.filter (fun x _ -> x.i = k) vm.glob
+
   let apronvar_of_binding (b : binding) gl : AD.var =
     let aux (b : binding) pre =
       Apron.Var.of_string (pre ^ string_of_nt b.t ^ Int32.to_string b.i)
