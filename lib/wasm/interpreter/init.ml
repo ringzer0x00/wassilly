@@ -35,6 +35,9 @@ let listnth_i32 l i = List.nth l (Int32.to_int i)
 let cc (c : Wasm.Ast.const) = c.it
 
 let init_globals (mod_ : Wasm.Ast.module_) (s : Memories.Frame.t) =
+  let eval p ms =
+    Eval.step mod_ (ms, p) Eval.Stack.empty Eval.Cache.empty Eval.MA.bot_pa
+  in
   let prepped = List.mapi (fun x y -> (Int32.of_int x, y)) mod_.it.globals in
   let rec aux (gs_idx : (int32 * Wasm.Ast.global) list) s =
     match gs_idx with
@@ -46,18 +49,8 @@ let init_globals (mod_ : Wasm.Ast.module_) (s : Memories.Frame.t) =
           | NumType n -> n
           | _ -> failwith "cannot handle these now @init"
         in
-        let _init_val_instrlist = gl.it.ginit.it in
-        let _binding : VMKey.t = { i; t = nty } in
-        let _vars' =
-          match s with
-          | Memories.Frame.Def d -> VM.bind d.var _binding Glob
-          | Bot -> failwith "init - bot @ _varsprime"
-        in
-        let s' = Memories.Frame.update_varmem _vars' s in
-        let eval p ms =
-          Eval.step mod_ (ms, p) Eval.Stack.empty Eval.Cache.empty
-            Eval.MA.bot_pa
-        in
+        let binding : VMKey.t = { i; t = nty } in
+        let s' = Memories.Frame.bind_vars binding Glob s in
         let r, _, _ = eval gl.it.ginit.it s' in
         (*do other stuff*)
         let r_nat = match r with Def d -> d.nat | Bot -> failwith "diobo" in
@@ -66,7 +59,7 @@ let init_globals (mod_ : Wasm.Ast.module_) (s : Memories.Frame.t) =
           | Expression v -> (v, Memories.Frame.pop_operand r_nat)
           | _ -> failwith "consts! @ init"
         in
-        let nat = Memories.Frame.assign_var r_nat Glob _binding _v_const in
+        let nat = Memories.Frame.assign_var r_nat Glob binding _v_const in
         aux t nat
   in
   aux prepped s

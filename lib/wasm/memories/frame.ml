@@ -64,6 +64,9 @@ let peek_nth_label k n = k >== fun a -> a.lsk |> peek_nth_label n
 let push_operand x k = k >>= fun a -> update_operandstack (x @ a.ops) k
 let push_label x k = k >>= fun a -> update_labelstack (x :: a.lsk) k
 
+let bind_vars b gl (k : t) =
+  k >>= fun a -> update_varmem (VariableMem.bind a.var b gl) k
+
 let is_lsk_empty k =
   match k with Bot -> failwith "" | Def kx -> Labelstack.is_empty kx.lsk
 
