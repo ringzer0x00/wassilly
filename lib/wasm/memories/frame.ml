@@ -67,6 +67,21 @@ let push_label x k = k >>= fun a -> update_labelstack (x :: a.lsk) k
 let is_lsk_empty k =
   match k with Bot -> failwith "" | Def kx -> Labelstack.is_empty kx.lsk
 
+let assign_var k gl b e =
+  k >>= fun a ->
+  return
+    {
+      ops =
+        Operandstack.concretize_assignment a.ops a.var
+          (match gl with
+          | VariableMem.Glob -> Operandstack.GVarRef b
+          | VariableMem.Loc -> Operandstack.LVarRef b);
+      var = VariableMem.assign a.var gl b e;
+      lsk = a.lsk;
+      tab = a.tab;
+      mem = a.mem;
+    }
+
 (* abstract domain operations *)
 let join (k1 : t) (k2 : t) =
   match (k1, k2) with

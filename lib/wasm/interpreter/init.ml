@@ -60,7 +60,11 @@ let init_globals (mod_ : Wasm.Ast.module_) (s : Memories.Frame.ms) =
         let r, _, _ = eval gl.it.ginit.it s' in
         (*do other stuff*)
         let r_nat = match r with Def d -> d.nat | Bot -> failwith "diobo" in
-        let _v_const = Memories.Frame.peek_operand r_nat in
+        let _v_const =
+          match List.nth (Memories.Frame.peek_operand r_nat) 0 with
+          | Expression v -> v
+          | _ -> failwith "consts! @ init"
+        in
         let nat_run =
           match r_nat with Def e -> e | Bot -> failwith "diobon"
         in
