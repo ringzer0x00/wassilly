@@ -34,8 +34,8 @@ let listnth_i32 l i = List.nth l (Int32.to_int i)
 
 let cc (c : Wasm.Ast.const) = c.it
 
-let init_globals g (s : Memories.Frame.ms) =
-  let prepped = List.mapi (fun x y -> (Int32.of_int x, y)) g in
+let init_globals (mod_ : Wasm.Ast.module_) (s : Memories.Frame.ms) =
+  let prepped = List.mapi (fun x y -> (Int32.of_int x, y)) mod_.it.globals in
   let rec aux (gs_idx : (int32 * Wasm.Ast.global) list) s =
     match gs_idx with
     | [] -> Memories.Frame.Def s
@@ -49,14 +49,20 @@ let init_globals g (s : Memories.Frame.ms) =
         let _init_val_instrlist = gl.it.ginit.it in
         let _binding : VMKey.t = { i; t = nty } in
         let _vars' = VM.bind s.var _binding Glob in
-        let s' : Memories.Frame.ms =
-          { lsk = s.lsk; var = _vars'; ops = s.ops; mem = s.mem; tab = s.tab }
+        let s' =
+          Eval.MS.Def
+            { lsk = s.lsk; var = _vars'; ops = s.ops; mem = s.mem; tab = s.tab }
         in
-        let s'' =
-          failwith "VM.assign s' Glob _binding (const_to_texpr init_val)"
+        let eval p ms =
+          Eval.step mod_ (ms, p) Eval.Stack.empty Eval.Cache.empty
+            Eval.MA.bot_pa
         in
-        (*to perform assignment*)
-        aux t s''
+        let r, _, _ = eval gl.it.ginit.it s' in
+        let r_nat = match r with Def d -> d.nat | Bot -> failwith "diobo" in
+        let nat_run =
+          match r_nat with Def e -> e | Bot -> failwith "diobon"
+        in
+        aux t nat_run
   in
   aux prepped s
 
@@ -135,5 +141,5 @@ let init (_mod : Wasm.Ast.module_) : Memories.Frame.t =
       lsk = [];
     }
   in
-  let vmem_init = init_globals _mod.it.globals def in
+  let vmem_init = init_globals _mod def in
   vmem_init

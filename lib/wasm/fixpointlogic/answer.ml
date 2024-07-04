@@ -6,6 +6,7 @@ open Datastructures.Monad
 type partial_answer = { p_br : LM.t; p_return : MS.t }
 type res = { nat : MS.t; br : LM.t; return : MS.t }
 
+let bot_pa = { p_br = LM.empty; p_return = MS.bot }
 let bot = Bot
 
 let lowlevel_join r1 r2 =
@@ -57,4 +58,3 @@ let le a1 a2 = leq a1 a2 && not (eq a1 a2)
 let pans_of_answer { nat; br; return } =
   ignore nat;
   { p_br = br; p_return = return }
-
