@@ -77,7 +77,7 @@ let assign_var k gl b e =
       ops =
         Operandstack.concretize_assignment a.ops a.var
           (Operandstack.ref_of_binding b gl);
-      var = VariableMem.assign a.var gl b e;
+      var = VariableMem.assign a.var gl b (Operandstack.operand_to_expr a.var e);
       lsk = a.lsk;
       tab = a.tab;
       mem = a.mem;
