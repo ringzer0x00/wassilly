@@ -32,6 +32,9 @@ let ref_to_apronvar op =
   | GVarRef i -> VariableMem.apronvar_of_binding i VariableMem.Glob
   | Expression _ -> failwith ""
 
+let ref_of_binding b gl =
+  match gl with VariableMem.Glob -> GVarRef b | VariableMem.Loc -> LVarRef b
+
 let operand_to_expr (mem : varmemories) op =
   match op with
   | Expression a -> a

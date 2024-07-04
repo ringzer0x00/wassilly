@@ -57,7 +57,7 @@ let init_globals (mod_ : Wasm.Ast.module_) (s : Memories.Frame.t) =
         let exp =
           match List.nth (Memories.Frame.peek_operand r_nat) 0 with
           | Expression v -> v
-          | _ -> failwith "consts! @ init"
+          | _ -> failwith "this must be consts! @ init"
         in
         let nat = Memories.Frame.assign_var s' Glob binding exp in
         aux t nat
@@ -130,15 +130,12 @@ let init (_mod : Wasm.Ast.module_) : Memories.Frame.t =
   let vmem_empty =
     VM.empty (Apronext.Apol.top (Datastructures.Aprondomain.make_env [||] [||]))
   in
-  let def : Memories.Frame.t =
-    Def
-      {
-        ops = [];
-        mem = mem_init;
-        var = vmem_empty;
-        tab = [ Memories.Table.empty ];
-        lsk = [];
-      }
-  in
-  let vmem_init = init_globals _mod def in
-  vmem_init
+  init_globals _mod
+    (Def
+       {
+         ops = [];
+         mem = mem_init;
+         var = vmem_empty;
+         tab = [ Memories.Table.empty ];
+         lsk = [];
+       })

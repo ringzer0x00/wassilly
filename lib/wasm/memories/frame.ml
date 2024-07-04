@@ -76,9 +76,7 @@ let assign_var k gl b e =
     {
       ops =
         Operandstack.concretize_assignment a.ops a.var
-          (match gl with
-          | VariableMem.Glob -> Operandstack.GVarRef b
-          | VariableMem.Loc -> Operandstack.LVarRef b);
+          (Operandstack.ref_of_binding b gl);
       var = VariableMem.assign a.var gl b e;
       lsk = a.lsk;
       tab = a.tab;
@@ -96,7 +94,7 @@ let join (k1 : t) (k2 : t) =
       let var' = VariableMem.join k1.var k2.var in
       let mem' = Linearmem.join k1.mem k2.mem in
       let tab' = Tables.join k1.tab k2.tab in
-      Def { ops = ops'; var = var'; tab = tab'; mem = mem'; lsk = k1.lsk }
+      return { ops = ops'; var = var'; tab = tab'; mem = mem'; lsk = k1.lsk }
 
 let widen (k1 : t) (k2 : t) =
   match (k1, k2) with
@@ -108,7 +106,7 @@ let widen (k1 : t) (k2 : t) =
       let var' = VariableMem.widen k1.var k2.var in
       let mem' = Linearmem.widen k1.mem k2.mem in
       let tab' = Tables.widen k1.tab k2.tab in
-      Def { ops = ops'; var = var'; tab = tab'; mem = mem'; lsk = k1.lsk }
+      return { ops = ops'; var = var'; tab = tab'; mem = mem'; lsk = k1.lsk }
 
 let leq (k1 : t) (k2 : t) =
   match (k1, k2) with
