@@ -25,6 +25,7 @@ let pop = SK.pop
 let pop_n = SK.pop_n
 let peek_nth_label = Labelstack.peek_nth
 
+(* update functions *)
 let update_operandstack ops' (k : t) =
   k >>= fun a ->
   return { ops = ops'; var = a.var; mem = a.mem; tab = a.tab; lsk = a.lsk }
@@ -45,22 +46,28 @@ let update_labelstack lsk' (k : t) =
   k >>= fun a ->
   return { ops = a.ops; var = a.var; mem = a.mem; tab = a.tab; lsk = lsk' }
 
+(* pop functions *)
 let pop_operand k : t = k >>= fun a -> update_operandstack (a.ops |> pop) k
 
 let pop_n_operand n k : t =
   k >>= fun a -> update_operandstack (a.ops |> pop_n n) k
 
 let pop_n_labels k n = k >== fun a -> update_labelstack (a.lsk |> pop_n n) k
+
+(* peek functions *)
 let peek_n_operand n k = k >== fun a -> a.ops |> peek_n n
 let peek_operand k = peek_n_operand 1 k
 let peek_binop k = peek_n_operand 2 k
 let peek_nth_label k n = k >== fun a -> a.lsk |> peek_nth_label n
+
+(* push functions *)
 let push_operand x k = k >>= fun a -> update_operandstack (x @ a.ops) k
 let push_label x k = k >>= fun a -> update_labelstack (x :: a.lsk) k
 
 let is_lsk_empty k =
   match k with Bot -> failwith "" | Def kx -> Labelstack.is_empty kx.lsk
 
+(* abstract domain operations *)
 let join (k1 : t) (k2 : t) =
   match (k1, k2) with
   | Bot, Bot -> Bot
