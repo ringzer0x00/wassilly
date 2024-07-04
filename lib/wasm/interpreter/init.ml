@@ -34,11 +34,11 @@ let listnth_i32 l i = List.nth l (Int32.to_int i)
 
 let cc (c : Wasm.Ast.const) = c.it
 
-let init_globals (mod_ : Wasm.Ast.module_) (s : Memories.Frame.ms) =
+let init_globals (mod_ : Wasm.Ast.module_) (s : Memories.Frame.t) =
   let prepped = List.mapi (fun x y -> (Int32.of_int x, y)) mod_.it.globals in
   let rec aux (gs_idx : (int32 * Wasm.Ast.global) list) s =
     match gs_idx with
-    | [] -> Memories.Frame.Def s
+    | [] -> s
     | (i, gl) :: t ->
         let ty_val = match gl.it.gtype with GlobalType (t, _) -> t in
         let nty =
@@ -48,11 +48,12 @@ let init_globals (mod_ : Wasm.Ast.module_) (s : Memories.Frame.ms) =
         in
         let _init_val_instrlist = gl.it.ginit.it in
         let _binding : VMKey.t = { i; t = nty } in
-        let _vars' = VM.bind s.var _binding Glob in
-        let s' =
-          Eval.MS.Def
-            { lsk = s.lsk; var = _vars'; ops = s.ops; mem = s.mem; tab = s.tab }
+        let _vars' =
+          match s with
+          | Memories.Frame.Def d -> VM.bind d.var _binding Glob
+          | Bot -> failwith "init - bot @ _varsprime"
         in
+        let s' = Memories.Frame.update_varmem _vars' s in
         let eval p ms =
           Eval.step mod_ (ms, p) Eval.Stack.empty Eval.Cache.empty
             Eval.MA.bot_pa
@@ -65,11 +66,8 @@ let init_globals (mod_ : Wasm.Ast.module_) (s : Memories.Frame.ms) =
           | Expression v -> (v, Memories.Frame.pop_operand r_nat)
           | _ -> failwith "consts! @ init"
         in
-        let r_nat = Memories.Frame.assign_var r_nat Glob _binding _v_const in
-        let nat_run =
-          match r_nat with Def e -> e | Bot -> failwith "diobon"
-        in
-        aux t nat_run
+        let nat = Memories.Frame.assign_var r_nat Glob _binding _v_const in
+        aux t nat
   in
   aux prepped s
 
@@ -139,14 +137,15 @@ let init (_mod : Wasm.Ast.module_) : Memories.Frame.t =
   let vmem_empty =
     VM.empty (Apronext.Apol.top (Datastructures.Aprondomain.make_env [||] [||]))
   in
-  let def : Memories.Frame.ms =
-    {
-      ops = [];
-      mem = mem_init;
-      var = vmem_empty;
-      tab = [ Memories.Table.empty ];
-      lsk = [];
-    }
+  let def : Memories.Frame.t =
+    Def
+      {
+        ops = [];
+        mem = mem_init;
+        var = vmem_empty;
+        tab = [ Memories.Table.empty ];
+        lsk = [];
+      }
   in
   let vmem_init = init_globals _mod def in
   vmem_init
