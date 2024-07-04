@@ -29,6 +29,18 @@ let update_operandstack ops' (k : t) =
   k >>= fun a ->
   return { ops = ops'; var = a.var; mem = a.mem; tab = a.tab; lsk = a.lsk }
 
+let update_tables tab' (k : t) =
+  k >>= fun a ->
+  return { ops = a.ops; var = a.var; mem = a.mem; tab = tab'; lsk = a.lsk }
+
+let update_linearmem mem' (k : t) =
+  k >>= fun a ->
+  return { ops = a.ops; var = a.var; mem = mem'; tab = a.tab; lsk = a.lsk }
+
+let update_varmem var' (k : t) =
+  k >>= fun a ->
+  return { ops = a.ops; var = var'; mem = a.mem; tab = a.tab; lsk = a.lsk }
+
 let update_labelstack lsk' (k : t) =
   k >>= fun a ->
   return { ops = a.ops; var = a.var; mem = a.mem; tab = a.tab; lsk = lsk' }
