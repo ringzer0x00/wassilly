@@ -16,7 +16,7 @@ let const (n : Wasm.Ast.num) (vm : Memories.Operandstack.varmemories) =
         let c = Wasm.I64.to_int_s c in
         Apronext.Intervalext.of_int c c
   in
-  [ Expression (const_expr vm v) ]
+  Expression (const_expr vm v)
 
 let mul_expr vm l r =
   let l_ex = operand_to_expr vm l in

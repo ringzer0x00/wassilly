@@ -12,14 +12,8 @@ open Exprs_math
 
 let enter_block bl prec =
   prec >>= fun d ->
-  return
-    {
-      ops = d.ops;
-      var = d.var;
-      mem = d.mem;
-      tab = d.tab;
-      lsk = LS.push bl d.lsk;
-    }
+  let lsk' = push (bl, d.lsk) in
+  return { ops = d.ops; var = d.var; mem = d.mem; tab = d.tab; lsk = lsk' }
 
 let end_of_block prec =
   prec >>= fun d ->
@@ -50,14 +44,8 @@ let brpeek prec n =
 
 let const_val v prec =
   prec >>= fun d ->
-  return
-    {
-      ops = (fun v sk -> append (const v d.var) sk) v d.ops;
-      var = d.var;
-      mem = d.mem;
-      tab = d.tab;
-      lsk = d.lsk;
-    }
+  let ops' = push (const v d.var, d.ops) in
+  return { ops = ops'; var = d.var; mem = d.mem; tab = d.tab; lsk = d.lsk }
 
 let mul prec =
   prec >>= fun d ->
