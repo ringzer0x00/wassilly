@@ -65,8 +65,16 @@ let rec step modul_ call sk cache p_ans : ans * Cache.t * SCG.t =
             let b = MS.get_var_binding ms' Glob var.it in
             let ms' = MS.assign_var ms' Glob b val_ in
             (cmd_result ms' p_ans, cache, SCG.empty)
-        | LocalGet _ -> failwith "return Lref"
-        | GlobalGet _ -> failwith "return Gref"
+        | LocalGet _var ->
+            (*rewrite monadic*)
+            let _b = MS.get_var_binding ms Loc _var.it in
+            let _ref = Memories.Operandstack.ref_of_binding _b Loc in
+            (cmd_result (Instructions.read ms _ref) p_ans, cache, SCG.empty)
+        | GlobalGet _var ->
+            (*rewrite monadic*)
+            let _b = MS.get_var_binding ms Glob _var.it in
+            let _ref = Memories.Operandstack.ref_of_binding _b Glob in
+            (cmd_result (Instructions.read ms _ref) p_ans, cache, SCG.empty)
         | Const num ->
             (cmd_result (Instructions.const_val num ms) p_ans, cache, SCG.empty)
         | Binary bop ->
@@ -129,7 +137,6 @@ let rec step modul_ call sk cache p_ans : ans * Cache.t * SCG.t =
             in
             let ms' = Cflow.enter_label l ms in
             let ms_t, ms_f = Cflow.ite_condition ms' in
-            (*check for bottoms before calling fix*)
             let a_true, c', _scgt =
               fixpoint modul_ ((ms_t, _then), false) sk cache p_ans step
             in
