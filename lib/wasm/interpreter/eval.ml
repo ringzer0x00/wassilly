@@ -168,6 +168,7 @@ let rec step modul_ call sk cache p_ans : ans * Cache.t * SCG.t =
             *)
             failwith ""
             (*before evaluating call push present natcont and other info to callstack*)
+        | CallIndirect _ -> failwith "callindirect, concretize ToS, filter by type, rewrite as Call"
         | _ -> failwith "other commands"
       in
       let res2, cache'', scg_t =
