@@ -69,12 +69,12 @@ let rec step modul_ call sk cache p_ans : ans * Cache.t * SCG.t =
             (*rewrite monadic*)
             let _b = MS.get_var_binding ms Loc _var.it in
             let _ref = Memories.Operandstack.ref_of_binding _b Loc in
-            (cmd_result (Instructions.read ms _ref) p_ans, cache, SCG.empty)
+            (cmd_result (Instructions.push ms _ref) p_ans, cache, SCG.empty)
         | GlobalGet _var ->
             (*rewrite monadic*)
             let _b = MS.get_var_binding ms Glob _var.it in
             let _ref = Memories.Operandstack.ref_of_binding _b Glob in
-            (cmd_result (Instructions.read ms _ref) p_ans, cache, SCG.empty)
+            (cmd_result (Instructions.push ms _ref) p_ans, cache, SCG.empty)
         | Const num ->
             (cmd_result (Instructions.const_val num ms) p_ans, cache, SCG.empty)
         | Binary bop ->

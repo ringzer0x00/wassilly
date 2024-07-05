@@ -84,7 +84,7 @@ let neg prec =
   let opsk' = unop d.ops (fun x -> neg_expr d.var x) in
   return { ops = opsk'; var = d.var; mem = d.mem; tab = d.tab; lsk = d.lsk }
 
-let read prec v =
+let push prec v =
   prec >>= fun d ->
   return
     { ops = push v d.ops; var = d.var; mem = d.mem; tab = d.tab; lsk = d.lsk }
