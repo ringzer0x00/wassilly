@@ -139,3 +139,13 @@ let eq (k1 : t) (k2 : t) =
 let le (k1 : t) (k2 : t) = leq k1 k2 && not (eq k1 k2)
 let filter _ctx _c = failwith ""
 (*Variablememories.filter_loc ms.var c*)
+
+let new_fun_ctx k locs =
+  k >>= fun a ->
+  let var' = VariableMem.new_ a.var locs in
+  update_varmem var' k |> update_operandstack [] |> update_labelstack []
+
+let return_ _k_to _k_from =
+  failwith
+    "return_ @ variablemem; concretize the peeked stack values involving \
+     locals, then push them to the _k_to opstack"

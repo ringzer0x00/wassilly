@@ -132,7 +132,7 @@ module VariableMem = struct
           | WT.NumType t ->
               let b : binding = { t; i = Int32.of_int (List.length acc) } in
               (b, apronvar_of_binding b Loc) :: acc
-          | _ -> failwith "")
+          | _ -> failwith "cannot do other shiiiit")
         locs_new []
     in
     let loc'_int, loc'_real = extract_typed_env_vars loc_binds in
@@ -146,6 +146,7 @@ module VariableMem = struct
     { loc = M.of_seq (List.to_seq loc_binds); glob; ad = ad'' }
 
   let return_ (from : t) (to_ : t) : t =
+    (*can this be improved?*)
     let globals = M.bindings from.glob |> List.map snd in
     let globs_var_expr =
       List.map

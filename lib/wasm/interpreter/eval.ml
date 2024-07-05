@@ -21,6 +21,10 @@ let getfbody (mod_ : module_) idx =
   let funx = List.nth mod_.it.funcs idx in
   (funx.it.body, funx.it.locals, funx.it.ftype)
 
+let gettype (mod_ : module_) idx =
+  let t = List.nth mod_.it.types idx in
+  t.it
+
 let fixpoint _module (call, ifb) stack cache pres stepf =
   let _ms, _p = call in
   match ifb with
@@ -155,9 +159,6 @@ let rec step modul_ call sk cache p_ans : ans * Cache.t * SCG.t =
                with the present one. rewrite globals with the present one and \
                return state"
         | Call _i ->
-            let _funb, _locs, _typ = getfbody modul_ (Int32.to_int _i.it) in
-
-            (*## _typ is a index of a type that needs to be query-ed in the module*)
             (*## locs is the list of locals declared in the scope of this function,
               params occupy the first n indices in the input type  (fuzzy words, but
               if the input type is i32, i32, the first two locals will be the parameters.)
@@ -166,9 +167,28 @@ let rec step modul_ call sk cache p_ans : ans * Cache.t * SCG.t =
                             local.get 1
                             local.get 2)
             *)
+            let _funb, _locs, _typ = getfbody modul_ (Int32.to_int _i.it) in
+            let _actual_type = gettype modul_ (Int32.to_int _typ.it) in
+            let _ti, _to =
+              (*list * list*)
+              match _actual_type with FuncType (_ti, _to) -> (_ti, _to)
+            in
+            let _vals, _ms' =
+              ( MS.peek_n_operand (List.length _ti) ms,
+                MS.pop_n_operand (List.length _ti) ms )
+            in
+            let _ms'' = MS.new_fun_ctx _ms' _ti in
+            (*perform assignment first pweeeeease*)
+            let _ms''', _, _ =
+              fixpoint modul_ ((_ms'', _funb), true) sk cache p_ans step
+            in
+
+            (*after shieeeet do VariableMem.return_*)
             failwith ""
             (*before evaluating call push present natcont and other info to callstack*)
-        | CallIndirect _ -> failwith "callindirect, concretize ToS, filter by type, rewrite as Call"
+        | CallIndirect _ ->
+            failwith
+              "callindirect, concretize ToS, filter by type, rewrite as Call"
         | _ -> failwith "other commands"
       in
       let res2, cache'', scg_t =
