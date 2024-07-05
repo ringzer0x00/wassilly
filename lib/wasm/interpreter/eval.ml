@@ -155,7 +155,18 @@ let rec step modul_ call sk cache p_ans : ans * Cache.t * SCG.t =
                with the present one. rewrite globals with the present one and \
                return state"
         | Call _i ->
-            failwith "add c2 and ms to callstack, call to fixpoint"
+            let _funb, _locs, _typ = getfbody modul_ (Int32.to_int _i.it) in
+
+            (*## _typ is a index of a type that needs to be query-ed in the module*)
+            (*## locs is the list of locals declared in the scope of this function,
+              params occupy the first n indices in the input type  (fuzzy words, but
+              if the input type is i32, i32, the first two locals will be the parameters.)
+                params :  (func (param i32) (param f32) (local f64)
+                            local.get 0
+                            local.get 1
+                            local.get 2)
+            *)
+            failwith ""
             (*before evaluating call push present natcont and other info to callstack*)
         | _ -> failwith "other commands"
       in
