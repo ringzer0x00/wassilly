@@ -61,30 +61,30 @@ let const_val v prec =
 
 let mul prec =
   prec >>= fun d ->
-  let opsk' = binop d.ops (fun x y -> mul_expr d.var x y) in
+  let opsk' = binop d.ops (fun x y -> mul_expr d.var x y) |> push in
   return { ops = opsk'; var = d.var; mem = d.mem; tab = d.tab; lsk = d.lsk }
 
 let divs prec =
   prec >>= fun d ->
-  let opsk' = binop d.ops (fun x y -> divs_expr d.var x y) in
+  let opsk' = binop d.ops (fun x y -> divs_expr d.var x y) |> push in
   return { ops = opsk'; var = d.var; mem = d.mem; tab = d.tab; lsk = d.lsk }
 
 let add prec =
   prec >>= fun d ->
-  let opsk' = binop d.ops (fun x y -> add_expr d.var x y) in
+  let opsk' = binop d.ops (fun x y -> add_expr d.var x y) |> push in
   return { ops = opsk'; var = d.var; mem = d.mem; tab = d.tab; lsk = d.lsk }
 
 let sub prec =
   prec >>= fun d ->
-  let opsk' = binop d.ops (fun x y -> sub_expr d.var x y) in
+  let opsk' = binop d.ops (fun x y -> sub_expr d.var x y) |> push in
   return { ops = opsk'; var = d.var; mem = d.mem; tab = d.tab; lsk = d.lsk }
 
 let neg prec =
   prec >>= fun d ->
-  let opsk' = unop d.ops (fun x -> neg_expr d.var x) in
+  let opsk' = unop d.ops (fun x -> neg_expr d.var x) |> push in
   return { ops = opsk'; var = d.var; mem = d.mem; tab = d.tab; lsk = d.lsk }
 
-let push prec v =
+let read prec v =
   prec >>= fun d ->
-  return
-    { ops = push v d.ops; var = d.var; mem = d.mem; tab = d.tab; lsk = d.lsk }
+  let ops' = push (v, d.ops) in
+  return { ops = ops'; var = d.var; mem = d.mem; tab = d.tab; lsk = d.lsk }
