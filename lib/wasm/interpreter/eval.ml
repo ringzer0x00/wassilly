@@ -50,6 +50,7 @@ let rec step modul_ call sk cache p_ans : ans * Cache.t * SCG.t =
         (*as opposed to ms this should return a vector of values which is then appended to the ms's operand stack*)
         match c1.it with
         | LocalSet var ->
+            (*rewrite monadic*)
             let val_, ms' =
               (MS.peek_operand ms |> List.hd, MS.pop_operand ms)
             in
@@ -57,6 +58,7 @@ let rec step modul_ call sk cache p_ans : ans * Cache.t * SCG.t =
             let ms' = MS.assign_var ms' Loc b val_ in
             (cmd_result ms' p_ans, cache, SCG.empty)
         | GlobalSet var ->
+            (*rewrite monadic*)
             let val_, ms' =
               (MS.peek_operand ms |> List.hd, MS.pop_operand ms)
             in
