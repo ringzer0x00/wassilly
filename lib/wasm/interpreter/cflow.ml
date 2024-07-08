@@ -55,3 +55,4 @@ let seq_answer r1 r2 =
       return = MS.join res1.return res2.return;
     }
 
+let fun_result r_f _block_body = r_f >>= fun _r -> failwith ""

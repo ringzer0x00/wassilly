@@ -167,22 +167,41 @@ let rec step modul_ call sk cache p_ans : ans * Cache.t * SCG.t =
                             local.get 1
                             local.get 2)
             *)
-            let _funb, _locs, _typ = getfbody modul_ (Int32.to_int _i.it) in
-            let _actual_type = gettype modul_ (Int32.to_int _typ.it) in
+            let funbody, _locs, typ_idx =
+              getfbody modul_ (Int32.to_int _i.it)
+            in
+            let typ_ = gettype modul_ (Int32.to_int typ_idx.it) in
             let _ti, _to =
               (*list * list*)
-              match _actual_type with FuncType (_ti, _to) -> (_ti, _to)
+              match typ_ with FuncType (_ti, _to) -> (_ti, _to)
+            in
+            let bindings_input =
+              List.mapi
+                (fun i x : Memories.Variablemem.MapKey.t ->
+                  {
+                    i = Int32.of_int i;
+                    t =
+                      (match x with
+                      | Wasm.Types.NumType t -> t
+                      | _ -> failwith "");
+                  })
+                _ti
             in
             let _vals, _ms' =
               ( MS.peek_n_operand (List.length _ti) ms,
                 MS.pop_n_operand (List.length _ti) ms )
             in
             let _ms'' = MS.new_fun_ctx _ms' _ti in
-            (*perform assignment first pweeeeease*)
-            let _ms''', _, _ =
-              fixpoint modul_ ((_ms'', _funb), true) sk cache p_ans step
+            let ms''' =
+              List.fold_right2
+                (fun b v m -> MS.assign_var m Loc b v)
+                bindings_input _vals _ms''
             in
-
+            (*perform assignment first pweeeeease*)
+            let _ms'''', _, _ =
+              fixpoint modul_ ((ms''', funbody), true) sk cache p_ans step
+            in
+            let _f_res = "" in
             (*after shieeeet do VariableMem.return_*)
             failwith ""
             (*before evaluating call push present natcont and other info to callstack*)
