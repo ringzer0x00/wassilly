@@ -45,6 +45,9 @@ let block_result r_b block_body =
 let simplecmd_answer r pres =
   return { nat = r; br = pres.p_br; return = pres.p_return }
 
+let end_of_func r pres =
+  return { nat = Bot; br = pres.p_br; return = MS.join r pres.p_return }
+
 let seq_answer r1 r2 =
   r1 >>= fun res1 ->
   r2 >>= fun res2 ->

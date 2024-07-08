@@ -17,6 +17,7 @@ let cmd_result = Cflow.simplecmd_answer
 let seq_result = Cflow.seq_answer
 let func_ans = Cflow.func_answer
 let pans_of_answer = MA.pans_of_answer
+let end_of_func = Cflow.end_of_func
 
 let getfbody (mod_ : module_) idx =
   let funx = List.nth mod_.it.funcs idx in
@@ -48,8 +49,10 @@ let rec step modul_ call sk cache p_ans : ans * Cache.t * SCG.t =
 
   match p with
   | [] ->
-      if MS.is_lsk_empty ms then failwith "end of function case"
-      else (cmd_result (Instructions.end_of_block ms) p_ans, cache, SCG.empty)
+      ( (if MS.is_lsk_empty ms then end_of_func ms p_ans
+         else cmd_result (Instructions.end_of_block ms) p_ans),
+        cache,
+        SCG.empty )
   | c1 :: c2 ->
       let (res1 : ans), cache', scg_h =
         (*as opposed to ms this should return a vector of values which is then appended to the ms's operand stack*)
