@@ -159,9 +159,3 @@ let func_res _k_to _k_from tp =
   let _vmem' = VariableMem.return_ from.var to_.var in
   return
     { ops = _sk_to; var = _vmem'; tab = to_.tab; mem = to_.mem; lsk = to_.lsk }
-(*
-  - peek operand stack with respect to output types
-  - concretize the peeked stack values involving locals
-  - then push (append) them to _k_to opstack
-  - global stuff (memory, varmemory) is handled by VariableMem.return_, which may or may not be improved, maybe by some operation with AD
-*)
