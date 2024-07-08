@@ -157,7 +157,8 @@ let func_res _k_to _k_from tp =
   in
   let _sk_to = _peeked_conc @ _to_sk in
   let _vmem' = VariableMem.return_ from.var to_.var in
-  failwith ""
+  return
+    { ops = _sk_to; var = _vmem'; tab = to_.tab; mem = to_.mem; lsk = to_.lsk }
 (*
   - peek operand stack with respect to output types
   - concretize the peeked stack values involving locals
