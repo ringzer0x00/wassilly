@@ -146,13 +146,17 @@ let new_fun_ctx k locs =
   update_varmem var' k |> update_operandstack [] |> update_labelstack []
 
 let func_res _k_to _k_from tp =
-  _k_to >>= fun _to_ ->
+  _k_to >>= fun to_ ->
   _k_from >>= fun from ->
+  let _to_sk = Operandstack.concretize_ret to_.ops to_.var in
   let _peeked_conc =
     List.map
-      (fun x -> Operandstack.concretize_in_exp from.var x)
+      (fun x ->
+        Operandstack.Expression (Operandstack.concretize_in_exp from.var x))
       (peek_n_operand tp _k_from)
   in
+  let _sk_to = _peeked_conc @ _to_sk in
+  let _vmem' = VariableMem.return_ from.var to_.var in
   failwith ""
 (*
   - peek operand stack with respect to output types

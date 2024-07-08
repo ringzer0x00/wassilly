@@ -82,6 +82,12 @@ let concretize_assignment (s : stack) (mem : varmemories) ref =
       let v_expr = concretize_in_exp mem ref in
       replace s ref (Expression v_expr)
 
+let concretize_ret (s : stack) (mem : varmemories) =
+  let bs =
+    VariableMem.M.bindings mem.glob |> List.map (fun x -> GVarRef (fst x))
+  in
+  List.fold_left (fun sk y -> concretize_assignment sk mem y) s bs
+
 let ival_join i1 i2 : Apronext.Intervalext.t = Apronext.Intervalext.join i1 i2
 
 let ival_widen i1 i2 =
