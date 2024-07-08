@@ -54,3 +54,10 @@ let seq_answer r1 r2 =
       br = LM.lub res1.br res2.br;
       return = MS.join res1.return res2.return;
     }
+
+let func_answer (_k_to : res t) =
+  (*unsure about this, maybe i need the natural cont too?*)
+  match _k_to with Def to_ -> to_.return | Bot -> MS.bot
+
+let call_answer par ms_body =
+  return { nat = ms_body; br = par.p_br; return = par.p_return }

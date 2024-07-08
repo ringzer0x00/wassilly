@@ -15,6 +15,7 @@ module CallSet = Callset.CallSet
 
 let cmd_result = Cflow.simplecmd_answer
 let seq_result = Cflow.seq_answer
+let func_ans = Cflow.func_answer
 let pans_of_answer = MA.pans_of_answer
 
 let getfbody (mod_ : module_) idx =
@@ -153,11 +154,7 @@ let rec step modul_ call sk cache p_ans : ans * Cache.t * SCG.t =
             (a, c'', scg)
         | BrIf _ -> failwith "weird ass instruction"
         | Return ->
-            failwith
-              "flush labels, get function type and return memorystate with the \
-               first n values top of the stack, collapse the state in cstack \
-               with the present one. rewrite globals with the present one and \
-               return state"
+            failwith "write on res.return, set nat to bottom, empty label stack"
         | Call _i ->
             (*## locs is the list of locals declared in the scope of this function,
               params occupy the first n indices in the input type  (fuzzy words, but
@@ -197,13 +194,11 @@ let rec step modul_ call sk cache p_ans : ans * Cache.t * SCG.t =
                 (fun b v m -> MS.assign_var m Loc b v)
                 bindings_input _vals _ms''
             in
-            let _ms'''', _, _ =
+            let _ms'''', c', g =
               fixpoint modul_ ((ms''', funbody), true) sk cache p_ans step
             in
-            let _f_res = "" in
-            (*after shieeeet do VariableMem.return_*)
-            failwith ""
-            (*before evaluating call push present natcont and other info to callstack*)
+            let _f_res = MS.func_res (func_ans _ms'''') ms (List.length _to) in
+            (Cflow.call_answer p_ans _f_res, c', g)
         | CallIndirect _ ->
             failwith
               "callindirect, concretize ToS, filter by type, rewrite as Call"
