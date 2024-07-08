@@ -131,3 +131,5 @@ let binop s f =
   let l, r = (List.nth operand 0, List.nth operand 1) in
   let res = f l r in
   (res, s)
+
+let return_ _f _to = failwith ""

@@ -145,7 +145,18 @@ let new_fun_ctx k locs =
   let var' = VariableMem.new_ a.var locs in
   update_varmem var' k |> update_operandstack [] |> update_labelstack []
 
-let return_ _k_to _k_from =
-  failwith
-    "return_ @ variablemem; concretize the peeked stack values involving \
-     locals, then push them to the _k_to opstack"
+let func_res _k_to _k_from tp =
+  _k_to >>= fun _to_ ->
+  _k_from >>= fun from ->
+  let _peeked_conc =
+    List.map
+      (fun x -> Operandstack.concretize_in_exp from.var x)
+      (peek_n_operand tp _k_from)
+  in
+  failwith ""
+(*
+  - peek operand stack with respect to output types
+  - concretize the peeked stack values involving locals
+  - then push (append) them to _k_to opstack
+  - global stuff (memory, varmemory) is handled by VariableMem.return_, which may or may not be improved, maybe by some operation with AD
+*)

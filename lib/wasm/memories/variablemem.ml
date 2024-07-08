@@ -146,6 +146,27 @@ module VariableMem = struct
     { loc = M.of_seq (List.to_seq loc_binds); glob; ad = ad'' }
 
   let return_ (from : t) (to_ : t) : t =
+    let locs_from = M.bindings from.loc |> List.map snd |> Array.of_list in
+    let _env_ad_from' (*forget locs*) =
+      Apronext.Abstractext.change_environment Apronext.Apol.man from.ad
+        (Apronext.Environmentext.remove from.ad.env locs_from)
+        false
+    in
+    let globs_to = M.bindings from.glob |> List.map snd |> Array.of_list in
+    let _ad_to' (*forget globs*) =
+      Apronext.Abstractext.forget_array Apronext.Apol.man to_.ad globs_to false
+    in
+    let env_lce = Apronext.Environmentext.lce _env_ad_from'.env _ad_to'.env in
+    let ad' =
+      Apronext.Abstractext.meet Apronext.Apol.man
+        (Apronext.Abstractext.change_environment Apronext.Apol.man _env_ad_from'
+           env_lce false)
+        (Apronext.Abstractext.change_environment Apronext.Apol.man _ad_to'
+           env_lce false)
+    in
+    { loc = to_.loc; glob = to_.glob; ad = ad' }
+  (*
+  let return_old (from : t) (to_ : t) : t =
     (*can this be improved?*)
     let globals = M.bindings from.glob |> List.map snd in
     let globs_var_expr =
@@ -159,5 +180,5 @@ module VariableMem = struct
         (fun a (var, value) -> AD.assign_expr a var value)
         to_.ad globs_var_expr
     in
-    { loc = to_.loc; glob = to_.glob; ad = ad' }
+    { loc = to_.loc; glob = to_.glob; ad = ad' }*)
 end

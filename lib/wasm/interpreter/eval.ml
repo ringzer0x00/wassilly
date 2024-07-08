@@ -197,7 +197,6 @@ let rec step modul_ call sk cache p_ans : ans * Cache.t * SCG.t =
                 (fun b v m -> MS.assign_var m Loc b v)
                 bindings_input _vals _ms''
             in
-            (*perform assignment first pweeeeease*)
             let _ms'''', _, _ =
               fixpoint modul_ ((ms''', funbody), true) sk cache p_ans step
             in
