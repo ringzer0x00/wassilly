@@ -75,6 +75,14 @@ let rec step modul_ call sk cache p_ans : ans * Cache.t * SCG.t =
             (cmd_result ms' p_ans, cache, SCG.empty)
         | LocalGet _var ->
             (*rewrite monadic*)
+            let () =
+              match ms with
+              | Bot -> failwith ""
+              | Def d ->
+                  Printf.printf "LocalGel_bindings: %i"
+                    (Memories.Variablemem.VariableMem.M.bindings d.var.loc
+                    |> List.length)
+            in
             let _b = MS.get_var_binding ms Loc _var.it in
             let _ref = Memories.Operandstack.ref_of_binding _b Loc in
             (cmd_result (Instructions.read ms _ref) p_ans, cache, SCG.empty)
@@ -167,40 +175,21 @@ let rec step modul_ call sk cache p_ans : ans * Cache.t * SCG.t =
                             local.get 1
                             local.get 2)
             *)
-            let funbody, _locs, typ_idx =
-              getfbody modul_ (Int32.to_int _i.it)
-            in
+            let funbody, locs, typ_idx = getfbody modul_ (Int32.to_int _i.it) in
             let typ_ = gettype modul_ (Int32.to_int typ_idx.it) in
             let _ti, _to =
               (*list * list*)
               match typ_ with FuncType (_ti, _to) -> (_ti, _to)
             in
-            let bindings_input =
-              List.mapi
-                (fun i x : Memories.Variablemem.MapKey.t ->
-                  {
-                    i = Int32.of_int i;
-                    t =
-                      (match x with
-                      | Wasm.Types.NumType t -> t
-                      | _ -> failwith "call @ eval @ bindings_input");
-                  })
-                _ti
-            in
-            let _vals, _ms' =
+            let _vals, ms' =
               ( MS.peek_n_operand (List.length _ti) ms,
                 MS.pop_n_operand (List.length _ti) ms )
             in
-            let _ms'' = MS.new_fun_ctx _ms' _locs in
-            let ms''' =
-              List.fold_right2
-                (fun b v m -> MS.assign_var m Loc b v)
-                bindings_input _vals _ms''
+            let ms'' = Cflow.prep_call ms' _vals modul_ locs typ_idx.it in
+            let ms''', c', g =
+              fixpoint modul_ ((ms'', funbody), true) sk cache p_ans step
             in
-            let _ms'''', c', g =
-              fixpoint modul_ ((ms''', funbody), true) sk cache p_ans step
-            in
-            let _f_res = MS.func_res (func_ans _ms'''') ms (List.length _to) in
+            let _f_res = MS.func_res (func_ans ms''') ms (List.length _to) in
             (Cflow.call_answer p_ans _f_res, c', g)
         | CallIndirect _ ->
             failwith

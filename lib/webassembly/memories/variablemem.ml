@@ -34,7 +34,7 @@ module VariableMem = struct
   let find_in_map vm k gl =
     match gl with
     | Glob -> M.filter (fun x _ -> x.i = k) vm.glob
-    | Loc -> M.filter (fun x _ -> x.i = k) vm.glob
+    | Loc -> M.filter (fun x _ -> x.i = k) vm.loc
 
   let apronvar_of_binding (b : binding) gl : AD.var =
     let aux (b : binding) pre =
@@ -48,7 +48,7 @@ module VariableMem = struct
       let var = M.find_opt b ma in
       match var with
       | None ->
-          Printf.printf "bindings len: %i" (List.length (M.bindings glob));
+          Printf.printf "bindings len: %i" (List.length (M.bindings loc));
           failwith "assignment failed, cannot find key-var"
       | Some var -> (ma, AD.assign_expr ad var exp)
     in
@@ -128,15 +128,16 @@ module VariableMem = struct
         ([], []) bs
     in
     let loc_binds =
-      List.fold_right
-        (fun x acc ->
+      List.mapi
+        (fun i x ->
           match x with
           | WT.NumType t ->
-              let b : binding = { t; i = Int32.of_int (List.length acc) } in
-              (b, apronvar_of_binding b Loc) :: acc
+              let b : binding = { t; i = Int32.of_int i } in
+              (b, apronvar_of_binding b Loc)
           | _ -> failwith "cannot do other shiiiit")
-        locs_new []
+        locs_new
     in
+    let () = Printf.printf "@new_ binds: %i\n" (List.length loc_binds) in
     let loc'_int, loc'_real = extract_typed_env_vars loc_binds in
     let glob_int, glob_real = extract_typed_env_vars globs in
     let intvars, realvars =
