@@ -53,7 +53,7 @@ let init_globals (mod_ : Wasm.Ast.module_) (s : Memories.Frame.t) =
         let s' = Memories.Frame.bind_vars binding Glob s in
         let r, _, _ = eval gl.it.ginit.it s' in
         (*do other stuff*)
-        let r_nat = match r with Def d -> d.nat | Bot -> failwith "diobo" in
+        let r_nat = match r with Def d -> d.return | Bot -> failwith "diobo" in
         let exp = Memories.Frame.peek_operand r_nat |> List.hd in
         let nat = Memories.Frame.assign_var s' Glob binding exp in
         aux t nat
@@ -65,9 +65,9 @@ let interpret_elem_segment (es : Wasm.Ast.elem_segment) (t : 'a list) =
   let _ =
     match _type with
     | ExternRefType -> failwith "stub"
-    | FuncRefType -> failwith ""
+    | FuncRefType -> failwith "funcreftype"
   in
-  let _ = match es.it.einit with [] -> failwith "" | h :: _ -> h.it in
+  let _ = match es.it.einit with [] -> failwith "miaOOOO" | h :: _ -> h.it in
   (*init is a list because element segment represents a vector of shit copied in table from an offset*)
   match m.it with
   | Wasm.Ast.Declarative -> assert false

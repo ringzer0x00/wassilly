@@ -1,1 +1,0 @@
-type block_type = Wasm.Ast.block_type

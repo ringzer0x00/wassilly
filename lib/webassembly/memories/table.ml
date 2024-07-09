@@ -13,8 +13,8 @@ type t = T.t
 
 let empty = T.empty
 let add (idx, offset) v t : t = T.add (idx ++ offset) v t
-let set (*for active segments*) = failwith ""
-let get (*for call indirect*) = failwith ""
+let set _ _ = failwith "table"
+let get _ _ = failwith "table"
 
 (*
 

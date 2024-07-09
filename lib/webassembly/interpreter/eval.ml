@@ -183,7 +183,7 @@ let rec step modul_ call sk cache p_ans : ans * Cache.t * SCG.t =
                     t =
                       (match x with
                       | Wasm.Types.NumType t -> t
-                      | _ -> failwith "");
+                      | _ -> failwith "call @ eval @ bindings_input");
                   })
                 _ti
             in

@@ -16,7 +16,7 @@ type t = Def of ms | Bot
 let return x = Def x
 let bind x op = match x with Bot -> Bot | Def a -> op a
 let ( >>= ) = bind
-let bind_peek x op = match x with Bot -> failwith "" | Def a -> op a
+let bind_peek x op = match x with Bot -> failwith "bindpeek" | Def a -> op a
 let ( >== ) = bind_peek
 let bot = Bot
 let peek = SK.peek
@@ -68,7 +68,7 @@ let bind_vars b gl (k : t) =
   k >>= fun a -> update_varmem (VariableMem.bind a.var b gl) k
 
 let is_lsk_empty k =
-  match k with Bot -> failwith "" | Def kx -> Labelstack.is_empty kx.lsk
+  match k with Bot -> failwith "lsk emptu @ frame" | Def kx -> Labelstack.is_empty kx.lsk
 
 let assign_var k gl b e =
   k >>= fun a ->
@@ -137,7 +137,7 @@ let eq (k1 : t) (k2 : t) =
       && Linearmem.eq k1.mem k2.mem && Tables.eq k1.tab k2.tab
 
 let le (k1 : t) (k2 : t) = leq k1 k2 && not (eq k1 k2)
-let filter _ctx _c = failwith ""
+let filter _ctx _c = failwith "filter not implemented"
 (*Variablememories.filter_loc ms.var c*)
 
 let new_fun_ctx k locs =

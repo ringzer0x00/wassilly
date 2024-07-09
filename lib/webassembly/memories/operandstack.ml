@@ -30,7 +30,7 @@ let ref_to_apronvar op =
   match op with
   | LVarRef i -> VariableMem.apronvar_of_binding i VariableMem.Loc
   | GVarRef i -> VariableMem.apronvar_of_binding i VariableMem.Glob
-  | Expression _ -> failwith ""
+  | Expression _ -> failwith "ref to apronvar @ operandstack"
 
 let ref_of_binding b gl =
   match gl with VariableMem.Glob -> GVarRef b | VariableMem.Loc -> LVarRef b
@@ -138,4 +138,4 @@ let binop s f =
   let res = f l r in
   (res, s)
 
-let return_ _f _to = failwith ""
+let return_ _f _to = failwith "return_ @ operandstack"

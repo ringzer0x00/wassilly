@@ -3,9 +3,9 @@ exception EmptyStack
 type 'a stack = 'a list
 
 let peek = function h :: _ -> h | [] -> raise EmptyStack
-let peekn _n _ = failwith ""
+let peekn _n _ = failwith "whatever"
 let pop = function _ :: t -> t | [] -> raise EmptyStack
-let popn _n _ = failwith ""
+let popn _n _ = failwith "whatever"
 let push x l = x :: l
 let push_vec x l = x @ l
 let update_topmost h' = function [] -> raise EmptyStack | _ :: t -> h' :: t

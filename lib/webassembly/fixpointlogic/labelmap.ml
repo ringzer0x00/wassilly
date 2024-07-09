@@ -18,8 +18,8 @@ module LabelMap = struct
     M.union (fun _key m1 m2 -> Some (Memory.widen m1 m2)) _lm1 _lm2
 
   let add_lub c ms lm = lub (M.singleton c ms) lm
-  let leq _ _ = failwith ""
-  let eq _ _ = failwith ""
+  let leq _ _ = failwith "leq @ opsk"
+  let eq _ _ = failwith "eq @ opsk"
   let le lm1 lm2 = leq lm1 lm2 && not (eq lm1 lm2)
 
   let res_label l lm =

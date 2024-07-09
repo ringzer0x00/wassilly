@@ -1,3 +1,0 @@
-(library
- (name memories)
- (libraries datastructures apronext wasm language))
