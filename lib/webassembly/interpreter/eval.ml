@@ -191,7 +191,7 @@ let rec step modul_ call sk cache p_ans : ans * Cache.t * SCG.t =
               ( MS.peek_n_operand (List.length _ti) ms,
                 MS.pop_n_operand (List.length _ti) ms )
             in
-            let _ms'' = MS.new_fun_ctx _ms' _ti in
+            let _ms'' = MS.new_fun_ctx _ms' _locs in
             let ms''' =
               List.fold_right2
                 (fun b v m -> MS.assign_var m Loc b v)

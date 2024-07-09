@@ -13,6 +13,15 @@ let load_mod fn =
   let bytes = read_whole_file fn in
   load fn bytes
 
+let unbound_input _size k =
+  match k with
+  | Memories.Frame.Bot -> failwith "unbound input failure"
+  | Memories.Frame.Def x ->
+      Array.make _size
+        (Memories.Operandstack.Expression
+           (Memories.Operandstack.const_expr x.var Apronext.Intervalext.top))
+      |> Array.to_list
+
 let analyze fn =
   let mod_ = load_mod fn in
   let startf, _ =
@@ -35,7 +44,19 @@ let analyze fn =
           ((i, startf), true)
           Eval.Stack.empty Eval.Cache.empty Eval.MA.bot_pa Eval.step
   in
-  let _ep_example =
+  let _b, _locs, _t =
     Eval.getfbody mod_ (Int32.to_int (List.hd _entrypoints).it)
   in
-  r_start
+  let v_init =
+    match r_start with
+    | Bot -> raise FailedInit
+    | Def d -> unbound_input 1 d.return
+  in
+  let call_ms =
+    match r_start with
+    | Bot -> raise FailedInit
+    | Def d -> Cflow.prep_call d.return v_init mod_ _locs _t.it
+  in
+  Eval.fixpoint mod_
+    ((call_ms, _b), true)
+    Eval.Stack.empty Eval.Cache.empty Eval.MA.bot_pa Eval.step

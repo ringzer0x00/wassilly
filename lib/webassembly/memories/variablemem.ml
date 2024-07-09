@@ -47,7 +47,9 @@ module VariableMem = struct
     let aux b ma =
       let var = M.find_opt b ma in
       match var with
-      | None -> failwith "assignment failed, cannot find key-var"
+      | None ->
+          Printf.printf "bindings len: %i" (List.length (M.bindings glob));
+          failwith "assignment failed, cannot find key-var"
       | Some var -> (ma, AD.assign_expr ad var exp)
     in
     match gl with
