@@ -20,8 +20,14 @@ let analyze fn =
     | None -> ([], [])
     | Some _st -> ( match Eval.getfbody mod_ 1 with a, b, _ -> (a, b))
   in
+  let _entrypoints =
+    List.filter_map
+      (fun (x : Wasm.Ast.export) ->
+        match x.it.edesc.it with FuncExport v -> Some v | _ -> None)
+      mod_.it.exports
+  in
   let i = Init.init mod_ in
-  let d' =
+  let r_start, _, _ =
     match i with
     | Bot -> raise FailedInit
     | _ ->
@@ -29,4 +35,7 @@ let analyze fn =
           ((i, startf), true)
           Eval.Stack.empty Eval.Cache.empty Eval.MA.bot_pa Eval.step
   in
-  d'
+  let _ep_example =
+    Eval.getfbody mod_ (Int32.to_int (List.hd _entrypoints).it)
+  in
+  r_start

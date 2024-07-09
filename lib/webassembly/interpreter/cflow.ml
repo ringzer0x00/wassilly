@@ -64,3 +64,58 @@ let func_answer (_k_to : res t) =
 
 let call_answer par ms_body =
   return { nat = ms_body; br = par.p_br; return = par.p_return }
+
+let prep_call _ms _vals _mod_ _locs _typ_idx_int =
+  let gettype (mod_ : Wasm.Ast.module_) idx =
+    let t = List.nth mod_.it.types idx in
+    t.it
+  in
+  let typ_ = gettype _mod_ (Int32.to_int _typ_idx_int) in
+  let _ti =
+    (*list * list*)
+    match typ_ with FuncType (_ti, _to) -> _ti
+  in
+  let bindings_input =
+    List.mapi
+      (fun i x : Memories.Variablemem.MapKey.t ->
+        {
+          i = Int32.of_int i;
+          t =
+            (match x with
+            | Wasm.Types.NumType t -> t
+            | _ -> failwith "call @ eval @ bindings_input");
+        })
+      _ti
+  in
+  let _ms'' = MS.new_fun_ctx _ms _ti in
+  let ms''' =
+    List.fold_right2
+      (fun b v m -> MS.assign_var m Loc b v)
+      bindings_input _vals _ms''
+  in
+  ms'''
+(*
+  let typ_ = gettype modul_ (Int32.to_int typ_idx.it) in
+  let _ti =
+    (*list * list*)
+    match typ_ with FuncType (_ti, _to) -> (_ti)
+  in
+  let bindings_input =
+    List.mapi
+      (fun i x : Memories.Variablemem.MapKey.t ->
+        {
+          i = Int32.of_int i;
+          t =
+            (match x with
+            | Wasm.Types.NumType t -> t
+            | _ -> failwith "call @ eval @ bindings_input");
+        })
+      _ti
+  in
+  let _ms'' = MS.new_fun_ctx _ms _ti in
+  let ms''' =
+    List.fold_right2
+      (fun b v m -> MS.assign_var m Loc b v)
+      bindings_input _vals _ms''
+  in
+  ms'''*)
