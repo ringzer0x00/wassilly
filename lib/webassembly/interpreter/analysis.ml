@@ -14,7 +14,19 @@ let load_mod fn =
   load fn bytes
 
 let analyze fn =
-  let i = Init.init (load_mod fn) in
-  match i with
-  | Bot -> raise FailedInit
-  | Def d -> Apronext.Abstractext.print Format.std_formatter d.var.ad
+  let mod_ = load_mod fn in
+  let startf, _ =
+    match mod_.it.start with
+    | None -> ([], [])
+    | Some _st -> ( match Eval.getfbody mod_ 1 with a, b, _ -> (a, b))
+  in
+  let i = Init.init mod_ in
+  let d' =
+    match i with
+    | Bot -> raise FailedInit
+    | _ ->
+        Eval.fixpoint mod_
+          ((i, startf), true)
+          Eval.Stack.empty Eval.Cache.empty Eval.MA.bot_pa Eval.step
+  in
+  d'
