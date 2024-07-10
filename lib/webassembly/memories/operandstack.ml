@@ -2,8 +2,10 @@ module SK = Datastructures.Liststack
 module VariableMem = Variablemem.VariableMem
 
 type aval = Apronext.Texprext.t (*this has to b*)
+type constr = Apronext.Tconsext.t (*this has to b*)
 
 type operand =
+  | BooleanExpression of constr
   | Expression of aval
   | LVarRef of VariableMem.binding
   | GVarRef of VariableMem.binding
@@ -31,6 +33,7 @@ let ref_to_apronvar op =
   | LVarRef i -> VariableMem.apronvar_of_binding i VariableMem.Loc
   | GVarRef i -> VariableMem.apronvar_of_binding i VariableMem.Glob
   | Expression _ -> failwith "ref to apronvar @ operandstack"
+  | BooleanExpression _ -> failwith "for now ok"
 
 let ref_of_binding b gl =
   match gl with VariableMem.Glob -> GVarRef b | VariableMem.Loc -> LVarRef b
@@ -40,12 +43,14 @@ let operand_to_expr (mem : varmemories) op =
   | Expression a -> a
   | LVarRef _ as r -> ref_to_apronvar r |> var_expr mem
   | GVarRef _ as r -> ref_to_apronvar r |> var_expr mem
+  | BooleanExpression _ -> failwith "for now ok\n"
 
 let concretize (mem : varmemories) op =
   match op with
   | Expression a -> Apronext.Abstractext.bound_texpr Apronext.Apol.man mem.ad a
   | LVarRef i -> VariableMem.lookup mem i VariableMem.Loc
   | GVarRef i -> VariableMem.lookup mem i VariableMem.Glob
+  | BooleanExpression _i -> failwith "for now ok"
 
 let concretize_in_exp (mem : varmemories) op =
   concretize mem op |> const_expr mem
@@ -81,6 +86,8 @@ let concretize_assignment (s : stack) (mem : varmemories) ref =
   | LVarRef _ | GVarRef _ ->
       let v_expr = concretize_in_exp mem ref in
       replace s ref (Expression v_expr)
+  | BooleanExpression _ ->
+      failwith "idk for now @ concretize ass @ operandstack"
 
 let concretize_ret (s : stack) (mem : varmemories) =
   let bs =
@@ -138,4 +145,8 @@ let binop s f =
   let res = f l r in
   (res, s)
 
-let return_ _f _to = failwith "return_ @ operandstack"
+let cmpop s f =
+  let operand, s = (peek_n 2 s, pop_n 2 s) in
+  let l, r = (List.nth operand 0, List.nth operand 1) in
+  let res = f l r in
+  (res, s)

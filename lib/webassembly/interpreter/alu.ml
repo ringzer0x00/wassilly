@@ -6,8 +6,8 @@ type ad = VM.aprondomain
 
 let int_unop (_u : Wasm.Ast.IntOp.unop) (_ : MS.t) = failwith "int unop @ alu"
 
-let int_relop (_u : Wasm.Ast.IntOp.relop) (_ : MS.t) =
-  failwith "int relop @ alu"
+let int_relop (u : Wasm.Ast.IntOp.relop) (ms : MS.t) =
+  match u with GeS -> Instructions.ge_s ms | _ -> failwith "not implemented"
 
 let int_binop (o : Wasm.Ast.IntOp.binop) (ms : MS.t) =
   match o with

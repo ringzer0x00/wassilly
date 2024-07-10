@@ -41,3 +41,8 @@ let sub_expr vm l r =
 let neg_expr vm o =
   let o_ex = operand_to_expr vm o in
   Expression (Apronext.Texprext.unary Apronext.Texprext.Neg o_ex)
+
+let ge_s_expr vm l r =
+  let l_ex = operand_to_expr vm l in
+  let r_ex = operand_to_expr vm r in
+  BooleanExpression (Apronext.Tconsext.geq l_ex r_ex)

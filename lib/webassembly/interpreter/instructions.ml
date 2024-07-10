@@ -76,3 +76,8 @@ let read prec v =
   prec >>= fun d ->
   let ops' = push (v, d.ops) in
   return { ops = ops'; var = d.var; mem = d.mem; tab = d.tab; lsk = d.lsk }
+
+let ge_s prec =
+  prec >>= fun d ->
+  let opsk' = binop d.ops (fun x y -> ge_s_expr d.var x y) |> push in
+  return { ops = opsk'; var = d.var; mem = d.mem; tab = d.tab; lsk = d.lsk }
