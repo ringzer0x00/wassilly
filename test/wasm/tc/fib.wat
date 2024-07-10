@@ -5,7 +5,7 @@
 
   local.get 0
   i32.const 2
-  i32.ge_s ;; [i]
+  i32.ge_s ;; [$0 >= 2]
   (if (result i32)
     (then
       local.get 0 

@@ -79,7 +79,7 @@ let rec step modul_ call sk cache p_ans : ans * Cache.t * SCG.t =
                 (*rewrite monadic*)
                 let () =
                   match ms with
-                  | Bot -> failwith ""
+                  | Bot -> failwith "lget bot"
                   | Def d ->
                       Printf.printf "LocalGel_bindings: %i"
                         (Memories.Variablemem.VariableMem.M.bindings d.var.loc

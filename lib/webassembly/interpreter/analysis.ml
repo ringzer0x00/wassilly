@@ -19,7 +19,7 @@ let unbound_input _size k =
   | Memories.Frame.Def x ->
       Array.make _size
         (Memories.Operandstack.Expression
-           (Memories.Operandstack.const_expr x.var Apronext.Intervalext.top))
+           (Memories.Operandstack.const_expr x.var (Apronext.Intervalext.top) ))
       |> Array.to_list
 
 let analyze fn =

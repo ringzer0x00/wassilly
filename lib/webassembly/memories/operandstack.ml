@@ -132,7 +132,7 @@ let jw_operand (mem1, o1) (mem2, o2) operation =
   if o1 = o2 then o1
   else
     Expression
-      (const_expr mem1 (operation (concretize mem1 o1) (concretize mem2 o2)))
+      (const_expr mem2 (operation (concretize mem1 o1) (concretize mem2 o2)))
 
 let join (m1, s1) (m2, s2) =
   (*two memories are needed, one for locals and one for globals*)
