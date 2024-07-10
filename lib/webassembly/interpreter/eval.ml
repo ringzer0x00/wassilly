@@ -211,6 +211,7 @@ let rec step modul_ call sk cache p_ans : ans * Cache.t * SCG.t =
                    Call"
             | Compare _r ->
                 (cmd_result (Ops.eval_relop _r ms) p_ans, cache, SCG.empty)
+            | Test t -> (cmd_result (Ops.eval_testop t ms) p_ans, cache, SCG.empty)
             | _ -> failwith "other commands"
           in
           let res2, cache'', scg_t =

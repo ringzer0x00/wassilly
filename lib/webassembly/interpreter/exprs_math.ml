@@ -51,3 +51,12 @@ let le_s_expr vm l r =
   let l_ex = operand_to_expr vm l in
   let r_ex = operand_to_expr vm r in
   BooleanExpression (Apronext.Tconsext.leq l_ex r_ex)
+
+let eq_expr vm l r =
+  let l_ex = operand_to_expr vm l in
+  let r_ex = operand_to_expr vm r in
+  BooleanExpression (Apronext.Tconsext.eq l_ex r_ex)
+
+let eqz_expr vm o =
+  let l_ex = operand_to_expr vm o in
+  BooleanExpression (Apronext.Tconsext.make l_ex Apronext.Tconsext.EQ)
