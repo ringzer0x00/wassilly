@@ -6,23 +6,32 @@ module LM = Fixpoint.Labelmap.LabelMap
 
 type abool = Datastructures.Abstractbit.t
 
-let intbool _exp _ms : abool = Top
-(*sat soving shenanigans.
-  is it zero, non-zero or can it be both?*)
+let intbool (_exp : Memories.Operandstack.operand) (_ms : MS.ms) : MS.t * MS.t =
+  (*Top*)
+  (*sat soving shenanigans.
+    is it zero, non-zero or can it be both?*)
+  let t, f = Memories.Operandstack.boole_filter _exp _ms.var in
+  let vm_t' : MS.VariableMem.t =
+    { loc = _ms.var.loc; glob = _ms.var.glob; ad = t }
+  in
+  let ms_t = MS.update_varmem vm_t' (Def _ms) in
+  let vm_f' : MS.VariableMem.t =
+    { loc = _ms.var.loc; glob = _ms.var.glob; ad = f }
+  in
+  let ms_f = MS.update_varmem vm_f' (Def _ms) in
+  match (Apronext.Apol.is_bottom t, Apronext.Apol.is_bottom f) with
+  | true, true -> (Bot, Bot)
+  | false, false -> (ms_t, ms_f)
+  | true, false -> (Bot, ms_f)
+  | false, true -> (ms_t, Bot)
 
 let cond ms =
-  let cond = MS.peek_operand ms in
+  let cond = MS.peek_operand ms |> List.hd in
   let ms' = MS.pop_operand ms in
   (cond, ms')
 
-let filter_cond c ms =
-  let eval = intbool c ms in
-  match eval with
-  (*branch_true, branch_false*)
-  | Top -> (ms, ms)
-  | One -> (ms, MS.bot)
-  | Zero -> (MS.bot, ms)
-  | Bot -> (MS.bot, MS.bot)
+let filter_cond c (ms : MS.t) : MS.t * MS.t =
+  match ms with Bot -> (Bot, Bot) | Def ms -> intbool c ms
 
 let ite_condition ms =
   let c, ms' = cond ms in

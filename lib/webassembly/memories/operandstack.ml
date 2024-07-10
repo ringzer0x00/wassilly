@@ -32,8 +32,9 @@ let ref_to_apronvar op =
   match op with
   | LVarRef i -> VariableMem.apronvar_of_binding i VariableMem.Loc
   | GVarRef i -> VariableMem.apronvar_of_binding i VariableMem.Glob
-  | Expression _ -> failwith "ref to apronvar @ operandstack"
-  | BooleanExpression _ -> failwith "for now ok"
+  | Expression _ -> failwith "ref to apronvar @ operandstack - expr case"
+  | BooleanExpression _ ->
+      failwith "ref to apronvar @ operandstack - bexpr case"
 
 let ref_of_binding b gl =
   match gl with VariableMem.Glob -> GVarRef b | VariableMem.Loc -> LVarRef b
@@ -46,6 +47,15 @@ let boole_as_int c (mem : varmemories) =
   | false, true -> Apronext.Intervalext.of_int 0 0
   | false, false -> Apronext.Intervalext.of_int 0 1
   | true, true -> failwith "wtf?????? @ operand_to_expr"
+
+let boole_filter o (mem : varmemories) =
+  match o with
+  | BooleanExpression c ->
+      let filter c =
+        Apronext.Abstractext.filter_tcons Apronext.Apol.man mem.ad c
+      in
+      (filter c, filter (Apronext.Tconsext.neg c))
+  | _ -> failwith "nope @ boole_as_ab"
 
 let operand_to_expr (mem : varmemories) op =
   match op with
@@ -106,8 +116,13 @@ let concretize_ret (s : stack) (mem : varmemories) =
 
 let ival_join i1 i2 : Apronext.Intervalext.t = Apronext.Intervalext.join i1 i2
 
-let ival_widen i1 i2 =
-  Apronext.Intervalext.join i1 i2 (*to be replaced with widening*)
+let ival_widen (smaller : Apron.Interval.t) (bigger : Apron.Interval.t) =
+  let (smaller_l, smaller_u), (bigger_l, bigger_u) =
+    ((smaller.inf, smaller.sup), (bigger.inf, bigger.sup))
+  in
+  let lower' = if bigger_l < smaller_l then Apron.Scalar.of_infty (-1) else bigger_l in
+  let upper' = if bigger_u > smaller_u then Apron.Scalar.of_infty 1 else bigger_u in
+  Apron.Interval.of_scalar lower' upper'
 
 let ival_leq = Apronext.Intervalext.is_leq
 let ival_eq = Apronext.Intervalext.equal
