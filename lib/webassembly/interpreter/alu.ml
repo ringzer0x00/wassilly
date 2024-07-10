@@ -6,6 +6,9 @@ type ad = VM.aprondomain
 
 let int_unop (_u : Wasm.Ast.IntOp.unop) (_ : MS.t) = failwith "int unop @ alu"
 
+let int_relop (_u : Wasm.Ast.IntOp.relop) (_ : MS.t) =
+  failwith "int relop @ alu"
+
 let int_binop (o : Wasm.Ast.IntOp.binop) (ms : MS.t) =
   match o with
   | Add -> Instructions.add ms
@@ -15,7 +18,11 @@ let int_binop (o : Wasm.Ast.IntOp.binop) (ms : MS.t) =
   | DivU -> failwith "divu @ binop @ alu"
   | _ -> failwith "int_binop @ alu other instr"
 
-let float_binop (_o : Wasm.Ast.FloatOp.binop) (_ms : MS.t) = failwith "float @ ali"
+let float_binop (_o : Wasm.Ast.FloatOp.binop) (_ms : MS.t) =
+  failwith "float @ ali"
 
 let float_unop (o : Wasm.Ast.FloatOp.unop) (ms : MS.t) =
   match o with Neg -> Instructions.neg ms | _ -> failwith "float @ alu"
+
+let float_relop (_o : Wasm.Ast.FloatOp.relop) (_ms : MS.t) =
+  failwith "float relop @ ali"

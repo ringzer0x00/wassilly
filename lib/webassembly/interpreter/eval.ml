@@ -98,9 +98,9 @@ let rec step modul_ call sk cache p_ans : ans * Cache.t * SCG.t =
                   cache,
                   SCG.empty )
             | Binary bop ->
-                (cmd_result (Binops.eval_binop bop ms) p_ans, cache, SCG.empty)
+                (cmd_result (Ops.eval_binop bop ms) p_ans, cache, SCG.empty)
             | Unary uop ->
-                (cmd_result (Unops.eval_unop uop ms) p_ans, cache, SCG.empty)
+                (cmd_result (Ops.eval_unop uop ms) p_ans, cache, SCG.empty)
             | Drop -> (cmd_result (MS.pop_operand ms) p_ans, cache, SCG.empty)
             | Nop -> (cmd_result ms p_ans, cache, SCG.empty)
             | Br i -> (
@@ -209,6 +209,7 @@ let rec step modul_ call sk cache p_ans : ans * Cache.t * SCG.t =
                 failwith
                   "callindirect, concretize ToS, filter by type, rewrite as \
                    Call"
+            | Compare _r -> failwith "cmpop"
             | _ -> failwith "other commands"
           in
           let res2, cache'', scg_t =
