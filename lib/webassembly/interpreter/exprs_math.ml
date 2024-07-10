@@ -46,3 +46,8 @@ let ge_s_expr vm l r =
   let l_ex = operand_to_expr vm l in
   let r_ex = operand_to_expr vm r in
   BooleanExpression (Apronext.Tconsext.geq l_ex r_ex)
+
+let le_s_expr vm l r =
+  let l_ex = operand_to_expr vm l in
+  let r_ex = operand_to_expr vm r in
+  BooleanExpression (Apronext.Tconsext.leq l_ex r_ex)

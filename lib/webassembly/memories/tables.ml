@@ -1,6 +1,6 @@
 type t = Table.t list
 
-let join _ _ = failwith "table failure"
-let widen _ _ = failwith "table failure"
-let leq _ _ = failwith "table failure"
-let eq _ _ = failwith "table failure"
+let join a _ = a
+let widen a _ = a
+let leq _ _ = Printf.printf "WARNING: NOT IMPLEMENTED LEQ @ TABLES"; true
+let eq _ _ = Printf.printf "WARNING: NOT IMPLEMENTED EQ @ TABLES"; true
