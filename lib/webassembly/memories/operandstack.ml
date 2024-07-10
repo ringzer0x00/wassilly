@@ -38,19 +38,28 @@ let ref_to_apronvar op =
 let ref_of_binding b gl =
   match gl with VariableMem.Glob -> GVarRef b | VariableMem.Loc -> LVarRef b
 
+let boole_as_int c (mem : varmemories) =
+  let sat c = Apronext.Abstractext.sat_tcons Apronext.Apol.man mem.ad c in
+  let sat_t, sat_f = (sat c, sat (Apronext.Tconsext.neg c)) in
+  match (sat_t, sat_f) with
+  | true, false -> Apronext.Intervalext.of_int 1 1
+  | false, true -> Apronext.Intervalext.of_int 0 0
+  | false, false -> Apronext.Intervalext.of_int 0 1
+  | true, true -> failwith "wtf?????? @ operand_to_expr"
+
 let operand_to_expr (mem : varmemories) op =
   match op with
   | Expression a -> a
   | LVarRef _ as r -> ref_to_apronvar r |> var_expr mem
   | GVarRef _ as r -> ref_to_apronvar r |> var_expr mem
-  | BooleanExpression _ -> failwith "for now ok\n"
+  | BooleanExpression constr -> const_expr mem (boole_as_int constr mem)
 
 let concretize (mem : varmemories) op =
   match op with
-  | Expression a -> Apronext.Abstractext.bound_texpr Apronext.Apol.man mem.ad a
+  | Expression e -> Apronext.Abstractext.bound_texpr Apronext.Apol.man mem.ad e
   | LVarRef i -> VariableMem.lookup mem i VariableMem.Loc
   | GVarRef i -> VariableMem.lookup mem i VariableMem.Glob
-  | BooleanExpression _i -> failwith "for now ok"
+  | BooleanExpression c -> boole_as_int c mem
 
 let concretize_in_exp (mem : varmemories) op =
   concretize mem op |> const_expr mem
