@@ -117,12 +117,18 @@ let concretize_ret (s : stack) (mem : varmemories) =
 let ival_join i1 i2 : Apronext.Intervalext.t = Apronext.Intervalext.join i1 i2
 
 let ival_widen (smaller : Apron.Interval.t) (bigger : Apron.Interval.t) =
-  let (smaller_l, smaller_u), (bigger_l, bigger_u) =
-    ((smaller.inf, smaller.sup), (bigger.inf, bigger.sup))
-  in
-  let lower' = if bigger_l < smaller_l then Apron.Scalar.of_infty (-1) else bigger_l in
-  let upper' = if bigger_u > smaller_u then Apron.Scalar.of_infty 1 else bigger_u in
-  Apron.Interval.of_scalar lower' upper'
+  if not (Apron.Interval.is_leq smaller bigger) then ival_join smaller bigger
+  else
+    let (smaller_l, smaller_u), (bigger_l, bigger_u) =
+      ((smaller.inf, smaller.sup), (bigger.inf, bigger.sup))
+    in
+    let lower' =
+      if bigger_l < smaller_l then Apron.Scalar.of_infty (-1) else bigger_l
+    in
+    let upper' =
+      if bigger_u > smaller_u then Apron.Scalar.of_infty 1 else bigger_u
+    in
+    Apron.Interval.of_scalar lower' upper'
 
 let ival_leq = Apronext.Intervalext.is_leq
 let ival_eq = Apronext.Intervalext.equal
@@ -131,8 +137,17 @@ let jw_operand (mem1, o1) (mem2, o2) operation =
   (*two memories are needed, one for locals and one for globals*)
   if o1 = o2 then o1
   else
+    let a = (concretize mem1 o1) in
+    let b = (concretize mem2 o2) in
+    Printf.printf "Join operands:";
+    Apron.Interval.print Format.std_formatter a;
+    Printf.printf "\n";
+    
+    Apron.Interval.print Format.std_formatter b;
+    Printf.printf "\n";
+
     Expression
-      (const_expr mem2 (operation (concretize mem1 o1) (concretize mem2 o2)))
+      (const_expr mem2 (operation a b))
 
 let join (m1, s1) (m2, s2) =
   (*two memories are needed, one for locals and one for globals*)
@@ -165,12 +180,12 @@ let unop s f =
 
 let binop s f =
   let operand, s = (peek_n 2 s, pop_n 2 s) in
-  let l, r = (List.nth operand 0, List.nth operand 1) in
+  let l, r = (List.nth operand 1, List.nth operand 0) in
   let res = f l r in
   (res, s)
 
 let cmpop s f =
   let operand, s = (peek_n 2 s, pop_n 2 s) in
-  let l, r = (List.nth operand 0, List.nth operand 1) in
+  let l, r = (List.nth operand 1, List.nth operand 0) in
   let res = f l r in
   (res, s)

@@ -19,7 +19,7 @@ let unbound_input _size k =
   | Memories.Frame.Def x ->
       Array.make _size
         (Memories.Operandstack.Expression
-           (Memories.Operandstack.const_expr x.var (Apronext.Intervalext.top) ))
+           (Memories.Operandstack.const_expr x.var Apronext.Intervalext.top))
       |> Array.to_list
 
 let analyze fn =
@@ -57,6 +57,9 @@ let analyze fn =
     | Bot -> raise FailedInit
     | Def d -> Cflow.prep_call d.return v_init mod_ _locs _t.it
   in
-  Eval.fixpoint mod_
-    ((call_ms, _b), true)
-    Eval.Stack.empty Eval.Cache.empty Eval.MA.bot_pa Eval.step
+  let ar, _, _ =
+    Eval.fixpoint mod_
+      ((call_ms, _b), true)
+      Eval.Stack.empty Eval.Cache.empty Eval.MA.bot_pa Eval.step
+  in
+  ar

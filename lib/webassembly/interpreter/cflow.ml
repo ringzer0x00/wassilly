@@ -20,10 +20,10 @@ let intbool (_exp : Memories.Operandstack.operand) (_ms : MS.ms) : MS.t * MS.t =
   in
   let ms_f = MS.update_varmem vm_f' (Def _ms) in
   match (Apronext.Apol.is_bottom t, Apronext.Apol.is_bottom f) with
-  | true, true -> (Bot, Bot)
-  | false, false -> (ms_t, ms_f)
-  | true, false -> (Bot, ms_f)
-  | false, true -> (ms_t, Bot)
+  | true, true -> Printf.printf "BOT BOT @ intbool\n"; (Bot, Bot)
+  | false, false -> Printf.printf "Def Def @ intbool\n"; (ms_t, ms_f)
+  | true, false -> Printf.printf "BOT Def @ intbool\n"; (Bot, ms_f)
+  | false, true -> Printf.printf "Def BOT @ intbool\n"; (ms_t, Bot)
 
 let cond ms =
   let cond = MS.peek_operand ms |> List.hd in
@@ -104,3 +104,12 @@ let prep_call ms vals mod_ locs typ_idx =
       bindings_input vals ms'
   in
   ms'''
+
+let test_lub_pans a pres =
+  a >>= fun r ->
+  return
+    {
+      nat = r.nat;
+      br = LM.lub r.br pres.p_br;
+      return = MS.join r.return pres.p_return;
+    }

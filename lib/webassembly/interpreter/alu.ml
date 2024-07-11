@@ -7,15 +7,19 @@ type ad = VM.aprondomain
 let int_unop (_u : Wasm.Ast.IntOp.unop) (_ : MS.t) = failwith "int unop @ alu"
 
 let int_testop (_u : Wasm.Ast.IntOp.testop) (ms : MS.t) =
-  match _u with
-  | Eqz -> Instructions.eqz ms
+  match _u with Eqz -> Instructions.eqz ms
 
 let int_relop (u : Wasm.Ast.IntOp.relop) (ms : MS.t) =
   match u with
   | GeS -> Instructions.ge_s ms
+  | GtS | GtU -> Instructions.gt_s ms
   | LeS -> Instructions.le_s ms
   | Eq -> Instructions.eq ms
-  | _ -> failwith "not implemented"
+  | GeU -> failwith "not implemented, GeU"
+  | LeU -> failwith "not implemented, LeU"
+  | LtS -> failwith "not implemented LtS"
+  | LtU -> failwith "not implemented LtU"
+  | Ne -> failwith "not implemented Ne"
 
 let int_binop (o : Wasm.Ast.IntOp.binop) (ms : MS.t) =
   match o with

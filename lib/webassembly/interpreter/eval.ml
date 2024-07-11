@@ -113,7 +113,7 @@ let rec step modul_ call sk cache p_ans : ans * Cache.t * SCG.t =
                     ( Def
                         {
                           nat = MS.Bot;
-                          br = LM.add_raw b.cmd ms' p_ans.p_br;
+                          br = LM.add_lub b.cmd ms' p_ans.p_br;
                           return = p_ans.p_return;
                         },
                       cache,
@@ -162,15 +162,32 @@ let rec step modul_ call sk cache p_ans : ans * Cache.t * SCG.t =
                 in
                 let ms' = Cflow.enter_label l ms in
                 let ms_t, ms_f = Cflow.ite_condition ms' in
+                let print_dom_ms (ms : MS.t) =
+                  match ms with
+                  | Def _d ->
+                      Apron.Abstract1.print Format.std_formatter _d.var.ad
+                  | Bot -> Printf.printf "Bot"
+                in
+                let print_dom_ans (a : Answer.res t) =
+                  match a with
+                  | Bot -> Printf.printf "Bot"
+                  | Def d -> print_dom_ms d.nat
+                in
+                Printf.printf "Doms for MS_t, MS_f";
+                print_dom_ms ms_t;
+                print_dom_ms ms_f;
                 let a_true, c', _scgt =
                   fixpoint modul_ ((ms_t, _then), false) sk cache p_ans step
                 in
                 let a_true = Cflow.block_result a_true [ c1 ] in
+                print_dom_ans a_true;
                 let a_false, c'', _scgf =
                   fixpoint modul_ ((ms_f, _else), false) sk c' p_ans step
                 in
                 let a_false = Cflow.block_result a_false [ c1 ] in
+                print_dom_ans a_false;
                 let a, scg = (MA.lub a_true a_false, SCG.union _scgt _scgf) in
+                let a = Cflow.test_lub_pans a p_ans in
                 (a, c'', scg)
             | BrIf _ -> failwith "weird ass instruction"
             | Return ->
@@ -211,7 +228,8 @@ let rec step modul_ call sk cache p_ans : ans * Cache.t * SCG.t =
                    Call"
             | Compare _r ->
                 (cmd_result (Ops.eval_relop _r ms) p_ans, cache, SCG.empty)
-            | Test t -> (cmd_result (Ops.eval_testop t ms) p_ans, cache, SCG.empty)
+            | Test t ->
+                (cmd_result (Ops.eval_testop t ms) p_ans, cache, SCG.empty)
             | _ -> failwith "other commands"
           in
           let res2, cache'', scg_t =

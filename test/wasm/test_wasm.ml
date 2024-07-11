@@ -4,12 +4,18 @@ let destroy_monad = function Bot -> failwith "bot @ destroymonad" | Def d -> d
 let p path = Interpreter.Analysis.analyze path
 (*"./tc/fib.wasm"*)
 
-let fib, _, _ = p "./tc/fibif.wasm"
+let fib = p "./tc/fibif.wasm"
 
 let fr =
   match (destroy_monad fib).return with
   | Memories.Frame.Bot -> failwith "bot @ result"
   | Def ms -> ms
 
-let ops = match List.hd fr.ops with Expression e -> e | LVarRef _ -> failwith "lvref" | _ -> failwith "bot @ ops"
+let ops =
+  match List.hd fr.ops with
+  | Expression e -> e
+  | LVarRef _ -> failwith "lvref"
+  | _ -> failwith "not expr not lvar @ ops"
+
+let length = List.length fr.ops
 let r = Apronext.Texprext.print Format.std_formatter ops

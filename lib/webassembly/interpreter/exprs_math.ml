@@ -11,7 +11,10 @@ let const (n : Wasm.Ast.num) (vm : Memories.Operandstack.varmemories) =
         Apronext.Intervalext.of_float c c
     | I32 c ->
         let c = Wasm.I32.to_int_s c in
-        Apronext.Intervalext.of_int c c
+        Printf.printf "\n\nConst: %i\n" c;
+        let interval = Apronext.Intervalext.of_int c c in
+        Apronext.Intervalext.print Format.std_formatter interval;
+        interval
     | I64 c ->
         let c = Wasm.I64.to_int_s c in
         Apronext.Intervalext.of_int c c
@@ -46,6 +49,11 @@ let ge_s_expr vm l r =
   let l_ex = operand_to_expr vm l in
   let r_ex = operand_to_expr vm r in
   BooleanExpression (Apronext.Tconsext.geq (*~typ:Apron.Texpr0.Int*) l_ex r_ex)
+
+let gt_s_expr vm l r =
+  let l_ex = operand_to_expr vm l in
+  let r_ex = operand_to_expr vm r in
+  BooleanExpression (Apronext.Tconsext.gt (*~typ:Apron.Texpr0.Int*) l_ex r_ex)
 
 let le_s_expr vm l r =
   let l_ex = operand_to_expr vm l in

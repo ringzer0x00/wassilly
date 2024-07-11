@@ -68,7 +68,9 @@ let bind_vars b gl (k : t) =
   k >>= fun a -> update_varmem (VariableMem.bind a.var b gl) k
 
 let is_lsk_empty k =
-  match k with Bot -> failwith "lsk emptu @ frame" | Def kx -> Labelstack.is_empty kx.lsk
+  match k with
+  | Bot -> failwith "lsk emptu @ frame"
+  | Def kx -> Labelstack.is_empty kx.lsk
 
 let assign_var k gl b e =
   k >>= fun a ->
@@ -93,7 +95,6 @@ let get_var_binding k gl idx =
 (* abstract domain operations *)
 let join (k1 : t) (k2 : t) =
   match (k1, k2) with
-  | Bot, Bot -> Bot
   | Bot, _ -> k2
   | _, Bot -> k1
   | Def k1, Def k2 ->
@@ -107,7 +108,7 @@ let widen (k1 : t) (k2 : t) =
   match (k1, k2) with
   | Bot, Bot -> Bot
   | Bot, _ -> k2
-  | _, Bot -> k1
+  | _, Bot -> failwith "bottom widening"
   | Def k1, Def k2 ->
       let ops' = Operandstack.widen (k1.var, k1.ops) (k2.var, k2.ops) in
       let var' = VariableMem.widen k1.var k2.var in
