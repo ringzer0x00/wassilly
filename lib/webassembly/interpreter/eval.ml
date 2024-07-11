@@ -3,7 +3,6 @@ module MS = Memories.Frame
 module LM = Fixpoint.Labelmap.LabelMap
 module MA = Fixpoint.Answer
 
-type ans = MA.res Datastructures.Monad.DefBot.t
 type module_ = Wasm.Ast.module_ (*or ' (?)*)
 type p = Language.Command.Command.t
 
@@ -44,7 +43,7 @@ let fixpoint _module (call, ifb) stack cache pres stepf =
           | false -> Iterate.iterate _module call stack cache pres stepf))
 
 (*eval should not be called recursively*)
-let rec step modul_ call sk cache p_ans : ans * Cache.t * SCG.t =
+let rec step modul_ call sk cache p_ans =
   let (ms : MS.t), (p : p) = call in
   match ms with
   | Bot -> (Bot, cache, SCG.empty)
@@ -56,7 +55,7 @@ let rec step modul_ call sk cache p_ans : ans * Cache.t * SCG.t =
             cache,
             SCG.empty )
       | c1 :: c2 ->
-          let (res1 : ans), cache', scg_h =
+          let res1, cache', scg_h =
             (*as opposed to ms this should return a vector of values which is then appended to the ms's operand stack*)
             match c1.it with
             | LocalSet var ->
@@ -121,6 +120,8 @@ let rec step modul_ call sk cache p_ans : ans * Cache.t * SCG.t =
                 | Some (LoopLabel l) ->
                     fixpoint modul_ ((ms', l.brcont), true) sk cache p_ans step
                 | None ->
+                    (*NOTE: handling this case as a standard block and the None case throwing
+                      an exception will make much easier to retrieve in which function we're in*)
                     (*return-like case*)
                     ( Def
                         {
@@ -194,27 +195,27 @@ let rec step modul_ call sk cache p_ans : ans * Cache.t * SCG.t =
                 failwith
                   "write on res.return, set nat to bottom, empty label stack"
             | Call _i ->
-                (*## locs is the list of locals declared in the scope of this function,
-                  params occupy the first n indices in the input type  (fuzzy words, but
-                  if the input type is i32, i32, the first two locals will be the parameters.)
-                    params :  (func (param i32) (param f32) (local f64)
-                                local.get 0
-                                local.get 1
-                                local.get 2)
-                *)
                 let funbody, locs, typ_idx =
                   getfbody modul_ (Int32.to_int _i.it)
                 in
                 let typ_ = gettype modul_ (Int32.to_int typ_idx.it) in
                 let _ti, _to =
-                  (*list * list*)
                   match typ_ with FuncType (_ti, _to) -> (_ti, _to)
+                in
+                let l =
+                  Memories.Labelstack.block
+                    {
+                      natcont = c2;
+                      brcont = c2;
+                      typ = Wasm.Ast.VarBlockType typ_idx;
+                      cmd = [ c1 ];
+                    }
                 in
                 let _vals, ms' =
                   ( MS.peek_n_operand (List.length _ti) ms,
                     MS.pop_n_operand (List.length _ti) ms )
                 in
-                let ms'' = Cflow.prep_call ms' _vals modul_ locs typ_idx.it in
+                let ms'' = Cflow.prep_call ms' _vals modul_ locs typ_idx.it l in
                 let ms''', c', g =
                   fixpoint modul_ ((ms'', funbody), true) sk cache p_ans step
                 in
