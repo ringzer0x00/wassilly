@@ -138,10 +138,10 @@ let le (k1 : t) (k2 : t) = leq k1 k2 && not (eq k1 k2)
 let filter _ctx _c = failwith "filter not implemented"
 (*Variablememories.filter_loc ms.var c*)
 
-let new_fun_ctx k locs flab =
+let new_fun_ctx k locs =
   k >>= fun a ->
   let var' = VariableMem.new_ a.var locs in
-  update_varmem var' k |> update_operandstack [] |> update_labelstack flab
+  update_varmem var' k |> update_operandstack [] |> update_labelstack []
 
 let func_res _k_to _k_from tp =
   _k_to >>= fun to_ ->

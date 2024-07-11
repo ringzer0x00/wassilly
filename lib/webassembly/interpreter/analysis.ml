@@ -54,15 +54,10 @@ let analyze fn =
     | Bot -> raise FailedInit
     | Def d -> unbound_input 1 d.return
   in
-  let l_start = Wasm.Ast.ValBlockType None in
-  let l =
-    Memories.Labelstack.block
-      { natcont = []; brcont = []; typ = l_start; cmd = _b }
-  in
   let call_ms =
     match r_start with
     | Bot -> raise FailedInit
-    | Def d -> Cflow.prep_call d.return v_init mod_ _locs _t.it l
+    | Def d -> Cflow.prep_call d.return v_init mod_ _locs _t.it
   in
   let ar, _, _ =
     Eval.fixpoint mod_
