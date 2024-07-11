@@ -2,7 +2,7 @@ open Memories.Frame
 open Memories.Operandstack
 module LS = Memories.Labelstack
 open Exprs_math
-open Datastructures.Monad
+open Datastructures.Monad.DefBot
 (*{
     ops : Memories.Operandstack.t;
     var : Memories.Variablememory.t;

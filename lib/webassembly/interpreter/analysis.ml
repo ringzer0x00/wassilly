@@ -1,6 +1,6 @@
 exception FailedInit
 
-open Datastructures.Monad
+open Datastructures.Monad.DefBot
 
 let load name bs = Wasm.Decode.decode name bs
 

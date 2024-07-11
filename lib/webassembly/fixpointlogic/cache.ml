@@ -6,7 +6,7 @@ module Cache = struct
   module M = Map.Make (Call.Call)
 
   type stability = Stable | Unstable
-  type t = (stability * Result.res Datastructures.Monad.t) M.t
+  type t = (stability * Result.res Datastructures.Monad.DefBot.t) M.t
 
   let empty : t = M.empty
   let call_in_cache k m = M.find_opt k m

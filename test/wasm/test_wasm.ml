@@ -1,4 +1,4 @@
-open Datastructures.Monad
+open Datastructures.Monad.DefBot
 
 let destroy_monad = function Bot -> failwith "bot @ destroymonad" | Def d -> d
 let p path = Interpreter.Analysis.analyze path

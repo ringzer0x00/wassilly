@@ -1,6 +1,6 @@
 module MS = Memories.Frame
 module LM = Labelmap.LabelMap
-open Datastructures.Monad
+open Datastructures.Monad.DefBot
 
 (*jmp map label(corpo) -> MS*)
 type partial_answer = { p_br : LM.t; p_return : MS.t }

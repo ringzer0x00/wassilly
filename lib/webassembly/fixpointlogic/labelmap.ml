@@ -1,6 +1,6 @@
 module Command = Language.Command.Command
 module Memory = Memories.Frame
-open Datastructures.Monad
+open Datastructures.Monad.DefBot
 
 module LabelMap = struct
   module M = Map.Make (Command)

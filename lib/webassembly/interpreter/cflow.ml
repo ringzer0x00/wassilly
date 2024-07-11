@@ -1,4 +1,4 @@
-open Datastructures.Monad
+open Datastructures.Monad.DefBot
 open Fixpoint.Answer
 module MS = Memories.Frame
 module SCG = Fixpoint.Scg

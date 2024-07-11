@@ -1,6 +1,6 @@
 module SK = Datastructures.Liststack
 module VariableMem = Variablemem.VariableMem
-open Datastructures.Monad
+open Datastructures.Monad.DefBot
 
 type cont (*probably a program, a wasm instr sequence*)
 

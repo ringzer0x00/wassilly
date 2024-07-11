@@ -1,9 +1,9 @@
-open Datastructures.Monad
+open Datastructures.Monad.DefBot
 module MS = Memories.Frame
 module LM = Fixpoint.Labelmap.LabelMap
 module MA = Fixpoint.Answer
 
-type ans = MA.res Datastructures.Monad.t
+type ans = MA.res Datastructures.Monad.DefBot.t
 type module_ = Wasm.Ast.module_ (*or ' (?)*)
 type p = Language.Command.Command.t
 
