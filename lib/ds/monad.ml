@@ -6,3 +6,8 @@ let ( >>= ) = bind
 let compose f g x = f x >>= fun y -> g y
 let ( >=> ) = compose
 let map x f = x >>= fun d -> f d
+
+let bind_failure x op =
+  match x with Bot -> failwith "bind_failure" | Def a -> op a
+
+let ( >>=? ) = bind_failure

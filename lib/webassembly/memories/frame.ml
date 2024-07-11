@@ -1,5 +1,6 @@
 module SK = Datastructures.Liststack
 module VariableMem = Variablemem.VariableMem
+open Datastructures.Monad
 
 type cont (*probably a program, a wasm instr sequence*)
 
@@ -11,13 +12,9 @@ type ms = {
   lsk : Labelstack.t;
 }
 
-type t = Def of ms | Bot
+type 'a tt = 'a t
+type t = ms tt
 
-let return x = Def x
-let bind x op = match x with Bot -> Bot | Def a -> op a
-let ( >>= ) = bind
-let bind_peek x op = match x with Bot -> failwith "bindpeek" | Def a -> op a
-let ( >== ) = bind_peek
 let bot = Bot
 let peek = SK.peek
 let peek_n = SK.peek_n
@@ -52,13 +49,13 @@ let pop_operand k : t = k >>= fun a -> update_operandstack (a.ops |> pop) k
 let pop_n_operand n k : t =
   k >>= fun a -> update_operandstack (a.ops |> pop_n n) k
 
-let pop_n_labels k n = k >== fun a -> update_labelstack (a.lsk |> pop_n n) k
+let pop_n_labels k n = k >>=? fun a -> update_labelstack (a.lsk |> pop_n n) k
 
 (* peek functions *)
-let peek_n_operand n k = k >== fun a -> a.ops |> peek_n n
+let peek_n_operand n k = k >>=? fun a -> a.ops |> peek_n n
 let peek_operand k = peek_n_operand 1 k
 let peek_binop k = peek_n_operand 2 k
-let peek_nth_label k n = k >== fun a -> a.lsk |> peek_nth_label n
+let peek_nth_label k n = k >>=? fun a -> a.lsk |> peek_nth_label n
 
 (* push functions *)
 let push_operand x k = k >>= fun a -> update_operandstack (x @ a.ops) k

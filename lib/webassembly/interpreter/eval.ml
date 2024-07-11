@@ -112,7 +112,7 @@ let rec step modul_ call sk cache p_ans : ans * Cache.t * SCG.t =
                 | Some (BlockLabel b) ->
                     ( Def
                         {
-                          nat = MS.Bot;
+                          nat = Bot;
                           br = LM.add_lub b.cmd ms' p_ans.p_br;
                           return = p_ans.p_return;
                         },
@@ -124,7 +124,7 @@ let rec step modul_ call sk cache p_ans : ans * Cache.t * SCG.t =
                     (*return-like case*)
                     ( Def
                         {
-                          nat = MS.Bot;
+                          nat = Bot;
                           br = p_ans.p_br;
                           return = MS.join p_ans.p_return ms';
                         },

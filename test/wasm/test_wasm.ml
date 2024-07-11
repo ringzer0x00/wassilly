@@ -4,11 +4,11 @@ let destroy_monad = function Bot -> failwith "bot @ destroymonad" | Def d -> d
 let p path = Interpreter.Analysis.analyze path
 (*"./tc/fib.wasm"*)
 
-let fib = p "./tc/fibif.wasm"
+let fib = p "./tc/if.wasm"
 
 let fr =
   match (destroy_monad fib).return with
-  | Memories.Frame.Bot -> failwith "bot @ result"
+  | Bot -> failwith "bot @ result"
   | Def ms -> ms
 
 let ops =

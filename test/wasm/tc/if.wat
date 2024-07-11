@@ -7,7 +7,7 @@
   i32.gt_s ;; [$0 >= 2]
   (if (result i32)
     (then
-      i32.const 1
+      i32.const 3
     )
     (else
     local.get 0

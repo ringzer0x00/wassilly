@@ -1,5 +1,7 @@
 exception FailedInit
 
+open Datastructures.Monad
+
 let load name bs = Wasm.Decode.decode name bs
 
 let read_whole_file filename =
@@ -13,10 +15,10 @@ let load_mod fn =
   let bytes = read_whole_file fn in
   load fn bytes
 
-let unbound_input _size k =
+let unbound_input _size (k : Memories.Frame.t) =
   match k with
-  | Memories.Frame.Bot -> failwith "unbound input failure"
-  | Memories.Frame.Def x ->
+  | Bot -> failwith "unbound input failure"
+  | Def x ->
       Array.make _size
         (Memories.Operandstack.Expression
            (Memories.Operandstack.const_expr x.var Apronext.Intervalext.top))

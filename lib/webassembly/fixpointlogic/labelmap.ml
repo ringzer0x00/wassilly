@@ -1,5 +1,6 @@
 module Command = Language.Command.Command
 module Memory = Memories.Frame
+open Datastructures.Monad
 
 module LabelMap = struct
   module M = Map.Make (Command)
@@ -24,7 +25,7 @@ module LabelMap = struct
 
   let res_label l lm =
     let r = M.find_opt l lm in
-    match r with None -> Memory.Bot | Some r -> r
+    match r with None -> Bot | Some r -> r
 
   let remove = M.remove
 end
