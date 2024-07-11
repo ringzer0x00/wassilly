@@ -104,28 +104,3 @@ let prep_call ms vals mod_ locs typ_idx =
       bindings_input vals ms'
   in
   ms'''
-(*
-  let typ_ = gettype modul_ (Int32.to_int typ_idx.it) in
-  let _ti =
-    (*list * list*)
-    match typ_ with FuncType (_ti, _to) -> (_ti)
-  in
-  let bindings_input =
-    List.mapi
-      (fun i x : Memories.Variablemem.MapKey.t ->
-        {
-          i = Int32.of_int i;
-          t =
-            (match x with
-            | Wasm.Types.NumType t -> t
-            | _ -> failwith "call @ eval @ bindings_input");
-        })
-      _ti
-  in
-  let _ms'' = MS.new_fun_ctx _ms _ti in
-  let ms''' =
-    List.fold_right2
-      (fun b v m -> MS.assign_var m Loc b v)
-      bindings_input _vals _ms''
-  in
-  ms'''*)

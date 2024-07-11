@@ -11,5 +11,5 @@ let fr =
   | Memories.Frame.Bot -> failwith "bot @ result"
   | Def ms -> ms
 
-let ops = match List.hd fr.ops with Expression e -> e | _ -> failwith "bot @ ops"
+let ops = match List.hd fr.ops with Expression e -> e | LVarRef _ -> failwith "lvref" | _ -> failwith "bot @ ops"
 let r = Apronext.Texprext.print Format.std_formatter ops
