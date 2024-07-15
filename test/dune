@@ -1,6 +1,6 @@
 (test
  (name test_chaotic_implicitgraph)
- (modes exe)
+ (modes exe byte)
  (libraries
   segalang_test
   test_monolith

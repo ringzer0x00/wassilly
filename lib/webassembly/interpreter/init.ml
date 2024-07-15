@@ -53,7 +53,9 @@ let init_globals (mod_ : Wasm.Ast.module_) (s : Memories.Frame.t) =
         let s' = Memories.Frame.bind_vars binding Glob s in
         let r, _, _ = eval gl.it.ginit.it s' in
         (*do other stuff*)
-        let r_nat = match r with Def d -> d.return | Bot -> failwith "diobo" in
+        let r_nat =
+          match r with Def d -> d.return | Bot -> failwith "diobo"
+        in
         let exp = Memories.Frame.peek_operand r_nat |> List.hd in
         let nat = Memories.Frame.assign_var s' Glob binding exp in
         aux t nat

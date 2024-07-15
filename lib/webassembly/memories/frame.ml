@@ -143,16 +143,27 @@ let new_fun_ctx k locs =
   let var' = VariableMem.new_ a.var locs in
   update_varmem var' k |> update_operandstack [] |> update_labelstack []
 
-let func_res _k_to _k_from tp =
-  _k_to >>= fun to_ ->
+let func_res _k_from _k_to tp =
+  Printf.printf "func_result\n\n";
   _k_from >>= fun from ->
+  _k_to >>= fun to_ ->
+  Printf.printf "==================== stack to:\n";
+  Operandstack.print_stack to_.ops;
+  Printf.printf "====================  stack from:\n";
+  Operandstack.print_stack from.ops;
+  Printf.printf "====================\n";
+
   let _to_sk = Operandstack.concretize_ret to_.ops to_.var in
+  Printf.printf "==================== stack to':\n";
+  Operandstack.print_stack _to_sk;
   let _peeked_conc =
     List.map
       (fun x ->
         Operandstack.Expression (Operandstack.concretize_in_exp from.var x))
       (peek_n_operand tp _k_from)
   in
+  Printf.printf "==================== stack from':\n";
+  Operandstack.print_stack _peeked_conc;
   let _sk_to = _peeked_conc @ _to_sk in
   let _vmem' = VariableMem.return_ from.var to_.var in
   return

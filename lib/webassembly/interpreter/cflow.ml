@@ -69,7 +69,7 @@ let seq_answer r1 r2 =
 
 let func_answer (_k_to : res t) =
   (*unsure about this, maybe i need the natural cont too?*)
-  match _k_to with Def to_ -> to_.return | Bot -> MS.bot
+  match _k_to with Def to_ -> to_.return | Bot -> Bot
 
 let call_answer par ms_body =
   return { nat = ms_body; br = par.p_br; return = par.p_return }
@@ -98,12 +98,12 @@ let prep_call ms vals mod_ locs typ_idx =
   in
 
   let ms' = MS.new_fun_ctx ms (_ti @ locs) in
-  let ms''' =
+  let ms'' =
     List.fold_right2
       (fun b v m -> MS.assign_var m Loc b v)
       bindings_input vals ms'
   in
-  ms'''
+  ms''
 
 let test_lub_pans a pres =
   a >>= fun r ->

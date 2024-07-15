@@ -34,7 +34,13 @@ let divs_expr vm l r =
 let add_expr vm l r =
   let l_ex = operand_to_expr vm l in
   let r_ex = operand_to_expr vm r in
-  Expression (Apronext.Texprext.binary Apronext.Texprext.Add l_ex r_ex)
+  let ex = Apronext.Texprext.binary Apronext.Texprext.Add l_ex r_ex in
+  Printf.printf "Expression:\n";
+  Apronext.Texprext.print_expr Format.std_formatter
+    (Apronext.Texprext.to_expr ex);
+  Printf.printf "\n";
+
+  Expression ex
 
 let sub_expr vm l r =
   let l_ex = operand_to_expr vm l in

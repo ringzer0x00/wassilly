@@ -1,34 +1,21 @@
-open Segalang
-open Command
+open Datastructures.Monad.DefBot
 
-let body : Language.t =
-  [ Language.Block (1, [ Language.Val 1l; Language.Br 0 ]) ]
+let destroy_monad = function Bot -> failwith "bot @ destroymonad" | Def d -> d
+let p path = Interpreter.Analysis.analyze path
+(*"./tc/fib.wasm"*)
 
-let funs = Funcs.add "silly" ([], body) Funcs.empty
-let call = (Memory.empty, body)
-let output = Apron.Interval.of_int 1 1
-let pres : Eval.partial_result = { br = Labelmap.empty; return = Memory.Bot }
+let fib = p "/home/ringzero/gitrepos/modular_chaotic_implicit_apron/test/wasm/tc/fib.wasm"
 
-let result, _, _ =
-  Eval.fixpoint funs (call, true) Stack.empty Cache.empty pres Eval.eval
+let fr =
+  match (destroy_monad fib).return with
+  | Bot -> failwith "bot @ result"
+  | Def ms -> ms
 
-let bind_result x f = match x with Result.Bot -> failwith "BotRes" | Result.Def o -> f o
-let ( >>= ) = bind_result
-let bind_mem x f = match x with Memory.Bot -> failwith "BotMem" | Memory.Def o -> f o
-let ( >>=^ ) = bind_mem
+let ops =
+  match List.hd fr.ops with
+  | Expression e -> e
+  | LVarRef _ -> failwith "lvref"
+  | _ -> failwith "not expr not lvar @ ops"
 
-let _ =
-  Printf.printf "MIAOOOOOOOOOOOO";
-  result >>= fun d ->
-  d.nat >>=^ fun m ->
-  match m.opsk with
-  | [] -> Printf.printf "MIAOOOOOOOOOOOO vuotooooooo"; false
-  | _h :: [] ->
-      Printf.printf "MIAOOOOOOOOOOOO Res:";
-      Apronext.Intervalext.print Format.std_formatter _h;
-      Printf.printf "MIAOOOOOOOOOOOO finitooo";
-      Apronext.Intervalext.equal _h output
-  | _h :: _ ->
-      Apronext.Intervalext.print Format.std_formatter _h;
-      Printf.printf "MIAOOOOOOOOOOOO altroooo";
-      false
+let _length = List.length fr.ops
+let _ = Apronext.Texprext.print Format.std_formatter ops

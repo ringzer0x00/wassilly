@@ -9,10 +9,10 @@ module MapKey = struct
 end
 
 let string_of_nt = function
-  | WT.I32Type -> "int32"
-  | WT.I64Type -> "int64"
-  | WT.F32Type -> "float32"
-  | WT.F64Type -> "float64"
+  | WT.I32Type -> "int32_"
+  | WT.I64Type -> "int64_"
+  | WT.F32Type -> "float32_"
+  | WT.F64Type -> "float64_"
 
 module VariableMem = struct
   module M = Map.Make (MapKey)
@@ -33,8 +33,8 @@ module VariableMem = struct
 
   let find_in_map vm k gl =
     match gl with
-    | Glob -> M.filter (fun x _ -> x.i = k) vm.glob
-    | Loc -> M.filter (fun x _ -> x.i = k) vm.loc
+    | Glob -> Printf.printf "FIND @ GLOB\n";M.filter (fun x _ -> x.i = k) vm.glob
+    | Loc -> Printf.printf "FIND @ Loc\n";M.filter (fun x _ -> x.i = k) vm.loc
 
   let apronvar_of_binding (b : binding) gl : AD.var =
     let aux (b : binding) pre =
@@ -48,7 +48,7 @@ module VariableMem = struct
       let var = M.find_opt b ma in
       match var with
       | None ->
-          Printf.printf "bindings len: %i" (List.length (M.bindings loc));
+          Printf.printf "bindings len: %i\n" (List.length (M.bindings loc));
           failwith "assignment failed, cannot find key-var"
       | Some var -> (ma, AD.assign_expr ad var exp)
     in
@@ -82,6 +82,7 @@ module VariableMem = struct
 
   let lookup { loc : apronvar M.t; glob : apronvar M.t; ad : aprondomain }
       (b : binding) gl : Apronext.Intervalext.t =
+      ignore(glob);
     (*raw interval, would returning ref would be appropriate?*)
     let aux b ma =
       let v = M.find_opt b ma in
@@ -168,20 +169,4 @@ module VariableMem = struct
            env_lce false)
     in
     { loc = to_.loc; glob = to_.glob; ad = ad' }
-  (*
-  let return_old (from : t) (to_ : t) : t =
-    (*can this be improved?*)
-    let globals = M.bindings from.glob |> List.map snd in
-    let globs_var_expr =
-      List.map
-        (fun x ->
-          (x, AD.bound_variable from.ad x |> AExpr.of_interval_in_ad from.ad))
-        globals
-    in
-    let ad' =
-      List.fold_left
-        (fun a (var, value) -> AD.assign_expr a var value)
-        to_.ad globs_var_expr
-    in
-    { loc = to_.loc; glob = to_.glob; ad = ad' }*)
 end

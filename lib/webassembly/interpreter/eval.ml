@@ -162,30 +162,30 @@ let rec step modul_ call sk cache p_ans : ans * Cache.t * SCG.t =
                 in
                 let ms' = Cflow.enter_label l ms in
                 let ms_t, ms_f = Cflow.ite_condition ms' in
-                let print_dom_ms (ms : MS.t) =
+                let print_dom_ms (ms : MS.t) s =
                   match ms with
                   | Def _d ->
                       Apron.Abstract1.print Format.std_formatter _d.var.ad
-                  | Bot -> Printf.printf "Bot"
+                  | Bot -> Printf.printf "Bot @ If (ms_dom) %s\n" s
                 in
-                let print_dom_ans (a : Answer.res t) =
+                let print_dom_ans (a : Answer.res t) s =
                   match a with
-                  | Bot -> Printf.printf "Bot"
-                  | Def d -> print_dom_ms d.nat
+                  | Bot -> Printf.printf "Bot @ If (ans_dom) %s\n" s
+                  | Def d -> print_dom_ms d.nat s
                 in
                 Printf.printf "Doms for MS_t, MS_f";
-                print_dom_ms ms_t;
-                print_dom_ms ms_f;
+                print_dom_ms ms_t "true";
+                print_dom_ms ms_f "false";
                 let a_true, c', _scgt =
                   fixpoint modul_ ((ms_t, _then), false) sk cache p_ans step
                 in
                 let a_true = Cflow.block_result a_true [ c1 ] in
-                print_dom_ans a_true;
+                print_dom_ans a_true "true";
                 let a_false, c'', _scgf =
                   fixpoint modul_ ((ms_f, _else), false) sk c' p_ans step
                 in
                 let a_false = Cflow.block_result a_false [ c1 ] in
-                print_dom_ans a_false;
+                print_dom_ans a_false "false";
                 let a, scg = (MA.lub a_true a_false, SCG.union _scgt _scgf) in
                 let a = Cflow.test_lub_pans a p_ans in
                 (a, c'', scg)
@@ -194,6 +194,7 @@ let rec step modul_ call sk cache p_ans : ans * Cache.t * SCG.t =
                 failwith
                   "write on res.return, set nat to bottom, empty label stack"
             | Call _i ->
+                Printf.printf "CALL\n\n";
                 (*## locs is the list of locals declared in the scope of this function,
                   params occupy the first n indices in the input type  (fuzzy words, but
                   if the input type is i32, i32, the first two locals will be the parameters.)
@@ -219,7 +220,7 @@ let rec step modul_ call sk cache p_ans : ans * Cache.t * SCG.t =
                   fixpoint modul_ ((ms'', funbody), true) sk cache p_ans step
                 in
                 let _f_res =
-                  MS.func_res (func_ans ms''') ms (List.length _to)
+                  MS.func_res (func_ans ms''') ms' (List.length _to)
                 in
                 (Cflow.call_answer p_ans _f_res, c', g)
             | CallIndirect _ ->

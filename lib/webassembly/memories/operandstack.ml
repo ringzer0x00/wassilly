@@ -15,6 +15,21 @@ type stack = operand list
 type t = stack
 type varmemories = VariableMem.t
 
+let print_stack s =
+  Printf.printf "[";
+  List.iter
+    (fun x ->
+      match x with
+      | BooleanExpression _ -> Printf.printf "Boolex;"
+      | Expression e ->
+          Printf.printf "Expr:";
+          Apronext.Texprext.print Format.std_formatter e;
+          Printf.printf ";"
+      | LVarRef _ -> Printf.printf "LVarRef;"
+      | GVarRef _ -> Printf.printf "GVarRef;")
+    s;
+  Printf.printf "]\n"
+
 let empty : stack = []
 let peek_n = SK.peek_n
 let pop_n = SK.pop_n
@@ -26,7 +41,7 @@ let push_ops = append
 let const_expr (mem : varmemories) inter =
   Apronext.Texprext.cst mem.ad.env (Apronext.Coeffext.Interval inter)
 
-let var_expr (mem : varmemories) inter = Apronext.Texprext.var mem.ad.env inter
+let var_expr (mem : varmemories) var = Apronext.Texprext.var mem.ad.env var
 
 let ref_to_apronvar op =
   match op with
@@ -74,17 +89,25 @@ let concretize (mem : varmemories) op =
 let concretize_in_exp (mem : varmemories) op =
   concretize mem op |> const_expr mem
 
-let replace (s : stack) (op : operand) exp =
-  List.map (fun x -> if x = op then exp else op) s
+let replace (s : stack) (op : operand) with_ =
+  List.map
+    (fun x ->
+      if x = op then (
+        Printf.printf "---------replaced\n";
+        with_)
+      else (
+        Printf.printf "-----not replaced\n";
+        op))
+    s
 
 let rec replace_var_in_exp destr (ref : operand) (mem : varmemories) =
   match destr with
-  | Apronext.Texprext.Cst _ -> destr
-  | Var var ->
+  | Apronext.Texprext.Cst _ as d -> d
+  | Var var as v ->
       let av_ref = ref_to_apronvar ref in
       if av_ref = var then
         Apronext.Texprext.Cst (Apronext.Coeffext.Interval (concretize mem ref))
-      else destr
+      else v
   | Unop (_op, _e, _t, _r) -> Unop (_op, replace_var_in_exp _e ref mem, _t, _r)
   | Binop (_op, _el, _er, _t, _r) ->
       Binop
@@ -102,17 +125,43 @@ let concretize_assignment (s : stack) (mem : varmemories) ref =
           (replace_var_in_exp (Apronext.Texprext.to_expr exp) ref mem)
       in
       replace s ref (Expression v)
-  | LVarRef _ | GVarRef _ ->
-      let v_expr = concretize_in_exp mem ref in
-      replace s ref (Expression v_expr)
+  | LVarRef _ as o ->
+      Printf.printf "Concretize LVarRef\n";
+      let v_expr = concretize_in_exp mem o in
+
+      Printf.printf "LVarRef Concretized as:\n";
+      Apronext.Texprext.print Format.std_formatter v_expr;
+      Printf.printf "\n\n";
+
+      replace s o (Expression v_expr)
+  | GVarRef _ as o ->
+      Printf.printf "Concretize GVarRef\n";
+      let v_expr = concretize_in_exp mem o in
+      replace s o (Expression v_expr)
   | BooleanExpression _ ->
       failwith "idk for now @ concretize ass @ operandstack"
 
 let concretize_ret (s : stack) (mem : varmemories) =
-  let bs =
+  let _concretize_globref (s : stack) (_mem : varmemories) bv =
+    List.map
+      (fun o ->
+        match o with
+        | BooleanExpression _ as be -> be
+        | Expression _ as e -> e
+        | GVarRef b as gvb ->
+            if b = bv then Expression (concretize_in_exp _mem gvb)
+            else GVarRef b
+        | LVarRef _ as lv -> lv)
+      s
+  in
+  let concretize_globref ops mem bv =
+    List.map (fun x -> concretize_assignment x mem bv) ops
+  in
+  Printf.printf "CONCRETIZE_RET NOT WORKING\n";
+  let global_bs =
     VariableMem.M.bindings mem.glob |> List.map (fun x -> GVarRef (fst x))
   in
-  List.fold_left (fun sk y -> concretize_assignment sk mem y) s bs
+  List.fold_left (fun sk y -> concretize_globref sk mem y) global_bs s
 
 let ival_join i1 i2 : Apronext.Intervalext.t = Apronext.Intervalext.join i1 i2
 
@@ -137,17 +186,16 @@ let jw_operand (mem1, o1) (mem2, o2) operation =
   (*two memories are needed, one for locals and one for globals*)
   if o1 = o2 then o1
   else
-    let a = (concretize mem1 o1) in
-    let b = (concretize mem2 o2) in
-    Printf.printf "Join operands:";
+    let a = concretize mem1 o1 in
+    let b = concretize mem2 o2 in
+    Printf.printf "J/W operands:";
     Apron.Interval.print Format.std_formatter a;
     Printf.printf "\n";
-    
-    Apron.Interval.print Format.std_formatter b;
-    Printf.printf "\n";
 
-    Expression
-      (const_expr mem2 (operation a b))
+    Apron.Interval.print Format.std_formatter b;
+    Printf.printf "\n-----------------\n";
+
+    Expression (const_expr mem1 (operation a b))
 
 let join (m1, s1) (m2, s2) =
   (*two memories are needed, one for locals and one for globals*)
