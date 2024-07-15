@@ -1,0 +1,3 @@
+(library
+ (name segalang_test)
+ (libraries monolith segalang ounit2))

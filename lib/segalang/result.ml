@@ -12,13 +12,7 @@ let bot = Bot
 
 (*monadic operators*)
 let return x = Def x
-
-let bind (x, y) op =
-  match (x, y) with
-  | Bot, Bot -> Bot
-  | Def a, Bot | Bot, Def a -> Def a
-  | Def a, Def b -> op a b
-
+let bind x op = match x with Bot -> Bot | Def a -> op a
 let ( >>= ) = bind
 
 let lowlevel_join r1 r2 =
@@ -35,9 +29,22 @@ let lowlevel_widen r1 r2 =
     nat = Memory.widen r1.nat r2.nat;
   }
 
+let j x y =
+  match (x, y) with
+  | Bot, Bot -> Bot
+  | Def a, Bot | Bot, Def a -> Def a
+  | Def a, Def b -> return (lowlevel_join a b)
+
+let w x y =
+  match (x, y) with
+  | Bot, Bot -> Bot
+  | Def _a, Bot -> failwith "widening with bottom @ w @ result.ml"
+  | Bot, Def a -> Def a
+  | Def a, Def b -> return (lowlevel_widen a b)
+
 (*magic*)
-let widen m1 m2 = (m1, m2) >>= fun a b -> return (lowlevel_widen a b)
-let join m1 m2 = (m1, m2) >>= fun a b -> return (lowlevel_join a b)
+let widen m1 m2 = w m1 m2
+let join m1 m2 = j m1 m2
 
 let leq m1 m2 =
   match (m1, m2) with

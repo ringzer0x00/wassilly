@@ -34,5 +34,5 @@ module Command = struct
 
   let print = function
     | Language.Call (n, _) -> Format.pp_print_string Format.std_formatter n
-    | _ -> failwith ""
+    | _ -> failwith "mono"
 end

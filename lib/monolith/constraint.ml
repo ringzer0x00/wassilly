@@ -6,8 +6,8 @@ let might_be_true mgr (_env : 'a Apron.Abstract1.t) _cond =
   let _l, _r =
     match _cond with
     | Eq (lft, right) ->
-        let l = match lft with Var v -> v | _ -> failwith "" in
-        let r = match right with Num n -> n | _ -> failwith "" in
+        let l = match lft with Var v -> v | _ -> failwith "mono" in
+        let r = match right with Num n -> n | _ -> failwith "mono" in
         (l, r)
   in
   let cons_true =
@@ -19,8 +19,8 @@ let texpr_of_boolequality (_env : 'a Apron.Abstract1.t) _cond =
   let _l, _r =
     match _cond with
     | Eq (lft, right) ->
-        let l = match lft with Var v -> v | _ -> failwith "" in
-        let r = match right with Num n -> n | _ -> failwith "" in
+        let l = match lft with Var v -> v | _ -> failwith "mono" in
+        let r = match right with Num n -> n | _ -> failwith "mono" in
         (l, r)
   in
   Apron.Parser.texpr1_of_string _env.env (_l ^ "-" ^ Int.to_string _r)
