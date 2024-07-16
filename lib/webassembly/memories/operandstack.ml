@@ -142,7 +142,6 @@ let concretize_assignment (s : stack) (mem : varmemories) (ref : operand) =
   List.map (fun x -> repl x ref) s
 
 let concretize_ret (s : stack) (mem : varmemories) =
-  Printf.printf "CONCRETIZE_RET NOT WORKING\n";
   let global_bs =
     VariableMem.M.bindings mem.glob |> List.map (fun x -> GVarRef (fst x))
   in
