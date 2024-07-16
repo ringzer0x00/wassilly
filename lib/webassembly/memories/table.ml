@@ -12,7 +12,7 @@ module T = Datastructures.Mapping.Make (Int32) (OInterval)
 type t = T.t
 
 let empty = T.empty
-let add (idx, offset) v t : t = T.add (idx ++ offset) v t
+let add idx v t : t = T.add idx v t
 let set _ _ = failwith "table"
 let get _ _ = failwith "table"
 

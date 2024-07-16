@@ -2,6 +2,7 @@ module Tabs = Memories.Tables
 module Tab = Memories.Table
 module VM = Memories.Variablemem.VariableMem
 module VMKey = Memories.Variablemem.MapKey
+open Datastructures.Monad.DefBot
 
 let listnth_i32 l i = List.nth l (Int32.to_int i)
 
@@ -19,18 +20,6 @@ let listnth_i32 l i = List.nth l (Int32.to_int i)
     imports : import list;
     exports : export list;
   }*)
-
-(*ELEMENT SEGMENTS - elemss
-
-  The initial contents of a table is uninitialized. Element segments can be used to initialize a subrange of a table from a static vector of elements.
-
-  The elems component of a module defines a vector of element segments. Each element segment defines a reference type and a corresponding list of constant element
-  expressions.
-
-  Element segments have a mode that identifies them as either passive, active, or declarative. A passive element segment’s elements can be copied to a table
-  using the table.init instruction. An active element segment copies its elements into a table during instantiation, as specified by a table index and a
-  constant expression defining an offset into that table. A declarative element segment is not available at runtime but merely serves to forward-declare
-  references that are formed in code with instructions like ref.func.*)
 
 let cc (c : Wasm.Ast.const) = c.it
 
@@ -85,6 +74,109 @@ let interpret_elem_segment (es : Wasm.Ast.elem_segment) (t : 'a list) =
           t
       in
       t'
+
+(*ELEMENT SEGMENTS - elemss
+
+  The initial contents of a table is uninitialized. Element segments can be used to initialize a subrange of a table from a static vector of elements.
+
+  The elems component of a module defines a vector of element segments. Each element segment defines a reference type and a corresponding list of constant element
+  expressions.
+
+  Element segments have a mode that identifies them as either passive, active, or declarative. A passive element segment’s elements can be copied to a table
+  using the table.init instruction. An active element segment copies its elements into a table during instantiation, as specified by a table index and a
+  constant expression defining an offset into that table. A declarative element segment is not available at runtime but merely serves to forward-declare
+  references that are formed in code with instructions like ref.func.*)
+let init_tab (mod_ : Wasm.Ast.module_) _ms =
+  let eval p ms =
+    Eval.step mod_ (ms, p) Eval.Stack.empty Eval.Cache.empty Eval.MA.bot_pa
+  in
+  let _extracted =
+    List.map
+      (fun (e : Wasm.Ast.elem_segment) ->
+        (e.it.emode.it, e.it.einit, e.it.etype))
+      mod_.it.elems
+  in
+  let interpret_segment s map =
+    let mode, (_einit : Wasm.Ast.const list), _etype = s in
+    match mode with
+    | Wasm.Ast.Declarative -> assert false
+    | Wasm.Ast.Passive -> map
+    | Wasm.Ast.Active
+        { index = _ (*i always assume one table for now*); offset = _offset } ->
+        let _pos = _offset.it in
+        let off, _, _ = eval _offset.it _ms in
+        let off =
+          match off with
+          | Def d -> d.return
+          | Bot -> failwith "failure @ table init"
+        in
+        let _offset_value = Memories.Frame.peek_operand off |> List.hd in
+        let _extr_offset_int =
+          match _offset_value with
+          | Expression ex ->
+              Apronext.Abstractext.bound_texpr Apronext.Apol.man
+                (match _ms with Def d -> d.var.ad | Bot -> failwith "")
+                ex
+              |> Apronext.Intervalext.to_float |> fst |> Float.to_int
+          | _ -> failwith "errore in init"
+        in
+        let init_mapped =
+          List.mapi (fun i e -> (Int32.of_int (i + _extr_offset_int), e)) _einit
+        in
+        let map' =
+          List.fold_left
+            (fun map ((_idx, x) : int32 * Wasm.Ast.const) ->
+              let _r, _, _ = eval x.it _ms in
+              let _res =
+                Memories.Frame.peek_operand
+                  (match _r with Def d -> d.return | Bot -> failwith "init")
+                |> List.hd
+              in
+              let _ex_res =
+                match _res with
+                | Expression ex ->
+                    Apronext.Abstractext.bound_texpr Apronext.Apol.man
+                      (match _ms with Def d -> d.var.ad | Bot -> failwith "")
+                      ex
+                | _ -> failwith "nope @ init"
+              in
+              Memories.Table.add _idx _ex_res map)
+            map init_mapped
+        in
+        (*altro fold qui*)
+        (*einit is list of initializators, so it should be recursively called*)
+        map'
+  in
+  List.fold_left
+    (fun acc x -> interpret_segment x acc)
+    Memories.Table.empty _extracted
+
+let init (_mod : Wasm.Ast.module_) : Memories.Frame.t =
+  (*always alloc a memory page*)
+  let ms_start : Eval.MS.ms t =
+    Def
+      {
+        ops = [];
+        mem = Memories.Linearmem.alloc_page_top;
+        var =
+          VM.empty
+            (Apronext.Apol.top (Datastructures.Aprondomain.make_env [||] [||]));
+        tab = [];
+        lsk = [];
+      }
+  in
+  let _tab_initialized = [ init_tab _mod ms_start ] in
+  init_globals _mod
+    (Def
+       {
+         ops = [];
+         mem = Memories.Linearmem.alloc_page_top;
+         var =
+           VM.empty
+             (Apronext.Apol.top (Datastructures.Aprondomain.make_env [||] [||]));
+         tab = _tab_initialized;
+         lsk = [];
+       })
 (* Data Segments
 
    The initial contents of a memory are zero bytes. Data segments can be used to initialize a range of memory from a static vector of bytes.
@@ -115,24 +207,3 @@ let interpret_data_segment (ds : Wasm.Ast.data_segment) _m =
           failwith
             "write _init (content) into _idx of _m at _offset.\n\
             \          _init is string, figure out how to convert it")
-
-let init (_mod : Wasm.Ast.module_) : Memories.Frame.t =
-  (*always alloc a memory page*)
-  let _mem_initialized = Memories.Linearmem.alloc_page_top in
-  let mem_init =
-    _mem_initialized
-    (*List.fold_left
-      (fun m d -> interpret_data_segment d m)
-      _mem_initialized _mod.it.datas*)
-  in
-  init_globals _mod
-    (Def
-       {
-         ops = [];
-         mem = mem_init;
-         var =
-           VM.empty
-             (Apronext.Apol.top (Datastructures.Aprondomain.make_env [||] [||]));
-         tab = [ Memories.Table.empty ];
-         lsk = [];
-       })

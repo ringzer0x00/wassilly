@@ -89,14 +89,6 @@ let concretize (mem : varmemories) op =
 let concretize_in_exp (mem : varmemories) op =
   concretize mem op |> const_expr mem
 
-let replace s (op : operand) with_ =
-  if s = op then (
-    Printf.printf "---------replaced\n";
-    with_)
-  else (
-    Printf.printf "-----not replaced\n";
-    op)
-
 let rec replace_var_in_exp destr (ref : operand) (mem : varmemories) =
   match destr with
   | Apronext.Texprext.Cst _ as d -> d
@@ -126,18 +118,20 @@ let concretize_assignment (s : stack) (mem : varmemories) (ref : operand) =
     | LVarRef _ as o ->
         Printf.printf "Concretize LVarRef\n";
         let v_expr = concretize_in_exp mem o in
-
         Printf.printf "LVarRef Concretized as:\n";
         Apronext.Texprext.print Format.std_formatter v_expr;
-        Printf.printf "\n\n";
-
-        replace operand to_replace (Expression v_expr)
+        if operand = to_replace then Expression v_expr else to_replace
     | GVarRef _ as o ->
         Printf.printf "Concretize GVarRef\n";
         let v_expr = concretize_in_exp mem o in
-        replace operand to_replace (Expression v_expr)
-    | BooleanExpression _ ->
-        failwith "idk for now @ concretize ass @ operandstack"
+        if operand = to_replace then Expression v_expr else to_replace
+    | BooleanExpression bex ->
+        let exp = Apronext.Tconsext.get_texpr1 bex in
+        let _v =
+          Apronext.Texprext.of_expr mem.ad.env
+            (replace_var_in_exp (Apronext.Texprext.to_expr exp) operand mem)
+        in
+        failwith "re-construct bex', analyse stuff in bex blabla"
   in
   List.map (fun x -> repl x ref) s
 

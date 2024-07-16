@@ -195,14 +195,6 @@ let rec step modul_ call sk cache p_ans : ans * Cache.t * SCG.t =
                   "write on res.return, set nat to bottom, empty label stack"
             | Call _i ->
                 Printf.printf "CALL\n\n";
-                (*## locs is the list of locals declared in the scope of this function,
-                  params occupy the first n indices in the input type  (fuzzy words, but
-                  if the input type is i32, i32, the first two locals will be the parameters.)
-                    params :  (func (param i32) (param f32) (local f64)
-                                local.get 0
-                                local.get 1
-                                local.get 2)
-                *)
                 let funbody, locs, typ_idx =
                   getfbody modul_ (Int32.to_int _i.it)
                 in
