@@ -89,16 +89,13 @@ let concretize (mem : varmemories) op =
 let concretize_in_exp (mem : varmemories) op =
   concretize mem op |> const_expr mem
 
-let replace (s : stack) (op : operand) with_ =
-  List.map
-    (fun x ->
-      if x = op then (
-        Printf.printf "---------replaced\n";
-        with_)
-      else (
-        Printf.printf "-----not replaced\n";
-        op))
-    s
+let replace s (op : operand) with_ =
+  if s = op then (
+    Printf.printf "---------replaced\n";
+    with_)
+  else (
+    Printf.printf "-----not replaced\n";
+    op)
 
 let rec replace_var_in_exp destr (ref : operand) (mem : varmemories) =
   match destr with
@@ -117,51 +114,46 @@ let rec replace_var_in_exp destr (ref : operand) (mem : varmemories) =
           _t,
           _r )
 
-let concretize_assignment (s : stack) (mem : varmemories) ref =
-  match ref with
-  | Expression exp ->
-      let v =
-        Apronext.Texprext.of_expr mem.ad.env
-          (replace_var_in_exp (Apronext.Texprext.to_expr exp) ref mem)
-      in
-      replace s ref (Expression v)
-  | LVarRef _ as o ->
-      Printf.printf "Concretize LVarRef\n";
-      let v_expr = concretize_in_exp mem o in
+let concretize_assignment (s : stack) (mem : varmemories) (ref : operand) =
+  let repl operand to_replace =
+    match operand with
+    | Expression exp ->
+        let v =
+          Apronext.Texprext.of_expr mem.ad.env
+            (replace_var_in_exp (Apronext.Texprext.to_expr exp) operand mem)
+        in
+        Expression v
+    | LVarRef _ as o ->
+        Printf.printf "Concretize LVarRef\n";
+        let v_expr = concretize_in_exp mem o in
 
-      Printf.printf "LVarRef Concretized as:\n";
-      Apronext.Texprext.print Format.std_formatter v_expr;
-      Printf.printf "\n\n";
+        Printf.printf "LVarRef Concretized as:\n";
+        Apronext.Texprext.print Format.std_formatter v_expr;
+        Printf.printf "\n\n";
 
-      replace s o (Expression v_expr)
-  | GVarRef _ as o ->
-      Printf.printf "Concretize GVarRef\n";
-      let v_expr = concretize_in_exp mem o in
-      replace s o (Expression v_expr)
-  | BooleanExpression _ ->
-      failwith "idk for now @ concretize ass @ operandstack"
+        replace operand to_replace (Expression v_expr)
+    | GVarRef _ as o ->
+        Printf.printf "Concretize GVarRef\n";
+        let v_expr = concretize_in_exp mem o in
+        replace operand to_replace (Expression v_expr)
+    | BooleanExpression _ ->
+        failwith "idk for now @ concretize ass @ operandstack"
+  in
+  List.map (fun x -> repl x ref) s
 
 let concretize_ret (s : stack) (mem : varmemories) =
-  let _concretize_globref (s : stack) (_mem : varmemories) bv =
-    List.map
-      (fun o ->
-        match o with
-        | BooleanExpression _ as be -> be
-        | Expression _ as e -> e
-        | GVarRef b as gvb ->
-            if b = bv then Expression (concretize_in_exp _mem gvb)
-            else GVarRef b
-        | LVarRef _ as lv -> lv)
-      s
-  in
-  let concretize_globref ops mem bv =
-    List.map (fun x -> concretize_assignment x mem bv) ops
-  in
   Printf.printf "CONCRETIZE_RET NOT WORKING\n";
   let global_bs =
     VariableMem.M.bindings mem.glob |> List.map (fun x -> GVarRef (fst x))
   in
-  List.fold_left (fun sk y -> concretize_globref sk mem y) global_bs s
+  let rec concretize_gref stack gbindings =
+    match gbindings with
+    | [] -> stack
+    | h :: t ->
+        let stack' = concretize_assignment stack mem h in
+        concretize_gref stack' t
+  in
+  concretize_gref s global_bs
 
 let ival_join i1 i2 : Apronext.Intervalext.t = Apronext.Intervalext.join i1 i2
 
