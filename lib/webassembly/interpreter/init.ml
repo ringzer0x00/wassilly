@@ -114,7 +114,7 @@ let init_tab (mod_ : Wasm.Ast.module_) _ms =
           match _offset_value with
           | Expression ex ->
               Apronext.Abstractext.bound_texpr Apronext.Apol.man
-                (match _ms with Def d -> d.var.ad | Bot -> failwith "")
+                (match _ms with Def d -> d.var.ad | Bot -> failwith "bot @ init table")
                 ex
               |> Apronext.Intervalext.to_float |> fst |> Float.to_int
           | _ -> failwith "errore in init"

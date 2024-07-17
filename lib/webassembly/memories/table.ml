@@ -15,6 +15,19 @@ let empty = T.empty
 let add idx v t : t = T.add idx v t
 let set _ _ = failwith "table"
 let get _ _ = failwith "table"
+let find_by_types typ_ t = T.filter (fun _ mapped_t -> mapped_t = typ_) t
+
+let find_by_idx (intval : Apron.Interval.t) t =
+  let inf, sup =
+    if Apronext.Intervalext.is_top intval then
+      (fst (T.min_binding t), fst (T.max_binding t))
+    else if Apronext.Intervalext.is_bottom intval then
+      (fst (T.max_binding t), Int32.minus_one)
+    else
+      let i, s = Apronext.Intervalext.to_float intval in
+      (Int32.of_float i, Int32.of_float s)
+  in
+  T.filter (fun x _ -> x >= inf && x <= sup) t
 
 (*
 

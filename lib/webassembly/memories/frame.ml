@@ -2,8 +2,6 @@ module SK = Datastructures.Liststack
 module VariableMem = Variablemem.VariableMem
 open Datastructures.Monad.DefBot
 
-type cont (*probably a program, a wasm instr sequence*)
-
 type ms = {
   ops : Operandstack.t;
   var : VariableMem.t;
@@ -15,7 +13,6 @@ type ms = {
 type 'a tt = 'a t
 type t = ms tt
 
-let bot = Bot
 let peek = SK.peek
 let peek_n = SK.peek_n
 let pop = SK.pop

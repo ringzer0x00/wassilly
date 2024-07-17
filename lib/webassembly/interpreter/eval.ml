@@ -40,7 +40,7 @@ let fixpoint _module (call, ifb) stack cache pres stepf =
           | Cache.Unstable -> (resCached, cache, SCG.singleton call))
       | None -> (
           match Stack.call_in_stack call stack with
-          | true -> (MA.bot, cache, SCG.singleton call)
+          | true -> (Bot, cache, SCG.singleton call)
           | false -> Iterate.iterate _module call stack cache pres stepf))
 
 (*eval should not be called recursively*)
@@ -215,7 +215,7 @@ let rec step modul_ call sk cache p_ans : ans * Cache.t * SCG.t =
                   MS.func_res (func_ans ms''') ms' (List.length _to)
                 in
                 (Cflow.call_answer p_ans _f_res, c', g)
-            | CallIndirect _ ->
+            | CallIndirect (_fsign, _table_idx) ->
                 failwith
                   "callindirect, concretize ToS, filter by type, rewrite as \
                    Call"
@@ -231,17 +231,6 @@ let rec step modul_ call sk cache p_ans : ans * Cache.t * SCG.t =
                     (Wasm.Types.FuncRefType, Some intval, Some ftype.it)
                 in
                 (cmd_result (Instructions.read ms resex) p_ans, cache, SCG.empty)
-            (*| RefFunc v ->
-                let intval = Apronext.Scalarext.of_int (Int32.to_int v.it) in
-                let resex =
-                  Memories.Operandstack.Expression
-                    (Memories.Operandstack.const_expr
-                       (match ms with
-                       | Def d -> d.var
-                       | Bot -> failwith "evalllll")
-                       (Apronext.Intervalext.of_scalar intval intval))
-                in
-                (cmd_result (Instructions.read ms resex) p_ans, cache, SCG.empty)*)
             | RefNull t ->
                 let resex = Memories.Operandstack.FuncRef (t, None, None) in
                 (cmd_result (Instructions.read ms resex) p_ans, cache, SCG.empty)

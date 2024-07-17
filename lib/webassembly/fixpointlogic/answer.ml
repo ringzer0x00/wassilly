@@ -6,8 +6,7 @@ open Datastructures.Monad.DefBot
 type partial_answer = { p_br : LM.t; p_return : MS.t }
 type res = { nat : MS.t; br : LM.t; return : MS.t }
 
-let bot_pa = { p_br = LM.empty; p_return = MS.bot }
-let bot = Bot
+let bot_pa = { p_br = LM.empty; p_return = Bot }
 
 let lowlevel_join r1 r2 =
   {
