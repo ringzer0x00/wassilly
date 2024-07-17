@@ -224,6 +224,14 @@ let rec step modul_ call sk cache p_ans : ans * Cache.t * SCG.t =
             | Test t ->
                 (cmd_result (Ops.eval_testop t ms) p_ans, cache, SCG.empty)
             | RefFunc v ->
+                let intval = v.it in
+                let _, _, ftype = getfbody modul_ (Int32.to_int intval) in
+                let resex =
+                  Memories.Operandstack.FuncRef
+                    (Wasm.Types.FuncRefType, Some intval, Some ftype.it)
+                in
+                (cmd_result (Instructions.read ms resex) p_ans, cache, SCG.empty)
+            (*| RefFunc v ->
                 let intval = Apronext.Scalarext.of_int (Int32.to_int v.it) in
                 let resex =
                   Memories.Operandstack.Expression
@@ -233,8 +241,10 @@ let rec step modul_ call sk cache p_ans : ans * Cache.t * SCG.t =
                        | Bot -> failwith "evalllll")
                        (Apronext.Intervalext.of_scalar intval intval))
                 in
+                (cmd_result (Instructions.read ms resex) p_ans, cache, SCG.empty)*)
+            | RefNull t ->
+                let resex = Memories.Operandstack.FuncRef (t, None, None) in
                 (cmd_result (Instructions.read ms resex) p_ans, cache, SCG.empty)
-            | RefNull _ -> failwith "nullrefs are not supported for now"
             | RefIsNull -> failwith ""
             | _ ->
                 Wasm.Print.instr Stdlib.stdout 100 c1;

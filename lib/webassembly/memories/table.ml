@@ -1,5 +1,5 @@
 module OInterval = struct
-  type t = Int32.t * Int32.t (*funcidx , type*)
+  type t = Int32.t option * Int32.t option (*funcidx , type*)
 
   let compare = compare
 end

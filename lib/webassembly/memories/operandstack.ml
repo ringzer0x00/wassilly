@@ -10,7 +10,7 @@ type operand =
   | Expression of aval
   | LVarRef of VariableMem.binding
   | GVarRef of VariableMem.binding
-  | FuncRef of Wasm.Types.ref_type * int32 option * int32
+  | FuncRef of Wasm.Types.ref_type * int32 option * int32 option
 
 (*| Label*)
 type stack = operand list

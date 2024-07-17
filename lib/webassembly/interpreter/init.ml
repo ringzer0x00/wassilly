@@ -131,19 +131,11 @@ let init_tab (mod_ : Wasm.Ast.module_) _ms =
                   (match _r with Def d -> d.return | Bot -> failwith "init")
                 |> List.hd
               in
-              let _ex_res =
-                match _res with
-                | Expression ex ->
-                    Apronext.Abstractext.bound_texpr Apronext.Apol.man
-                      (match _ms with Def d -> d.var.ad | Bot -> failwith "")
-                      ex
-                    |> Apronext.Intervalext.to_float |> fst |> Int32.of_float
-                | _ -> failwith "nope @ init"
-              in
-              let _tidx =
-                (List.nth mod_.it.funcs (Int32.to_int _ex_res)).it.ftype.it
-              in
-              Memories.Table.add _idx (_ex_res, _tidx) map)
+              match _res with
+              | FuncRef (_rt, _opt_fbody, _tidx)
+              (*Wasm.Types.ref_type * int32 option * int32*) ->
+                  Memories.Table.add _idx (_opt_fbody, _tidx) map
+              | _ -> failwith "nope @ init")
             map init_mapped
         in
         map'
