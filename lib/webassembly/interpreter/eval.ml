@@ -216,6 +216,11 @@ let rec step modul_ call sk cache p_ans : ans * Cache.t * SCG.t =
                 in
                 (Cflow.call_answer p_ans _f_res, c', g)
             | CallIndirect (_fsign, _table_idx) ->
+                let _ti, _to =
+                  match gettype modul_ (Int32.to_int _fsign.it) with
+                  | FuncType (_ti, _to) -> (_ti, _to)
+                in
+                let _abstract_idx = MS.peek_n_operand 1 ms |> List.hd in
                 failwith
                   "callindirect, concretize ToS, filter by type, rewrite as \
                    Call"

@@ -58,6 +58,12 @@ let peek_nth_label k n = k >>=? fun a -> a.lsk |> peek_nth_label n
 let push_operand x k = k >>= fun a -> update_operandstack (x @ a.ops) k
 let push_label x k = k >>= fun a -> update_labelstack (x :: a.lsk) k
 
+(*table stuff*)
+let table_getrefs idx typ k =
+  k >>=? fun a ->
+  let table = List.nth a.tab 0 in
+  Table.find_by_idx idx table |> Table.find_by_types typ
+
 let bind_vars b gl (k : t) =
   k >>= fun a -> update_varmem (VariableMem.bind a.var b gl) k
 
