@@ -1,5 +1,5 @@
 module OInterval = struct
-  type t = Apronext.Intervalext.t (*also ref type*)
+  type t = Int32.t * Int32.t (*funcidx , type*)
 
   let compare = compare
 end

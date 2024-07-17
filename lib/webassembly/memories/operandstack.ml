@@ -5,10 +5,12 @@ type aval = Apronext.Texprext.t (*this has to b*)
 type constr = Apronext.Tconsext.t (*this has to b*)
 
 type operand =
+  (*i need a funcref operand type i think*)
   | BooleanExpression of constr
   | Expression of aval
   | LVarRef of VariableMem.binding
   | GVarRef of VariableMem.binding
+  | FuncRef of Wasm.Types.ref_type * int32 option * int32
 
 (*| Label*)
 type stack = operand list
@@ -26,7 +28,8 @@ let print_stack s =
           Apronext.Texprext.print Format.std_formatter e;
           Printf.printf ";"
       | LVarRef _ -> Printf.printf "LVarRef;"
-      | GVarRef _ -> Printf.printf "GVarRef;")
+      | GVarRef _ -> Printf.printf "GVarRef;"
+      | FuncRef _ -> Printf.printf "FuncRef;")
     s;
   Printf.printf "]\n"
 
@@ -50,6 +53,7 @@ let ref_to_apronvar op =
   | Expression _ -> failwith "ref to apronvar @ operandstack - expr case"
   | BooleanExpression _ ->
       failwith "ref to apronvar @ operandstack - bexpr case"
+  | FuncRef _ -> failwith "no correspondance of funcref here"
 
 let ref_of_binding b gl =
   match gl with VariableMem.Glob -> GVarRef b | VariableMem.Loc -> LVarRef b
@@ -78,6 +82,7 @@ let operand_to_expr (mem : varmemories) op =
   | LVarRef _ as r -> ref_to_apronvar r |> var_expr mem
   | GVarRef _ as r -> ref_to_apronvar r |> var_expr mem
   | BooleanExpression constr -> const_expr mem (boole_as_int constr mem)
+  | FuncRef _ -> failwith "cannot convert funcref to expr"
 
 let concretize (mem : varmemories) op =
   match op with
@@ -85,6 +90,7 @@ let concretize (mem : varmemories) op =
   | LVarRef i -> VariableMem.lookup mem i VariableMem.Loc
   | GVarRef i -> VariableMem.lookup mem i VariableMem.Glob
   | BooleanExpression c -> boole_as_int c mem
+  | FuncRef _ -> failwith "idk @ concretize funcref"
 
 let concretize_in_exp (mem : varmemories) op =
   concretize mem op |> const_expr mem
@@ -132,6 +138,7 @@ let concretize_assignment (s : stack) (mem : varmemories) (ref : operand) =
             (replace_var_in_exp (Apronext.Texprext.to_expr exp) operand mem)
         in
         failwith "re-construct bex', analyse stuff in bex blabla"
+    | FuncRef _ -> failwith "funcref @ concretize"
   in
   List.map (fun x -> repl x ref) s
 

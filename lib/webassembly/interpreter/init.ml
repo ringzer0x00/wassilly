@@ -101,8 +101,7 @@ let init_tab (mod_ : Wasm.Ast.module_) _ms =
     match mode with
     | Wasm.Ast.Declarative -> assert false
     | Wasm.Ast.Passive -> map
-    | Wasm.Ast.Active
-        { index = _ (*i always assume one table for now*); offset = _offset } ->
+    | Wasm.Ast.Active { index = _; offset = _offset } ->
         let _pos = _offset.it in
         let off, _, _ = eval _offset.it _ms in
         let off =
@@ -138,13 +137,15 @@ let init_tab (mod_ : Wasm.Ast.module_) _ms =
                     Apronext.Abstractext.bound_texpr Apronext.Apol.man
                       (match _ms with Def d -> d.var.ad | Bot -> failwith "")
                       ex
+                    |> Apronext.Intervalext.to_float |> fst |> Int32.of_float
                 | _ -> failwith "nope @ init"
               in
-              Memories.Table.add _idx _ex_res map)
+              let _tidx =
+                (List.nth mod_.it.funcs (Int32.to_int _ex_res)).it.ftype.it
+              in
+              Memories.Table.add _idx (_ex_res, _tidx) map)
             map init_mapped
         in
-        (*altro fold qui*)
-        (*einit is list of initializators, so it should be recursively called*)
         map'
   in
   let r =

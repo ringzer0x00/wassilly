@@ -234,16 +234,7 @@ let rec step modul_ call sk cache p_ans : ans * Cache.t * SCG.t =
                        (Apronext.Intervalext.of_scalar intval intval))
                 in
                 (cmd_result (Instructions.read ms resex) p_ans, cache, SCG.empty)
-            | RefNull _ ->
-                let resex =
-                  Memories.Operandstack.Expression
-                    (Memories.Operandstack.const_expr
-                       (match ms with
-                       | Def d -> d.var
-                       | Bot -> failwith "evalllll")
-                       Apronext.Intervalext.bottom)
-                in
-                (cmd_result (Instructions.read ms resex) p_ans, cache, SCG.empty)
+            | RefNull _ -> failwith "nullrefs are not supported for now"
             | RefIsNull -> failwith ""
             | _ ->
                 Wasm.Print.instr Stdlib.stdout 100 c1;
