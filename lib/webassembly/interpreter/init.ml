@@ -147,9 +147,14 @@ let init_tab (mod_ : Wasm.Ast.module_) _ms =
         (*einit is list of initializators, so it should be recursively called*)
         map'
   in
-  List.fold_left
-    (fun acc x -> interpret_segment x acc)
-    Memories.Table.empty _extracted
+  let r =
+    List.fold_left
+      (fun acc x -> interpret_segment x acc)
+      Memories.Table.empty _extracted
+  in
+  Printf.printf "MAP LENGTH @ TABLES: %i\n"
+    (Memories.Table.T.bindings r |> List.length);
+  r
 
 let init (_mod : Wasm.Ast.module_) : Memories.Frame.t =
   (*always alloc a memory page*)

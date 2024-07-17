@@ -223,7 +223,20 @@ let rec step modul_ call sk cache p_ans : ans * Cache.t * SCG.t =
                 (cmd_result (Ops.eval_relop _r ms) p_ans, cache, SCG.empty)
             | Test t ->
                 (cmd_result (Ops.eval_testop t ms) p_ans, cache, SCG.empty)
-            | _ -> failwith "other commands"
+            | RefFunc v ->
+                let intval = Apronext.Scalarext.of_int (Int32.to_int v.it) in
+                let resex =
+                  Memories.Operandstack.Expression
+                    (Memories.Operandstack.const_expr
+                       (match ms with
+                       | Def d -> d.var
+                       | Bot -> failwith "evalllll")
+                       (Apronext.Intervalext.of_scalar intval intval))
+                in
+                (cmd_result (Instructions.read ms resex) p_ans, cache, SCG.empty)
+            | _ ->
+                Wasm.Print.instr Stdlib.stdout 100 c1;
+                failwith "other commands"
           in
           let res2, cache'', scg_t =
             Cflow.monad_step res1 cache' (fun x ->
