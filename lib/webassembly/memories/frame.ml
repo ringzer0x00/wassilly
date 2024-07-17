@@ -64,6 +64,17 @@ let table_getrefs idx typ k =
   let table = List.nth a.tab 0 in
   Table.find_by_idx idx table |> Table.find_by_types typ
 
+(*other*)
+let concretize_operand o k =
+  k >>=? fun a -> Operandstack.concretize_in_exp a.var o
+
+let concretize_expr e k =
+  k >>=? fun a -> Apronext.Abstractext.bound_texpr Apronext.Apol.man a.var.ad e
+
+let operand_as_interval o k =
+  let e = concretize_operand o k in
+  concretize_expr e k
+
 let bind_vars b gl (k : t) =
   k >>= fun a -> update_varmem (VariableMem.bind a.var b gl) k
 

@@ -220,7 +220,8 @@ let rec step modul_ call sk cache p_ans : ans * Cache.t * SCG.t =
                   match gettype modul_ (Int32.to_int _fsign.it) with
                   | FuncType (_ti, _to) -> (_ti, _to)
                 in
-                let _abstract_idx = MS.peek_n_operand 1 ms |> List.hd in
+                let expr_idx = MS.peek_n_operand 1 ms |> List.hd in
+                let _interval_idx = MS.operand_as_interval expr_idx ms in
                 failwith
                   "callindirect, concretize ToS, filter by type, rewrite as \
                    Call"
