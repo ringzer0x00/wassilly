@@ -64,4 +64,4 @@ let analyze fn =
       ((call_ms, _b), true)
       Eval.Stack.empty Eval.Cache.empty Eval.MA.bot_pa Eval.step
   in
-  ar
+  (ar, Eval.cg)

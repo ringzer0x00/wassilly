@@ -13,6 +13,9 @@ module Stack = Stack.Stack
 module SCG = Scg.SCC
 module CallSet = Callset.CallSet
 
+type g = { i : int }
+
+let cg = ref { i = 0 }
 let cmd_result = Cflow.simplecmd_answer
 let seq_result = Cflow.seq_answer
 let func_ans = Cflow.func_answer

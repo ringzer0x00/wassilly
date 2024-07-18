@@ -4,7 +4,7 @@ let destroy_monad = function Bot -> failwith "bot @ destroymonad" | Def d -> d
 let p path = Interpreter.Analysis.analyze path
 (*"./tc/fib.wasm"*)
 
-let fib =
+let fib, _g =
   p
     "/home/ringzero/gitrepos/modular_chaotic_implicit_apron/test/wasm/tc/table.wasm"
 
