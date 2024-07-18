@@ -264,54 +264,6 @@ let rec step modul_ call sk cache p_ans : ans * Cache.t * SCG.t =
                   MS.func_res (func_ans computed) ms' (List.length _to)
                 in
                 (Cflow.call_answer p_ans _f_res, cache', scg)
-            (* let ms'' = Cflow.prep_call ms' _vals modul_ locs typ_idx.it in
-               let ms''', c', g =
-                 fixpoint modul_ ((ms'', funbody), true) sk cache p_ans step
-               in
-               let _f_res =
-                 MS.func_res (func_ans ms''') ms' (List.length _to)
-               in
-               (Cflow.call_answer p_ans _f_res, c', g)*)
-            (*| CallIndirect (_fsign, _table_idx) ->
-                let _ti, _to =
-                  match gettype modul_ (Int32.to_int _fsign.it) with
-                  | FuncType (_ti, _to) -> (_ti, _to)
-                in
-                let expr_idx, ms' =
-                  (MS.peek_n_operand 1 ms |> List.hd, MS.pop_operand ms)
-                in
-                let _interval_idx = MS.operand_as_interval expr_idx ms in
-                let _refs =
-                  MS.table_getrefs _interval_idx (Some _fsign.it) ms'
-                in
-                let _calls =
-                  List.fold_left
-                    (fun x y ->
-                      match y with
-                      | Some c ->
-                          Wasm.Source.at c1.at
-                            (Wasm.Ast.Call (Wasm.Source.at _table_idx.at c))
-                          :: x
-                      | None -> x)
-                    []
-                    (List.map
-                       (fun x -> fst (snd x))
-                       (Memories.Table.T.bindings _refs))
-                in
-                let rewritten = List.map (fun x -> x :: c2) _calls in
-                Printf.printf "CALL INDIRECT size of callset %i\n\n"
-                  (List.length _calls);
-                let _r, c', scg =
-                  List.fold_left
-                    (fun (rl, c, scg) p ->
-                      let r, c', scg' =
-                        fixpoint modul_ ((ms', p), false) sk c p_ans step
-                      in
-                      (r :: rl, c', SCG.union scg scg'))
-                    ([], cache, SCG.empty) rewritten
-                in
-                let _r = List.fold_left (fun r r' -> Answer.lub r r') Bot _r in
-                (_r, c', scg)*)
             | Compare _r ->
                 (cmd_result (Ops.eval_relop _r ms) p_ans, cache, SCG.empty)
             | Test t ->
