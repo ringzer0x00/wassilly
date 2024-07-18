@@ -220,11 +220,40 @@ let rec step modul_ call sk cache p_ans : ans * Cache.t * SCG.t =
                   match gettype modul_ (Int32.to_int _fsign.it) with
                   | FuncType (_ti, _to) -> (_ti, _to)
                 in
-                let expr_idx = MS.peek_n_operand 1 ms |> List.hd in
+                let expr_idx, ms' =
+                  (MS.peek_n_operand 1 ms |> List.hd, MS.pop_operand ms)
+                in
                 let _interval_idx = MS.operand_as_interval expr_idx ms in
-                failwith
-                  "callindirect, concretize ToS, filter by type, rewrite as \
-                   Call"
+                let _refs =
+                  MS.table_getrefs _interval_idx (Some _fsign.it) ms'
+                in
+                let _calls =
+                  List.fold_left
+                    (fun x y ->
+                      match y with
+                      | Some c ->
+                          Wasm.Source.at c1.at
+                            (Wasm.Ast.Call (Wasm.Source.at _table_idx.at c))
+                          :: x
+                      | None -> x)
+                    []
+                    (List.map
+                       (fun x -> fst (snd x))
+                       (Memories.Table.T.bindings _refs))
+                in
+                let rewritten = List.map (fun x -> x :: c2) _calls in
+                Printf.printf "CALL INDIRECT size of callset %i\n\n"
+                  (List.length _calls);
+                let r =
+                  List.fold_left
+                    (fun (r, c, scg) p ->
+                      let r', c', scg' =
+                        fixpoint modul_ ((ms', p), false) sk c p_ans step
+                      in
+                      (Answer.lub r r', c', SCG.union scg scg'))
+                    (Bot, cache, SCG.empty) rewritten
+                in
+                r
             | Compare _r ->
                 (cmd_result (Ops.eval_relop _r ms) p_ans, cache, SCG.empty)
             | Test t ->

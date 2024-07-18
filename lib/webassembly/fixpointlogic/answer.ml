@@ -24,7 +24,7 @@ let lowlevel_widen r1 r2 =
 
 let j x y =
   match (x, y) with
-  | Bot, Bot -> Bot
+  | Bot, Bot -> Printf.printf "BOTBOT"; Bot
   | Def a, Bot | Bot, Def a -> Def a
   | Def a, Def b -> return (lowlevel_join a b)
 
