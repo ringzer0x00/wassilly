@@ -27,13 +27,20 @@ module CallSet = struct
   let singleton = S.singleton
   let add = S.add
   let union = S.union
+
   let print g =
     Printf.printf "CallSet:[";
     S.iter
       (fun (f, t) ->
-        Printf.printf "%s -> %s\n" (Wasm.Source.string_of_region f.at) (Int32.to_string t))
+        Printf.printf "%s -> %s\n"
+          (Wasm.Source.string_of_region f.at)
+          (Int32.to_string t))
       g;
     Printf.printf "]\n"
+  (*type pos = {file : string; line : int; column : int}
+    type region = {left : pos; right : pos}
+    type 'a phrase = {at : region; it : 'a}
+    - turn into from-to for functions? *)
 end
 
 module CallGraph = struct

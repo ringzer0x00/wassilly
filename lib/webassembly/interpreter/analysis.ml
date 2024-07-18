@@ -26,10 +26,11 @@ let unbound_input _size (k : Memories.Frame.t) =
 
 let analyze fn =
   let mod_ = load_mod fn in
-  let startf, _ =
+  let startf, _, fstart =
     match mod_.it.start with
-    | None -> ([], [])
-    | Some _st -> ( match Eval.getfbody mod_ 1 with a, b, _ -> (a, b))
+    | None -> ([], [], Int32.minus_one)
+    | Some _st -> (
+        match Eval.getfbody mod_ 1 with a, b, _ -> (a, b, Int32.minus_one))
   in
   let _entrypoints =
     List.filter_map
@@ -44,7 +45,7 @@ let analyze fn =
     | _ ->
         Eval.fixpoint mod_
           ((i, startf), true)
-          Eval.Stack.empty Eval.Cache.empty Eval.MA.bot_pa Eval.step
+          Eval.Stack.empty Eval.Cache.empty fstart Eval.MA.bot_pa Eval.step
   in
   let _b, _locs, _t =
     Eval.getfbody mod_ (Int32.to_int (List.hd _entrypoints).it)
@@ -62,6 +63,6 @@ let analyze fn =
   let ar, _, _ =
     Eval.fixpoint mod_
       ((call_ms, _b), true)
-      Eval.Stack.empty Eval.Cache.empty Eval.MA.bot_pa Eval.step
+      Eval.Stack.empty Eval.Cache.empty ((List.hd _entrypoints).it) Eval.MA.bot_pa Eval.step
   in
   (ar, !Eval.cg)

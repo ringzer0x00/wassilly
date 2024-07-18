@@ -8,7 +8,7 @@ let fib, _g =
   p
     "/home/ringzero/gitrepos/modular_chaotic_implicit_apron/test/wasm/tc/fib.wasm"
 
-let _ = Fixpoint.Callgraph.CallSet.print _g
+let _ = Fixpoint.Callgraph.CallGraph.print _g
 
 let fr =
   match (destroy_monad fib).return with
