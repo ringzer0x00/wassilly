@@ -27,6 +27,13 @@ module CallSet = struct
   let singleton = S.singleton
   let add = S.add
   let union = S.union
+  let print g =
+    Printf.printf "CallSet:[";
+    S.iter
+      (fun (f, t) ->
+        Printf.printf "%s -> %s\n" (Wasm.Source.string_of_region f.at) (Int32.to_string t))
+      g;
+    Printf.printf "]\n"
 end
 
 module CallGraph = struct
@@ -41,10 +48,12 @@ module CallGraph = struct
   let of_list = S.of_list
 
   let print g =
+    Printf.printf "Callgraph:[";
     S.iter
       (fun (f, t) ->
         Printf.printf "%s -> %s\n" (Int32.to_string f) (Int32.to_string t))
-      g
+      g;
+    Printf.printf "]\n"
 end
 
 let find_fidx_from_instr (mod_ : Wasm.Ast.module_) (i : Wasm.Ast.instr) =

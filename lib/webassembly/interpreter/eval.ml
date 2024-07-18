@@ -11,12 +11,9 @@ open Fixpoint
 module Cache = Cache.Cache
 module Stack = Stack.Stack
 module SCG = Scg.SCC
-module CallSet = Callset.CallSet
-module CallGraph = Callgraph.CallGraph
+module CallSet = Callgraph.CallSet
 
-type g = CallGraph.t
-
-let cg = ref Callgraph.CallGraph.phi
+let cg = ref CallSet.phi
 let cmd_result = Cflow.simplecmd_answer
 let seq_result = Cflow.seq_answer
 let func_ans = Cflow.func_answer
@@ -199,6 +196,7 @@ let rec step modul_ call sk cache p_ans : ans * Cache.t * SCG.t =
                   "write on res.return, set nat to bottom, empty label stack"
             | Call _i ->
                 Printf.printf "CALL\n\n";
+                cg := CallSet.union (CallSet.singleton (c1, _i.it)) !cg;
                 let funbody, locs, typ_idx =
                   getfbody modul_ (Int32.to_int _i.it)
                 in
