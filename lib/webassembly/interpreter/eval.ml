@@ -227,6 +227,63 @@ let rec step modul_ call sk cache p_ans : ans * Cache.t * SCG.t =
                 let _refs =
                   MS.table_getrefs _interval_idx (Some _fsign.it) ms'
                 in
+                let _targets =
+                  List.map
+                    (fun x -> fst (snd x))
+                    (Memories.Table.T.bindings _refs)
+                  |> List.filter_map (fun x -> x)
+                in
+                let typ_ = gettype modul_ (Int32.to_int _fsign.it) in
+                let _ti, _to =
+                  (*list * list*)
+                  match typ_ with FuncType (_ti, _to) -> (_ti, _to)
+                in
+                let _vals, _ms'' =
+                  ( MS.peek_n_operand (List.length _ti) ms',
+                    MS.pop_n_operand (List.length _ti) ms' )
+                in
+                let funcs =
+                  List.map (fun x -> getfbody modul_ (Int32.to_int x)) _targets
+                in
+                let _mses_prepped =
+                  List.map
+                    (fun (_f, _locs, (typ_idx : Wasm.Ast.var)) ->
+                      Cflow.prep_call _ms'' _vals modul_ _locs typ_idx.it)
+                    funcs
+                in
+                let computed, cache', scg =
+                  List.fold_left2
+                    (fun (a, c, g) m (f, _, _) ->
+                      let a', c', g' =
+                        fixpoint modul_ ((m, f), true) sk c p_ans step
+                      in
+                      (Answer.j a a', c', SCG.union g g'))
+                    (Bot, cache, SCG.empty) _mses_prepped funcs
+                in
+                let _f_res =
+                  MS.func_res (func_ans computed) ms' (List.length _to)
+                in
+                (Cflow.call_answer p_ans _f_res, cache', scg)
+            (* let ms'' = Cflow.prep_call ms' _vals modul_ locs typ_idx.it in
+               let ms''', c', g =
+                 fixpoint modul_ ((ms'', funbody), true) sk cache p_ans step
+               in
+               let _f_res =
+                 MS.func_res (func_ans ms''') ms' (List.length _to)
+               in
+               (Cflow.call_answer p_ans _f_res, c', g)*)
+            (*| CallIndirect (_fsign, _table_idx) ->
+                let _ti, _to =
+                  match gettype modul_ (Int32.to_int _fsign.it) with
+                  | FuncType (_ti, _to) -> (_ti, _to)
+                in
+                let expr_idx, ms' =
+                  (MS.peek_n_operand 1 ms |> List.hd, MS.pop_operand ms)
+                in
+                let _interval_idx = MS.operand_as_interval expr_idx ms in
+                let _refs =
+                  MS.table_getrefs _interval_idx (Some _fsign.it) ms'
+                in
                 let _calls =
                   List.fold_left
                     (fun x y ->
@@ -244,16 +301,17 @@ let rec step modul_ call sk cache p_ans : ans * Cache.t * SCG.t =
                 let rewritten = List.map (fun x -> x :: c2) _calls in
                 Printf.printf "CALL INDIRECT size of callset %i\n\n"
                   (List.length _calls);
-                let r =
+                let _r, c', scg =
                   List.fold_left
-                    (fun (r, c, scg) p ->
-                      let r', c', scg' =
+                    (fun (rl, c, scg) p ->
+                      let r, c', scg' =
                         fixpoint modul_ ((ms', p), false) sk c p_ans step
                       in
-                      (Answer.lub r r', c', SCG.union scg scg'))
-                    (Bot, cache, SCG.empty) rewritten
+                      (r :: rl, c', SCG.union scg scg'))
+                    ([], cache, SCG.empty) rewritten
                 in
-                r
+                let _r = List.fold_left (fun r r' -> Answer.lub r r') Bot _r in
+                (_r, c', scg)*)
             | Compare _r ->
                 (cmd_result (Ops.eval_relop _r ms) p_ans, cache, SCG.empty)
             | Test t ->
