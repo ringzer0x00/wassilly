@@ -12,10 +12,11 @@ module Cache = Cache.Cache
 module Stack = Stack.Stack
 module SCG = Scg.SCC
 module CallSet = Callset.CallSet
+module CallGraph = Callgraph.CallGraph
 
-type g = { i : int }
+type g = CallGraph.t
 
-let cg = ref { i = 0 }
+let cg = ref Callgraph.CallGraph.phi
 let cmd_result = Cflow.simplecmd_answer
 let seq_result = Cflow.seq_answer
 let func_ans = Cflow.func_answer
