@@ -4,7 +4,8 @@ module VM = Memories.Variablemem.VariableMem
 
 type ad = VM.aprondomain
 
-let int_unop (_u : Wasm.Ast.IntOp.unop) (_ : MS.t) = failwith "int unop @ alu"
+let int_unop (_u : Wasm.Ast.IntOp.unop) (_ : MS.t) =
+  match _u with Clz | Ctz | ExtendS _ | Popcnt -> failwith "unop int @ alu"
 
 let int_testop (_u : Wasm.Ast.IntOp.testop) (ms : MS.t) =
   match _u with Eqz -> Instructions.eqz ms
@@ -12,7 +13,7 @@ let int_testop (_u : Wasm.Ast.IntOp.testop) (ms : MS.t) =
 let int_relop (u : Wasm.Ast.IntOp.relop) (ms : MS.t) =
   match u with
   | GeS -> Instructions.ge_s ms
-  | GtS  -> Instructions.gt_s ms
+  | GtS -> Instructions.gt_s ms
   | LeS -> Instructions.le_s ms
   | Eq -> Instructions.eq ms
   | GtU -> failwith "not implemented, gtu"
@@ -29,16 +30,20 @@ let int_binop (o : Wasm.Ast.IntOp.binop) (ms : MS.t) =
   | Mul -> Instructions.mul ms
   | DivS -> Instructions.divs ms
   | DivU -> failwith "divu @ binop @ alu"
-  | _ -> failwith "int_binop @ alu other instr"
+  | And | Or | RemS | RemU | Rotl | Rotr | Shl | ShrS | ShrU | Xor ->
+      failwith "int_binop @ alu other instr"
 
 let float_binop (_o : Wasm.Ast.FloatOp.binop) (_ms : MS.t) =
-  failwith "float @ ali"
+  match _o with
+  | Add | CopySign | Div | Max | Min | Mul | Sub -> failwith "float binop"
 
 let float_testop (_t : Wasm.Ast.FloatOp.testop) (_ms : MS.t) =
-  failwith "float testop @ ali"
+  match _t with _ -> failwith "no float testop?"
 
 let float_unop (o : Wasm.Ast.FloatOp.unop) (ms : MS.t) =
-  match o with Neg -> Instructions.neg ms | _ -> failwith "float @ alu"
+  match o with
+  | Neg -> Instructions.neg ms
+  | Abs | Ceil | Floor | Nearest | Sqrt | Trunc -> failwith "float @ alu"
 
 let float_relop (_o : Wasm.Ast.FloatOp.relop) (_ms : MS.t) =
-  failwith "float relop @ ali"
+  match _o with Eq | Ge | Gt | Le | Lt | Ne -> failwith "float relop @ alu"
