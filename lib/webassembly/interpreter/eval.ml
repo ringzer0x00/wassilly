@@ -200,6 +200,7 @@ let rec step modul_ call sk cache (fin : Int32.t) p_ans : ans * Cache.t * SCG.t
             | Call _i ->
                 Printf.printf "CALL\n\n";
                 cg := CallSet.union (CallSet.singleton (fin, _i.it)) !cg;
+                let fin' = _i.it in
                 let funbody, locs, typ_idx =
                   getfbody modul_ (Int32.to_int _i.it)
                 in
@@ -216,7 +217,7 @@ let rec step modul_ call sk cache (fin : Int32.t) p_ans : ans * Cache.t * SCG.t
                 let ms''', c', g =
                   fixpoint modul_
                     ((ms'', funbody), true)
-                    sk cache fin p_ans step
+                    sk cache fin' p_ans step
                 in
                 let _f_res =
                   MS.func_res (func_ans ms''') ms' (List.length _to)
@@ -250,19 +251,21 @@ let rec step modul_ call sk cache (fin : Int32.t) p_ans : ans * Cache.t * SCG.t
                     MS.pop_n_operand (List.length _ti) ms' )
                 in
                 let funcs =
-                  List.map (fun x -> getfbody modul_ (Int32.to_int x)) _targets
+                  List.map
+                    (fun x -> (getfbody modul_ (Int32.to_int x), x))
+                    _targets
                 in
                 let _mses_prepped =
                   List.map
-                    (fun (_f, _locs, (typ_idx : Wasm.Ast.var)) ->
+                    (fun ((_f, _locs, (typ_idx : Wasm.Ast.var)), _) ->
                       Cflow.prep_call _ms'' _vals modul_ _locs typ_idx.it)
                     funcs
                 in
                 let computed, cache', scg =
                   List.fold_left2
-                    (fun (a, c, g) m (f, _, _) ->
+                    (fun (a, c, g) m ((f, _, _), fin') ->
                       let a', c', g' =
-                        fixpoint modul_ ((m, f), true) sk c fin p_ans step
+                        fixpoint modul_ ((m, f), true) sk c fin' p_ans step
                       in
                       (Answer.j a a', c', SCG.union g g'))
                     (Bot, cache, SCG.empty) _mses_prepped funcs
