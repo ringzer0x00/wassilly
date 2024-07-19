@@ -6,24 +6,32 @@ module LM = Fixpoint.Labelmap.LabelMap
 
 type abool = Datastructures.Abstractbit.t
 
-let intbool (_exp : Memories.Operandstack.operand) (_ms : MS.ms) : MS.t * MS.t =
+let intbool (exp : Memories.Operandstack.operand) (ms : MS.ms) =
   (*Top*)
   (*sat soving shenanigans.
     is it zero, non-zero or can it be both?*)
-  let t, f = Memories.Operandstack.boole_filter _exp _ms.var in
+  let t, f = Memories.Operandstack.boole_filter exp ms.var in
   let vm_t' : MS.VariableMem.t =
-    { loc = _ms.var.loc; glob = _ms.var.glob; ad = t }
+    { loc = ms.var.loc; glob = ms.var.glob; ad = t }
   in
-  let ms_t = MS.update_varmem vm_t' (Def _ms) in
   let vm_f' : MS.VariableMem.t =
-    { loc = _ms.var.loc; glob = _ms.var.glob; ad = f }
+    { loc = ms.var.loc; glob = ms.var.glob; ad = f }
   in
-  let ms_f = MS.update_varmem vm_f' (Def _ms) in
+  let ms_t ms = MS.update_varmem vm_t' (Def ms) in
+  let ms_f ms = MS.update_varmem vm_f' (Def ms) in
   match (Apronext.Apol.is_bottom t, Apronext.Apol.is_bottom f) with
-  | true, true -> Printf.printf "BOT BOT @ intbool\n"; (Bot, Bot)
-  | false, false -> Printf.printf "Def Def @ intbool\n"; (ms_t, ms_f)
-  | true, false -> Printf.printf "BOT Def @ intbool\n"; (Bot, ms_f)
-  | false, true -> Printf.printf "Def BOT @ intbool\n"; (ms_t, Bot)
+  | true, true ->
+      Printf.printf "BOT BOT @ intbool\n";
+      (Bot, Bot)
+  | false, false ->
+      Printf.printf "Def Def @ intbool\n";
+      (ms_t ms, ms_f ms)
+  | true, false ->
+      Printf.printf "BOT Def @ intbool\n";
+      (Bot, ms_f ms)
+  | false, true ->
+      Printf.printf "Def BOT @ intbool\n";
+      (ms_t ms, Bot)
 
 let cond ms =
   let cond = MS.peek_operand ms |> List.hd in
@@ -67,9 +75,9 @@ let seq_answer r1 r2 =
       return = MS.join res1.return res2.return;
     }
 
-let func_answer (_k_to : res t) =
+let func_answer (k_to : res t) =
   (*unsure about this, maybe i need the natural cont too?*)
-  match _k_to with Def to_ -> to_.return | Bot -> Bot
+  k_to >>= fun to_ -> to_.return
 
 let call_answer par ms_body =
   return { nat = ms_body; br = par.p_br; return = par.p_return }

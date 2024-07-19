@@ -5,7 +5,7 @@ let p path = Interpreter.Analysis.analyze path
 
 let fib, _g =
   p
-    "/home/ringzero/gitrepos/modular_chaotic_implicit_apron/test/wasm/tc/fib.wasm"
+    "/home/ringzero/gitrepos/modular_chaotic_implicit_apron/test/wasm/tc/callchain.wasm"
 
 let _ = Fixpoint.Callgraph.CallGraph.print _g
 

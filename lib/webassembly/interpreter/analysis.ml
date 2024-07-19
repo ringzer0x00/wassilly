@@ -44,9 +44,14 @@ let analyze fn =
   let _b, _locs, _t =
     Eval.getfbody mod_ (Int32.to_int (List.hd _entrypoints).it)
   in
+  let t_in, _t_out =
+    match Eval.gettype mod_ (Int32.to_int _t.it) with FuncType (i, o) -> (i, o)
+  in
   let call_ms =
     r_start >>=? fun d ->
-    Cflow.prep_call d.return (unbound_input 1 d.return) mod_ _locs _t.it
+    Cflow.prep_call d.return
+      (unbound_input (List.length t_in) d.return)
+      mod_ _locs _t.it
   in
   let ar, _, _ =
     Eval.fixpoint mod_

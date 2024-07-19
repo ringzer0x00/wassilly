@@ -6,4 +6,3 @@ module WASM = Test_wasm
   let _ = run_test_tt_main MON.all
     let _ = run_test_tt_main SLT.all*)
 let _ = WASM.r
-let _ = Printf.printf "length of stack: %i" WASM.length
