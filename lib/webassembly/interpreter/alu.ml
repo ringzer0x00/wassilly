@@ -12,9 +12,10 @@ let int_testop (_u : Wasm.Ast.IntOp.testop) (ms : MS.t) =
 let int_relop (u : Wasm.Ast.IntOp.relop) (ms : MS.t) =
   match u with
   | GeS -> Instructions.ge_s ms
-  | GtS | GtU -> Instructions.gt_s ms
+  | GtS  -> Instructions.gt_s ms
   | LeS -> Instructions.le_s ms
   | Eq -> Instructions.eq ms
+  | GtU -> failwith "not implemented, gtu"
   | GeU -> failwith "not implemented, GeU"
   | LeU -> failwith "not implemented, LeU"
   | LtS -> failwith "not implemented LtS"
