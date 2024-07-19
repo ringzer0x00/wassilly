@@ -14,6 +14,8 @@ module DefBot = struct
     match x with Bot -> raise UndefinedDefBot | Def a -> op a
 
   let ( >>=? ) = bind_exn
+  let compose_exn f g x = f x >>=? fun y -> g y
+  let ( >=>? ) = compose
 end
 
 module Writer = struct
