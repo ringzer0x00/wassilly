@@ -1,4 +1,6 @@
 module DefBot = struct
+  exception UndefinedDefBot
+
   type 'a t = Def of 'a | Bot
 
   let return x = Def x
@@ -8,10 +10,10 @@ module DefBot = struct
   let ( >=> ) = compose
   let map x f = x >>= fun d -> f d
 
-  let bind_failure x op =
-    match x with Bot -> failwith "bind_failure" | Def a -> op a
+  let bind_exn x op =
+    match x with Bot -> raise UndefinedDefBot | Def a -> op a
 
-  let ( >>=? ) = bind_failure
+  let ( >>=? ) = bind_exn
 end
 
 module Writer = struct
