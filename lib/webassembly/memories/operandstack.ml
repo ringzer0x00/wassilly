@@ -11,7 +11,7 @@ type operand =
   | LVarRef of VariableMem.binding
   | GVarRef of VariableMem.binding
   | FuncRef of Wasm.Types.ref_type * int32 option * int32 option
-  | Label of Labelstack.label
+  | Label of Label.label
 
 (*| Label*)
 type stack = operand list

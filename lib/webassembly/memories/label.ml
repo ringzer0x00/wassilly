@@ -1,7 +1,3 @@
-module SK = Datastructures.Liststack
-
-exception EmptyStack
-
 type cont = Language.Command.Command.t
 type block_type = Language.Typing.block_type
 
@@ -13,14 +9,9 @@ type labelcontent = {
 }
 
 and label = BlockLabel of labelcontent | LoopLabel of labelcontent
-(*type? idk*)
 
-(*a label containts:
-   - type of output
-   - natural continuation
-   - br continuation i.e.: loops are different from blocks when targeted by br instrs*)
-type 'a stack = 'a SK.stack
-type t = label stack
+let type_of_peeked_label = function BlockLabel c | LoopLabel c -> c.typ
+
 (*
 let peek_nth nth l = List.nth_opt l nth
 let pop_n : int -> t -> t = SK.pop_n

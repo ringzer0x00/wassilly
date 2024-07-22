@@ -112,23 +112,29 @@ let rec step modul_ call sk cache (fin : Int32.t)
                 (*check this br, its probably wrong*)
                 let idx = i.it |> Int32.to_int in
                 let l = MS.peek_nth_label ms idx in
-                let ms' =
+                let _t =
                   match l with
-                  | Some _ -> MS.pop_n_labels ms (idx + 1)
-                  | None -> MS.pop_n_labels ms idx
+                  | Some (Memories.Operandstack.Label l) ->
+                      Memories.Label.type_of_peeked_label l
+                  | Some _ -> failwith "cannot do it"
+                  | None -> failwith "cannot pop that deep"
+                in
+                let ms' =
+                  failwith
+                    "MS.pop_n_labels ms (idx + 1) | MS.pop_n_labels ms idx"
                 in
                 let ff l ms =
-                  (fun (x : Memories.Labelstack.labelcontent) ms ->
+                  (fun (x : Memories.Label.labelcontent) ms ->
                     fixpoint modul_
                       ((ms, x.brcont), true)
                       sk cache fin p_ans step)
                     l ms
                 in
-                Semantics.br l ms' p_ans cache ff
+                Semantics.br l ms' p_ans cache _t ff
             | Block (_bt, bbody) ->
                 let l =
                   Memories.Operandstack.Label
-                    (Memories.Labelstack.BlockLabel
+                    (Memories.Label.BlockLabel
                        { natcont = c2; brcont = c2; typ = _bt; cmd = [ c1 ] })
                 in
                 let ms' = Cflow.enter_label l ms in
@@ -139,7 +145,7 @@ let rec step modul_ call sk cache (fin : Int32.t)
             | Loop (_bt, lbody) ->
                 let _lab =
                   Memories.Operandstack.Label
-                    (Memories.Labelstack.LoopLabel
+                    (Memories.Label.LoopLabel
                        {
                          natcont = c2;
                          brcont = c1 :: c2;
@@ -155,7 +161,7 @@ let rec step modul_ call sk cache (fin : Int32.t)
             | If (_blocktype, _then, _else) ->
                 let l =
                   Memories.Operandstack.Label
-                    (Memories.Labelstack.BlockLabel
+                    (Memories.Label.BlockLabel
                        {
                          natcont = c2;
                          brcont = c2;
@@ -163,8 +169,10 @@ let rec step modul_ call sk cache (fin : Int32.t)
                          cmd = [ c1 ];
                        })
                 in
-                let ms' = Cflow.enter_label l ms in
-                let ms_t, ms_f = Cflow.ite_condition ms' in
+                let ms_t, ms_f = Cflow.ite_condition ms in
+                let ms_t, ms_f =
+                  (Cflow.enter_label l ms_t, Cflow.enter_label l ms_f)
+                in
                 let print_dom_ms (ms : MS.t) s =
                   match ms with
                   | Def _d ->
@@ -195,15 +203,25 @@ let rec step modul_ call sk cache (fin : Int32.t)
             | BrIf _i ->
                 let _ms_t, _ms_f = Cflow.ite_condition ms in
                 let l = MS.peek_nth_label ms (Int32.to_int _i.it) in
-                let _ms_t = MS.pop_n_labels ms (Int32.to_int _i.it + 1) in
+                let _t =
+                  match l with
+                  | Some (Memories.Operandstack.Label l) ->
+                      Memories.Label.type_of_peeked_label l
+                  | Some _ -> failwith "cannot do it"
+                  | None -> failwith "invalid depth (until funcs have a block)"
+                in
+                let _ms_t =
+                  failwith "MS.pop_n_labels ms (Int32.to_int _i.it + 1)"
+                in
                 let _ff l ms =
-                  (fun (x : Instructions.LS.labelcontent) ms ->
+                  (fun (x : Memories.Label.labelcontent) ms ->
                     fixpoint modul_
                       ((ms, x.brcont), true)
                       sk cache fin p_ans step)
                     l ms
                 in
-                let _a_t, c', scg = Semantics.br l _ms_t p_ans cache _ff in
+                let _t = failwith "" in
+                let _a_t, c', scg = Semantics.br l _ms_t p_ans cache _ff _t in
                 let ans : Answer.res t =
                   match _a_t with
                   | Def d ->

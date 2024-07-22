@@ -45,7 +45,7 @@ let ite_condition ms =
   let c, ms' = cond ms in
   filter_cond c ms'
 
-let enter_label _l _ms = failwith "MS.push_label l ms"
+let enter_label _l ms = Memories.Frame.push_operand [ _l ] ms
 
 let monad_step c1 ca f =
   match c1 with Bot -> (Bot, ca, SCG.SCC.empty) | Def d -> f d
