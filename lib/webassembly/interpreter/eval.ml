@@ -57,6 +57,7 @@ let rec step modul_ call sk cache (fin : Int32.t)
       match p with
       | [] ->
           ( (if MS.is_lsk_empty ms then end_of_func ms p_ans
+               (*this needs some work now, but the idea should be to put the control into end of block and there handle the returnlike case*)
              else cmd_result (Instructions.end_of_block ms) p_ans),
             cache,
             SCG.empty )
@@ -209,7 +210,9 @@ let rec step modul_ call sk cache (fin : Int32.t)
                       Memories.Label.type_of_peeked_label l
                       |> Memories.Label.extract_type_of_label modul_
                   | Some _ -> failwith "cannot do it"
-                  | None -> failwith "invalid depth (until funcs have a block)"
+                  | None ->
+                      failwith
+                        "(until funcs have a block) this is the reference case"
                 in
                 let _vals, _ms_t =
                   ( MS.peek_n_operand (List.length _t) _ms_t,
@@ -266,6 +269,15 @@ let rec step modul_ call sk cache (fin : Int32.t)
                 let funbody, locs, typ_idx =
                   getfbody modul_ (Int32.to_int _i.it)
                 in
+                let _flab =
+                  Memories.Label.BlockLabel
+                    {
+                      typ = Wasm.Ast.VarBlockType _i;
+                      cmd = funbody;
+                      natcont = [];
+                      brcont = [];
+                    }
+                in
                 let typ_ = gettype modul_ (Int32.to_int typ_idx.it) in
                 let _ti, _to =
                   (*list * list*)
@@ -275,7 +287,9 @@ let rec step modul_ call sk cache (fin : Int32.t)
                   ( MS.peek_n_operand (List.length _ti) ms,
                     MS.pop_n_operand (List.length _ti) ms )
                 in
-                let ms'' = Cflow.prep_call ms' _vals modul_ locs typ_idx.it in
+                let ms'' =
+                  Cflow.prep_call ms' _vals modul_ locs typ_idx.it (*flab*)
+                in
                 let ms''', c', g =
                   fixpoint modul_
                     ((ms'', funbody), true)
