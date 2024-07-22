@@ -13,6 +13,8 @@
     )
     (else
     local.get 0
+          local.get 0
+      br_if 0
     )
   )
 )

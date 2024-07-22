@@ -3,7 +3,7 @@ open Fixpoint.Answer
 open Datastructures.Monad.DefBot
 module SCG = Fixpoint.Scg.SCC
 
-let br label ms' p_ans cache _brt fixf  =
+let br label ms' p_ans cache fixf  =
   match label with
   | Some (Memories.Operandstack.Label BlockLabel b) ->
       ( Def

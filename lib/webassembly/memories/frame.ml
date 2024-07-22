@@ -23,9 +23,6 @@ let lsk s =
     s
 
 let peek_nth_label s nth = List.nth_opt (lsk s) nth
-let pop_n_labels _ _ =
-  (*recursive pop until desired number of label is popped*) 
-  failwith "pop_n_labels"
 
 (* update functions *)
 let update_operandstack ops' (k : t) =
@@ -42,6 +39,14 @@ let update_varmem var' (k : t) =
 
 (* pop functions *)
 let pop_operand k : t = k >>= fun a -> update_operandstack (a.ops |> pop) k
+
+let rec pop_n_labels _ms _n =
+  _ms >>= fun a ->
+  let n', sk' =
+    match peek a.ops with Label _ -> (_n - 1, pop a.ops) | _ -> (_n, pop a.ops)
+  in
+  let ms' = update_operandstack sk' _ms in
+  if n' = 0 then ms' else pop_n_labels ms' n'
 
 let pop_n_operand n k : t =
   k >>= fun a -> update_operandstack (a.ops |> pop_n n) k

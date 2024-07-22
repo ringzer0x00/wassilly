@@ -130,7 +130,7 @@ let rec step modul_ call sk cache (fin : Int32.t)
                       sk cache fin p_ans step)
                     l ms
                 in
-                Semantics.br l ms' p_ans cache _t ff
+                Semantics.br l ms' p_ans cache ff
             | Block (_bt, bbody) ->
                 let l =
                   Memories.Operandstack.Label
@@ -223,8 +223,7 @@ let rec step modul_ call sk cache (fin : Int32.t)
                       sk cache fin p_ans step)
                     l ms
                 in
-                let _t = failwith "" in
-                let _a_t, c', scg = Semantics.br l _ms_t p_ans cache _ff _t in
+                let _a_t, c', scg = Semantics.br l _ms_t p_ans cache _ff in
                 let ans : Answer.res t =
                   match _a_t with
                   | Def d ->
