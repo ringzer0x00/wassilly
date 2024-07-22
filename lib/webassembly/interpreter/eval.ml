@@ -108,37 +108,23 @@ let rec step modul_ call sk cache (fin : Int32.t)
                 (cmd_result (Ops.eval_unop uop ms) p_ans, cache, SCG.empty)
             | Drop -> (cmd_result (MS.pop_operand ms) p_ans, cache, SCG.empty)
             | Nop -> (cmd_result ms p_ans, cache, SCG.empty)
-            | Br i -> (
+            | Br i ->
                 (*check this br, its probably wrong*)
                 let idx = i.it |> Int32.to_int in
                 let l = MS.peek_nth_label ms idx in
-                match l with
-                | Some (BlockLabel b) ->
-                    let ms' : MS.t = MS.pop_n_labels ms (idx + 1) in
-                    ( Def
-                        {
-                          nat = Bot;
-                          br = LM.add_lub b.cmd ms' p_ans.p_br;
-                          return = p_ans.p_return;
-                        },
-                      cache,
-                      SCG.empty )
-                | Some (LoopLabel l) ->
-                    let ms' : MS.t = MS.pop_n_labels ms (idx + 1) in
+                let ms' =
+                  match l with
+                  | Some _ -> MS.pop_n_labels ms (idx + 1)
+                  | None -> MS.pop_n_labels ms idx
+                in
+                let ff l ms =
+                  (fun (x : Instructions.LS.labelcontent) ms ->
                     fixpoint modul_
-                      ((ms', l.brcont), true)
-                      sk cache fin p_ans step
-                | None ->
-                    Printf.printf "br noeneee";
-                    let ms' : MS.t = MS.pop_n_labels ms idx in
-                    ( Def
-                        {
-                          nat = Bot;
-                          br = LM.empty;
-                          return = MS.join p_ans.p_return ms';
-                        },
-                      cache,
-                      SCG.empty ))
+                      ((ms, x.brcont), true)
+                      sk cache fin p_ans step)
+                    l ms
+                in
+                Semantics.br l ms' p_ans cache ff
             | Block (_bt, bbody) ->
                 let l =
                   Memories.Labelstack.block
@@ -202,7 +188,7 @@ let rec step modul_ call sk cache (fin : Int32.t)
                 let _ms_t, _ms_f = Cflow.ite_condition ms in
                 let _ms_t = MS.pop_n_labels ms (Int32.to_int _i.it + 1) in
                 let l = MS.peek_nth_label ms (Int32.to_int _i.it) in
-                let _ff (l : Instructions.LS.labelcontent) ms =
+                let _ff l ms =
                   (fun (x : Instructions.LS.labelcontent) ms ->
                     fixpoint modul_
                       ((ms, x.brcont), true)
