@@ -193,10 +193,35 @@ let rec step modul_ call sk cache (fin : Int32.t) p_ans : ans * Cache.t * SCG.t
                 let a, scg = (MA.lub a_true a_false, SCG.union _scgt _scgf) in
                 let a = Cflow.test_lub_pans a p_ans in
                 (a, c'', scg)
-            | BrIf _ -> failwith "weird ass instruction"
+            | BrIf _i ->
+                let _ms_t, _ms_f = Cflow.ite_condition ms in
+                let l = MS.peek_nth_label ms (Int32.to_int _i.it) in
+                let _ff (l : Instructions.LS.labelcontent) ms =
+                  (fun (x : Instructions.LS.labelcontent) ms ->
+                    fixpoint modul_
+                      ((ms, x.brcont), true)
+                      sk cache fin p_ans step)
+                    l ms
+                in
+                let _ = Semantics.br l _ms_t p_ans cache _ff in
+                failwith ""
+            (*let a_true, c', _scgt =
+                fixpoint modul_ ((ms_t, _then), false) sk cache fin p_ans step
+              in
+              let a_true = Cflow.block_result a_true [ c1 ] in
+              print_dom_ans a_true "true";
+              let a_false, c'', _scgf =
+                fixpoint modul_ ((ms_f, _else), false) sk c' fin p_ans step
+              in
+              let a_false = Cflow.block_result a_false [ c1 ] in
+              print_dom_ans a_false "false";
+              let a, scg = (MA.lub a_true a_false, SCG.union _scgt _scgf) in
+              let a = Cflow.test_lub_pans a p_ans in
+              (a, c'', scg)*)
             | Return ->
                 failwith
-                  "write on res.return, set nat to bottom, empty label stack"
+                  "perform adequate stack manips, write on res.return, set nat \
+                   to bottom, empty label stack"
             | Call _i ->
                 Printf.printf "CALL\n\n";
                 cg := CallSet.union (CallSet.singleton (fin, _i.it)) !cg;
