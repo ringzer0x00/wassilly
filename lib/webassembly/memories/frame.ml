@@ -23,7 +23,9 @@ let lsk s =
     s
 
 let peek_nth_label s nth = List.nth_opt (lsk s) nth
-let pop_n_labels _ _ = failwith "pop_n_labels"
+let pop_n_labels _ _ =
+  (*recursive pop until desired number of label is popped*) 
+  failwith "pop_n_labels"
 
 (* update functions *)
 let update_operandstack ops' (k : t) =

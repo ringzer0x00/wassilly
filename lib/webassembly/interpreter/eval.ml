@@ -203,16 +203,19 @@ let rec step modul_ call sk cache (fin : Int32.t)
             | BrIf _i ->
                 let _ms_t, _ms_f = Cflow.ite_condition ms in
                 let l = MS.peek_nth_label ms (Int32.to_int _i.it) in
-                let _t =
+                let _, _t =
                   match l with
                   | Some (Memories.Operandstack.Label l) ->
                       Memories.Label.type_of_peeked_label l
+                      |> Memories.Label.extract_type_of_label modul_
                   | Some _ -> failwith "cannot do it"
                   | None -> failwith "invalid depth (until funcs have a block)"
                 in
-                let _ms_t =
-                  failwith "MS.pop_n_labels ms (Int32.to_int _i.it + 1)"
+                let _vals, _ms_t =
+                  ( MS.peek_n_operand (List.length _t) _ms_t,
+                    MS.pop_n_operand (List.length _t) _ms_t )
                 in
+                let _ms_t = MS.pop_n_labels ms (Int32.to_int _i.it + 1) in
                 let _ff l ms =
                   (fun (x : Memories.Label.labelcontent) ms ->
                     fixpoint modul_
