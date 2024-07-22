@@ -1,4 +1,4 @@
-open Instructions.LS
+open Memories.Labelstack
 open Fixpoint.Answer
 open Datastructures.Monad.DefBot
 module SCG = Fixpoint.Scg.SCC

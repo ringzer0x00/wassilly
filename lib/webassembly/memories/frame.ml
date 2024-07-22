@@ -7,7 +7,6 @@ type ms = {
   var : VariableMem.t;
   mem : Linearmem.t;
   tab : Tables.t;
-  lsk : Labelstack.t;
 }
 
 type 'a tt = 'a t
@@ -17,28 +16,26 @@ let peek = SK.peek
 let peek_n = SK.peek_n
 let pop = SK.pop
 let pop_n = SK.pop_n
-let peek_nth_label = Labelstack.peek_nth
+
+let lsk s =
+  List.filter
+    (fun x -> match x with Operandstack.Label _ -> true | _ -> false)
+    s
+
+let peek_nth_label s nth = List.nth_opt (lsk s) nth
 
 (* update functions *)
 let update_operandstack ops' (k : t) =
-  k >>= fun a ->
-  return { ops = ops'; var = a.var; mem = a.mem; tab = a.tab; lsk = a.lsk }
+  k >>= fun a -> return { ops = ops'; var = a.var; mem = a.mem; tab = a.tab }
 
 let update_tables tab' (k : t) =
-  k >>= fun a ->
-  return { ops = a.ops; var = a.var; mem = a.mem; tab = tab'; lsk = a.lsk }
+  k >>= fun a -> return { ops = a.ops; var = a.var; mem = a.mem; tab = tab' }
 
 let update_linearmem mem' (k : t) =
-  k >>= fun a ->
-  return { ops = a.ops; var = a.var; mem = mem'; tab = a.tab; lsk = a.lsk }
+  k >>= fun a -> return { ops = a.ops; var = a.var; mem = mem'; tab = a.tab }
 
 let update_varmem var' (k : t) =
-  k >>= fun a ->
-  return { ops = a.ops; var = var'; mem = a.mem; tab = a.tab; lsk = a.lsk }
-
-let update_labelstack lsk' (k : t) =
-  k >>= fun a ->
-  return { ops = a.ops; var = a.var; mem = a.mem; tab = a.tab; lsk = lsk' }
+  k >>= fun a -> return { ops = a.ops; var = var'; mem = a.mem; tab = a.tab }
 
 (* pop functions *)
 let pop_operand k : t = k >>= fun a -> update_operandstack (a.ops |> pop) k
@@ -46,17 +43,14 @@ let pop_operand k : t = k >>= fun a -> update_operandstack (a.ops |> pop) k
 let pop_n_operand n k : t =
   k >>= fun a -> update_operandstack (a.ops |> pop_n n) k
 
-let pop_n_labels k n = k >>= fun a -> update_labelstack (a.lsk |> pop_n n) k
-
 (* peek functions *)
 let peek_n_operand n k = k >>=? fun a -> a.ops |> peek_n n
 let peek_operand k = peek_n_operand 1 k
 let peek_binop k = peek_n_operand 2 k
-let peek_nth_label k n = k >>=? fun a -> a.lsk |> peek_nth_label n
+let peek_nth_label k n = k >>=? fun a -> peek_nth_label a.ops n
 
 (* push functions *)
 let push_operand x k = k >>= fun a -> update_operandstack (x @ a.ops) k
-let push_label x k = k >>= fun a -> update_labelstack (x :: a.lsk) k
 
 (*table stuff*)
 let table_getrefs idx typ k =
@@ -81,7 +75,7 @@ let bind_vars b gl (k : t) =
 let is_lsk_empty k =
   match k with
   | Bot -> failwith "lsk emptu @ frame"
-  | Def kx -> Labelstack.is_empty kx.lsk
+  | Def kx -> ( match lsk kx.ops with [] -> true | _ -> false)
 
 let assign_var k gl b e =
   k >>= fun a ->
@@ -91,7 +85,6 @@ let assign_var k gl b e =
         Operandstack.concretize_assignment a.ops a.var
           (Operandstack.ref_of_binding b gl);
       var = VariableMem.assign a.var gl b (Operandstack.operand_to_expr a.var e);
-      lsk = a.lsk;
       tab = a.tab;
       mem = a.mem;
     }
@@ -113,7 +106,7 @@ let join (k1 : t) (k2 : t) =
       let var' = VariableMem.join k1.var k2.var in
       let mem' = Linearmem.join k1.mem k2.mem in
       let tab' = Tables.join k1.tab k2.tab in
-      return { ops = ops'; var = var'; tab = tab'; mem = mem'; lsk = k1.lsk }
+      return { ops = ops'; var = var'; tab = tab'; mem = mem' }
 
 let widen (k1 : t) (k2 : t) =
   match (k1, k2) with
@@ -125,7 +118,7 @@ let widen (k1 : t) (k2 : t) =
       let var' = VariableMem.widen k1.var k2.var in
       let mem' = Linearmem.widen k1.mem k2.mem in
       let tab' = Tables.widen k1.tab k2.tab in
-      return { ops = ops'; var = var'; tab = tab'; mem = mem'; lsk = k1.lsk }
+      return { ops = ops'; var = var'; tab = tab'; mem = mem' }
 
 let leq (k1 : t) (k2 : t) =
   match (k1, k2) with
@@ -155,7 +148,7 @@ let filter _ctx _c = failwith "filter not implemented"
 let new_fun_ctx k locs =
   k >>= fun a ->
   let var' = VariableMem.new_ a.var locs in
-  update_varmem var' k |> update_operandstack [] |> update_labelstack []
+  update_varmem var' k |> update_operandstack []
 
 let func_res _k_from _k_to tp =
   Printf.printf "func_result\n\n";
@@ -180,5 +173,4 @@ let func_res _k_from _k_to tp =
   Operandstack.print_stack _peeked_conc;
   let _sk_to = _peeked_conc @ _to_sk in
   let _vmem' = VariableMem.return_ from.var to_.var in
-  return
-    { ops = _sk_to; var = _vmem'; tab = to_.tab; mem = to_.mem; lsk = to_.lsk }
+  return { ops = _sk_to; var = _vmem'; tab = to_.tab; mem = to_.mem }

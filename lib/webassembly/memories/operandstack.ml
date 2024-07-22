@@ -43,6 +43,13 @@ let push (x, s) = x :: s
 let append sp s = sp @ s
 let push_ops = append
 
+let lsk s =
+  List.filter
+    (fun x -> match x with Label _ -> true | _ -> false)
+    s
+
+let peek_nth_label s nth = List.nth_opt (lsk s) nth
+
 let const_expr (mem : varmemories) inter =
   Apronext.Texprext.cst mem.ad.env (Apronext.Coeffext.Interval inter)
 
