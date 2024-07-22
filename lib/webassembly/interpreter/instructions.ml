@@ -11,8 +11,22 @@ let enter_block bl prec =
 
 let end_of_block prec =
   prec >>= fun d ->
-  return
-    { ops = failwith "pop first label"; var = d.var; mem = d.mem; tab = d.tab }
+  let _, _t =
+    match peek_nth_label d.ops 0 with
+    | Some (Label l) ->
+        Memories.Label.type_of_peeked_label l
+        |> Memories.Label.extract_type_of_label "moduleee"
+    | _ -> failwith "cannot handle"
+  in
+  let _vals, ops' =
+    (peek_n (List.length _t) d.ops, pop_n (List.length _t) d.ops)
+  in
+  let prec' =
+    return
+      (*peek first label, discover type and blabla*)
+      { ops = ops'; var = d.var; mem = d.mem; tab = d.tab }
+  in
+  Memories.Frame.pop_n_labels prec' 1
 
 let brpeek prec n = prec >>=? fun d -> peek_nth_label d.ops n
 
