@@ -51,6 +51,7 @@ let monad_step c1 ca f =
   match c1 with Bot -> (Bot, ca, SCG.SCC.empty) | Def d -> f d
 
 let block_result r_b block_body =
+  Printf.printf "BLCOK RESULT";
   r_b >>= fun r ->
   return
     {
@@ -63,7 +64,7 @@ let simplecmd_answer r pres =
   return { nat = r; br = pres.p_br; return = pres.p_return }
 
 let end_of_func r pres =
-  return { nat = Bot; br = pres.p_br; return = MS.join r pres.p_return }
+  return { nat = Bot; br = LM.empty; return = MS.join r pres.p_return }
 
 let seq_answer r1 r2 =
   r1 >>= fun res1 ->

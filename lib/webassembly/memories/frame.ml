@@ -46,7 +46,7 @@ let pop_operand k : t = k >>= fun a -> update_operandstack (a.ops |> pop) k
 let pop_n_operand n k : t =
   k >>= fun a -> update_operandstack (a.ops |> pop_n n) k
 
-let pop_n_labels k n = k >>=? fun a -> update_labelstack (a.lsk |> pop_n n) k
+let pop_n_labels k n = k >>= fun a -> update_labelstack (a.lsk |> pop_n n) k
 
 (* peek functions *)
 let peek_n_operand n k = k >>=? fun a -> a.ops |> peek_n n

@@ -21,4 +21,4 @@ let br label ms' p_ans cache fixf =
         cache,
         SCG.empty )
 
-let invoke = failwith ""
+let invoke = 0

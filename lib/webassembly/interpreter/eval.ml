@@ -45,11 +45,14 @@ let fixpoint _module (call, ifb) stack cache fin pres stepf =
           | false -> Iterate.iterate _module call stack cache fin pres stepf))
 
 (*eval should not be called recursively*)
-let rec step modul_ call sk cache (fin : Int32.t) p_ans : ans * Cache.t * SCG.t
-    =
+let rec step modul_ call sk cache (fin : Int32.t)
+    (p_ans : Answer.partial_answer) : ans * Cache.t * SCG.t =
   let (ms : MS.t), (p : p) = call in
   match ms with
-  | Bot -> (Bot, cache, SCG.empty)
+  | Bot ->
+      ( Def { nat = Bot; return = p_ans.p_return; br = p_ans.p_br },
+        cache,
+        SCG.empty )
   | Def _ -> (
       match p with
       | [] ->
@@ -109,9 +112,9 @@ let rec step modul_ call sk cache (fin : Int32.t) p_ans : ans * Cache.t * SCG.t
                 (*check this br, its probably wrong*)
                 let idx = i.it |> Int32.to_int in
                 let l = MS.peek_nth_label ms idx in
-                let ms' : MS.t = MS.pop_n_labels ms (idx + 1) in
                 match l with
                 | Some (BlockLabel b) ->
+                    let ms' : MS.t = MS.pop_n_labels ms (idx + 1) in
                     ( Def
                         {
                           nat = Bot;
@@ -121,15 +124,17 @@ let rec step modul_ call sk cache (fin : Int32.t) p_ans : ans * Cache.t * SCG.t
                       cache,
                       SCG.empty )
                 | Some (LoopLabel l) ->
+                    let ms' : MS.t = MS.pop_n_labels ms (idx + 1) in
                     fixpoint modul_
                       ((ms', l.brcont), true)
                       sk cache fin p_ans step
                 | None ->
-                    (*return-like case*)
+                    Printf.printf "br noeneee";
+                    let ms' : MS.t = MS.pop_n_labels ms idx in
                     ( Def
                         {
                           nat = Bot;
-                          br = p_ans.p_br;
+                          br = LM.empty;
                           return = MS.join p_ans.p_return ms';
                         },
                       cache,
@@ -195,6 +200,7 @@ let rec step modul_ call sk cache (fin : Int32.t) p_ans : ans * Cache.t * SCG.t
                 (a, c'', scg)
             | BrIf _i ->
                 let _ms_t, _ms_f = Cflow.ite_condition ms in
+                let _ms_t = MS.pop_n_labels ms (Int32.to_int _i.it + 1) in
                 let l = MS.peek_nth_label ms (Int32.to_int _i.it) in
                 let _ff (l : Instructions.LS.labelcontent) ms =
                   (fun (x : Instructions.LS.labelcontent) ms ->
@@ -203,7 +209,7 @@ let rec step modul_ call sk cache (fin : Int32.t) p_ans : ans * Cache.t * SCG.t
                       sk cache fin p_ans step)
                     l ms
                 in
-                let _ = Semantics.br l _ms_t p_ans cache _ff in
+                let _a_t, _c', _scg' = Semantics.br l _ms_t p_ans cache _ff in
                 failwith ""
             (*let a_true, c', _scgt =
                 fixpoint modul_ ((ms_t, _then), false) sk cache fin p_ans step
