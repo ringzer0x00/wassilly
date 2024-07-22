@@ -74,7 +74,7 @@ let boole_filter o (mem : varmemories) =
         Apronext.Abstractext.filter_tcons Apronext.Apol.man mem.ad c
       in
       (filter c, filter (Apronext.Tconsext.neg c))
-  | _ -> failwith "nope @ boole_as_ab"
+  | _ -> (mem.ad, mem.ad)
 
 let operand_to_expr (mem : varmemories) op =
   match op with

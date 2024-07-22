@@ -186,8 +186,8 @@ let rec step modul_ call sk cache (fin : Int32.t)
                 (a, c'', scg)
             | BrIf _i ->
                 let _ms_t, _ms_f = Cflow.ite_condition ms in
-                let _ms_t = MS.pop_n_labels ms (Int32.to_int _i.it + 1) in
                 let l = MS.peek_nth_label ms (Int32.to_int _i.it) in
+                let _ms_t = MS.pop_n_labels ms (Int32.to_int _i.it + 1) in
                 let _ff l ms =
                   (fun (x : Instructions.LS.labelcontent) ms ->
                     fixpoint modul_
@@ -195,8 +195,25 @@ let rec step modul_ call sk cache (fin : Int32.t)
                       sk cache fin p_ans step)
                     l ms
                 in
-                let _a_t, _c', _scg' = Semantics.br l _ms_t p_ans cache _ff in
-                failwith ""
+                let _a_t, c', scg = Semantics.br l _ms_t p_ans cache _ff in
+                let ans : Answer.res t =
+                  match _a_t with
+                  | Def d ->
+                      Def
+                        {
+                          nat = _ms_f;
+                          return = MS.join p_ans.p_return d.return;
+                          br = LM.lub p_ans.p_br d.br;
+                        }
+                  | Bot ->
+                      Def
+                        {
+                          nat = _ms_f;
+                          return = p_ans.p_return;
+                          br = p_ans.p_br;
+                        }
+                in
+                (ans, c', scg)
             (*let a_true, c', _scgt =
                 fixpoint modul_ ((ms_t, _then), false) sk cache fin p_ans step
               in
