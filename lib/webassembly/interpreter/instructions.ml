@@ -12,12 +12,7 @@ let enter_block bl prec =
 let end_of_block prec =
   prec >>= fun d ->
   return
-    {
-      ops = (match d.ops with [] -> failwith "" | _ :: t -> t);
-      var = d.var;
-      mem = d.mem;
-      tab = d.tab;
-    }
+    { ops = failwith "pop first label"; var = d.var; mem = d.mem; tab = d.tab }
 
 let brpeek prec n = prec >>=? fun d -> peek_nth_label d.ops n
 

@@ -118,7 +118,7 @@ let rec step modul_ call sk cache (fin : Int32.t)
                   | None -> MS.pop_n_labels ms idx
                 in
                 let ff l ms =
-                  (fun (x : Instructions.LS.labelcontent) ms ->
+                  (fun (x : Memories.Labelstack.labelcontent) ms ->
                     fixpoint modul_
                       ((ms, x.brcont), true)
                       sk cache fin p_ans step)
@@ -127,8 +127,9 @@ let rec step modul_ call sk cache (fin : Int32.t)
                 Semantics.br l ms' p_ans cache ff
             | Block (_bt, bbody) ->
                 let l =
-                  Memories.Labelstack.block
-                    { natcont = c2; brcont = c2; typ = _bt; cmd = [ c1 ] }
+                  Memories.Operandstack.Label
+                    (Memories.Labelstack.BlockLabel
+                       { natcont = c2; brcont = c2; typ = _bt; cmd = [ c1 ] })
                 in
                 let ms' = Cflow.enter_label l ms in
                 let a, c, g =
@@ -137,8 +138,14 @@ let rec step modul_ call sk cache (fin : Int32.t)
                 (Cflow.block_result a [ c1 ], c, g)
             | Loop (_bt, lbody) ->
                 let _lab =
-                  Memories.Labelstack.loop
-                    { natcont = c2; brcont = c1 :: c2; typ = _bt; cmd = [ c1 ] }
+                  Memories.Operandstack.Label
+                    (Memories.Labelstack.LoopLabel
+                       {
+                         natcont = c2;
+                         brcont = c1 :: c2;
+                         typ = _bt;
+                         cmd = [ c1 ];
+                       })
                 in
                 let ms' = Cflow.enter_label _lab ms in
                 let a, c, g =
@@ -147,13 +154,14 @@ let rec step modul_ call sk cache (fin : Int32.t)
                 (Cflow.block_result a [ c1 ], c, g)
             | If (_blocktype, _then, _else) ->
                 let l =
-                  Memories.Labelstack.block
-                    {
-                      natcont = c2;
-                      brcont = c2;
-                      typ = _blocktype;
-                      cmd = [ c1 ];
-                    }
+                  Memories.Operandstack.Label
+                    (Memories.Labelstack.BlockLabel
+                       {
+                         natcont = c2;
+                         brcont = c2;
+                         typ = _blocktype;
+                         cmd = [ c1 ];
+                       })
                 in
                 let ms' = Cflow.enter_label l ms in
                 let ms_t, ms_f = Cflow.ite_condition ms' in

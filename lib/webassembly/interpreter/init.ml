@@ -160,7 +160,6 @@ let init (_mod : Wasm.Ast.module_) : Memories.Frame.t =
           VM.empty
             (Apronext.Apol.top (Datastructures.Aprondomain.make_env [||] [||]));
         tab = [];
-        lsk = [];
       }
   in
   let _tab_initialized = [ init_tab _mod ms_start ] in
@@ -173,7 +172,6 @@ let init (_mod : Wasm.Ast.module_) : Memories.Frame.t =
            VM.empty
              (Apronext.Apol.top (Datastructures.Aprondomain.make_env [||] [||]));
          tab = _tab_initialized;
-         lsk = [];
        })
 (* Data Segments
 
