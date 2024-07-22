@@ -43,7 +43,8 @@ let float_testop (_t : Wasm.Ast.FloatOp.testop) (_ms : MS.t) =
 let float_unop (o : Wasm.Ast.FloatOp.unop) (ms : MS.t) =
   match o with
   | Neg -> Instructions.neg ms
-  | Abs | Ceil | Floor | Nearest | Sqrt | Trunc -> failwith "float @ alu"
+  | Sqrt -> Instructions.sqrt ms
+  | Abs | Ceil | Floor | Nearest  | Trunc -> failwith "float @ alu"
 
 let float_relop (_o : Wasm.Ast.FloatOp.relop) (_ms : MS.t) =
   match _o with Eq | Ge | Gt | Le | Lt | Ne -> failwith "float relop @ alu"
