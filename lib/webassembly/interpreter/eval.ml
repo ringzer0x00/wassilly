@@ -241,6 +241,10 @@ let rec step modul_ call sk cache (fin : Int32.t) p_ans : ans * Cache.t * SCG.t
                     (Memories.Table.T.bindings _refs)
                   |> List.filter_map (fun x -> x)
                 in
+                List.iter
+                  (fun x ->
+                    cg := CallSet.union (CallSet.singleton (fin, x)) !cg)
+                  _targets;
                 let typ_ = gettype modul_ (Int32.to_int _fsign.it) in
                 let _ti, _to =
                   (*list * list*)
