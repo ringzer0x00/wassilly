@@ -9,7 +9,7 @@
     (then
       i32.const 3
       local.get 0
-      br 0
+      br_if 0
     )
     (else
     local.get 0

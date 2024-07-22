@@ -11,6 +11,7 @@ type operand =
   | LVarRef of VariableMem.binding
   | GVarRef of VariableMem.binding
   | FuncRef of Wasm.Types.ref_type * int32 option * int32 option
+  | Label of Labelstack.label
 
 (*| Label*)
 type stack = operand list
@@ -29,7 +30,8 @@ let print_stack s =
           Printf.printf ";"
       | LVarRef _ -> Printf.printf "LVarRef;"
       | GVarRef _ -> Printf.printf "GVarRef;"
-      | FuncRef _ -> Printf.printf "FuncRef;")
+      | FuncRef _ -> Printf.printf "FuncRef;"
+      | Label _ -> Printf.printf "label")
     s;
   Printf.printf "]\n"
 
@@ -54,6 +56,7 @@ let ref_to_apronvar op =
   | BooleanExpression _ ->
       failwith "ref to apronvar @ operandstack - bexpr case"
   | FuncRef _ -> failwith "no correspondance of funcref here"
+  | Label _ -> failwith "apronvar of label lmao"
 
 let ref_of_binding b gl =
   match gl with VariableMem.Glob -> GVarRef b | VariableMem.Loc -> LVarRef b
@@ -83,6 +86,7 @@ let operand_to_expr (mem : varmemories) op =
   | GVarRef _ as r -> ref_to_apronvar r |> var_expr mem
   | BooleanExpression constr -> const_expr mem (boole_as_int constr mem)
   | FuncRef _ -> failwith "cannot convert funcref to expr"
+  | Label _ -> failwith "cannot convert to expr label"
 
 let concretize (mem : varmemories) op =
   match op with
@@ -91,6 +95,7 @@ let concretize (mem : varmemories) op =
   | GVarRef i -> VariableMem.lookup mem i VariableMem.Glob
   | BooleanExpression c -> boole_as_int c mem
   | FuncRef _ -> failwith "idk @ concretize funcref"
+  | Label _ -> failwith "cannot concretize label"
 
 let concretize_in_exp (mem : varmemories) op =
   concretize mem op |> const_expr mem
@@ -139,6 +144,7 @@ let concretize_assignment (s : stack) (mem : varmemories) (ref : operand) =
         in
         failwith "re-construct bex', analyse stuff in bex blabla"
     | FuncRef _ -> failwith "funcref @ concretize"
+    | Label _ -> failwith "label@concretize"
   in
   List.map (fun x -> repl x ref) s
 
@@ -191,6 +197,7 @@ let jw_operand (mem1, o1) (mem2, o2) operation =
 
 let join (m1, s1) (m2, s2) =
   (*two memories are needed, one for locals and one for globals*)
+  Printf.printf "~~ %i, %i" (List.length s1) (List.length s2);
   List.map2 (fun x y -> jw_operand (m1, x) (m2, y) ival_join) s1 s2
 
 let widen (m1, s1) (m2, s2) =
