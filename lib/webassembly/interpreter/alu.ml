@@ -16,12 +16,12 @@ let int_relop (u : Wasm.Ast.IntOp.relop) (ms : MS.t) =
   | GtS -> Instructions.gt_s ms
   | LeS -> Instructions.le_s ms
   | Eq -> Instructions.eq ms
+  | Ne -> Instructions.ne ms
+  | LtS -> Instructions.lt_s ms
   | GtU -> failwith "not implemented, gtu"
   | GeU -> failwith "not implemented, GeU"
   | LeU -> failwith "not implemented, LeU"
-  | LtS -> failwith "not implemented LtS"
-  | LtU -> failwith "not implemented LtU"
-  | Ne -> failwith "not implemented Ne"
+  | LtU -> failwith "not implemented LtU (UINT_MAX + 1)"
 
 let int_binop (o : Wasm.Ast.IntOp.binop) (ms : MS.t) =
   match o with
@@ -44,7 +44,7 @@ let float_unop (o : Wasm.Ast.FloatOp.unop) (ms : MS.t) =
   match o with
   | Neg -> Instructions.neg ms
   | Sqrt -> Instructions.sqrt ms
-  | Abs | Ceil | Floor | Nearest  | Trunc -> failwith "float @ alu"
+  | Abs | Ceil | Floor | Nearest | Trunc -> failwith "float @ alu"
 
 let float_relop (_o : Wasm.Ast.FloatOp.relop) (_ms : MS.t) =
   match _o with Eq | Ge | Gt | Le | Lt | Ne -> failwith "float relop @ alu"

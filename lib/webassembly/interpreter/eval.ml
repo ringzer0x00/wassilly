@@ -130,7 +130,7 @@ let rec step modul_ call sk cache (fin : Int32.t) ft
                     (Memories.Label.BlockLabel
                        { natcont = c2; brcont = c2; typ = _bt; cmd = [ c1 ] })
                 in
-                let ms' = Cflow.enter_label  l ms modul_ in
+                let ms' = Cflow.enter_label l ms modul_ in
                 let a, c, g =
                   fixpoint modul_
                     ((ms', bbody), false)
@@ -149,7 +149,7 @@ let rec step modul_ call sk cache (fin : Int32.t) ft
                          cmd = [ c1 ];
                        })
                 in
-                let ms' = Cflow.enter_label _lab ms   modul_ in
+                let ms' = Cflow.enter_label _lab ms modul_ in
                 let a, c, g =
                   fixpoint modul_
                     ((ms', lbody), true)
@@ -170,7 +170,8 @@ let rec step modul_ call sk cache (fin : Int32.t) ft
                 in
                 let ms_t, ms_f = Cflow.ite_condition ms in
                 let ms_t, ms_f =
-                  (Cflow.enter_label l ms_t modul_, Cflow.enter_label l ms_f modul_)
+                  ( Cflow.enter_label l ms_t modul_,
+                    Cflow.enter_label l ms_f modul_ )
                 in
                 let print_dom_ms (ms : MS.t) s =
                   match ms with
@@ -346,6 +347,7 @@ let rec step modul_ call sk cache (fin : Int32.t) ft
                 let resex = Memories.Operandstack.FuncRef (t, None, None) in
                 (cmd_result (Instructions.read ms resex) p_ans, cache, SCG.empty)
             | RefIsNull -> failwith ""
+            | Convert _ -> failwith "convert"
             | _ ->
                 Wasm.Print.instr Stdlib.stdout 100 c1;
                 failwith "other commands"
