@@ -34,7 +34,6 @@ let br depth ms p_ans cache modul_ ft fixf =
       fixf l ms'''
       (*this is wrong... probably, i think i should do stack manips beforehand*)
   | None ->
-      Printf.printf "(*return-like case -> legacy, it should be an error!!!!*)";
       let ms'' =
         if not (MS.is_lsk_empty ms') then MS.pop_n_labels ms' depth else ms'
       in
