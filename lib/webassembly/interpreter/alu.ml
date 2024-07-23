@@ -47,5 +47,11 @@ let float_unop (o : Wasm.Ast.FloatOp.unop) (ms : MS.t) =
   | Sqrt -> Instructions.sqrt ms
   | Abs | Ceil | Floor | Nearest | Trunc -> failwith "float @ alu"
 
-let float_relop (_o : Wasm.Ast.FloatOp.relop) (_ms : MS.t) =
-  match _o with Eq | Ge | Gt | Le | Lt | Ne -> failwith "float relop @ alu"
+let float_relop (o : Wasm.Ast.FloatOp.relop) (ms : MS.t) =
+  match o with
+  | Eq -> Instructions.eq ms
+  | Ge -> Instructions.ge_s ms
+  | Gt -> Instructions.gt_s ms
+  | Le -> Instructions.le_s ms
+  | Lt -> Instructions.lt_s ms
+  | Ne -> Instructions.ne ms
