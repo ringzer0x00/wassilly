@@ -1,6 +1,6 @@
-open Memories.Operandstack
+open Memories.Operand
 
-let const (n : Wasm.Ast.num) (vm : Memories.Operandstack.varmemories) =
+let const (n : Wasm.Ast.num) (vm : varmemories) =
   let v =
     match n.it with
     | F32 c ->

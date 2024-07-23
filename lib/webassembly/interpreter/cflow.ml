@@ -10,7 +10,7 @@ let intbool (exp : Memories.Operandstack.operand) (ms : MS.ms) =
   (*Top*)
   (*sat soving shenanigans.
     is it zero, non-zero or can it be both?*)
-  let t, f = Memories.Operandstack.boole_filter exp ms.var in
+  let t, f = Memories.Operand.boole_filter exp ms.var in
   let vm_t' : MS.VariableMem.t =
     { loc = ms.var.loc; glob = ms.var.glob; ad = t }
   in
@@ -48,7 +48,7 @@ let ite_condition ms =
 let enter_label _l ms mod_ =
   let in_, _ =
     match _l with
-    | Memories.Operandstack.Label lab ->
+    | Memories.Operand.Label lab ->
         Memories.Label.type_of_peeked_label lab
         |> Memories.Label.extract_type_of_label mod_
     | _ -> failwith "booooooo enter label bnoooo"

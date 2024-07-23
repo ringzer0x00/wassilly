@@ -18,9 +18,7 @@ let pop = SK.pop
 let pop_n = SK.pop_n
 
 let lsk s =
-  List.filter
-    (fun x -> match x with Operandstack.Label _ -> true | _ -> false)
-    s
+  List.filter (fun x -> match x with Operand.Label _ -> true | _ -> false) s
 
 let peek_nth_label s nth = List.nth_opt (lsk s) nth
 
@@ -68,8 +66,7 @@ let table_getrefs idx typ k =
   Table.find_by_idx idx table |> Table.find_by_types typ
 
 (*other*)
-let concretize_operand o k =
-  k >>=? fun a -> Operandstack.concretize_in_exp a.var o
+let concretize_operand o k = k >>=? fun a -> Operand.concretize_in_exp a.var o
 
 let concretize_expr e k =
   k >>=? fun a -> Apronext.Abstractext.bound_texpr Apronext.Apol.man a.var.ad e
@@ -92,8 +89,8 @@ let assign_var k gl b e =
     {
       ops =
         Operandstack.concretize_assignment a.ops a.var
-          (Operandstack.ref_of_binding b gl);
-      var = VariableMem.assign a.var gl b (Operandstack.operand_to_expr a.var e);
+          (Operand.ref_of_binding b gl);
+      var = VariableMem.assign a.var gl b (Operand.operand_to_expr a.var e);
       tab = a.tab;
       mem = a.mem;
     }
@@ -175,7 +172,7 @@ let func_res _k_from _k_to tp =
   let _peeked_conc =
     List.map
       (fun x ->
-        Operandstack.Expression (Operandstack.concretize_in_exp from.var x))
+        Operand.Expression (Operand.concretize_in_exp from.var x))
       (peek_n_operand tp _k_from)
   in
   Printf.printf "==================== stack from':\n";

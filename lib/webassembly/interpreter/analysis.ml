@@ -16,8 +16,8 @@ let load_mod fn =
 let unbound_input _size (k : Memories.Frame.t) =
   k >>=? fun x ->
   Array.make _size
-    (Memories.Operandstack.Expression
-       (Memories.Operandstack.const_expr x.var Apronext.Intervalext.top))
+    (Memories.Operand.Expression
+       (Memories.Operand.const_expr x.var Apronext.Intervalext.top))
   |> Array.to_list
 
 let analyze fn =

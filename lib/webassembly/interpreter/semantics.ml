@@ -7,7 +7,7 @@ let br depth ms p_ans cache modul_ ft fixf =
   let label = MS.peek_nth_label ms depth in
   let _, _t =
     match label with
-    | Some (Memories.Operandstack.Label l) ->
+    | Some (Memories.Operand.Label l) ->
         Memories.Label.type_of_peeked_label l
         |> Memories.Label.extract_type_of_label modul_
     | Some _ -> failwith "cannot do it"
@@ -17,7 +17,7 @@ let br depth ms p_ans cache modul_ ft fixf =
     (MS.peek_n_operand (List.length _t) ms, MS.pop_n_operand (List.length _t) ms)
   in
   match label with
-  | Some (Memories.Operandstack.Label (BlockLabel b)) ->
+  | Some (Memories.Operand.Label (BlockLabel b)) ->
       let ms'' = MS.pop_n_labels ms' (depth + 1) in
       let ms''' = MS.push_operand _vals ms'' in
       ( Def
@@ -28,7 +28,7 @@ let br depth ms p_ans cache modul_ ft fixf =
           },
         cache,
         SCG.empty )
-  | Some (Memories.Operandstack.Label (LoopLabel l)) ->
+  | Some (Memories.Operand.Label (LoopLabel l)) ->
       let ms'' = MS.pop_n_labels ms' (depth + 1) in
       let ms''' = MS.push_operand _vals ms'' in
       fixf l ms'''

@@ -95,12 +95,12 @@ let rec step modul_ call sk cache (fin : Int32.t) ft
                         |> List.length)
                 in
                 let _b = MS.get_var_binding ms Loc _var.it in
-                let _ref = Memories.Operandstack.ref_of_binding _b Loc in
+                let _ref = Memories.Operand.ref_of_binding _b Loc in
                 (cmd_result (Instructions.read ms _ref) p_ans, cache, SCG.empty)
             | GlobalGet _var ->
                 (*rewrite monadic*)
                 let _b = MS.get_var_binding ms Glob _var.it in
-                let _ref = Memories.Operandstack.ref_of_binding _b Glob in
+                let _ref = Memories.Operand.ref_of_binding _b Glob in
                 (cmd_result (Instructions.read ms _ref) p_ans, cache, SCG.empty)
             | Const num ->
                 Printf.printf "Const\n\n";
@@ -126,7 +126,7 @@ let rec step modul_ call sk cache (fin : Int32.t) ft
             | Block (_bt, bbody) ->
                 (*manca la parametrizzazione in input!!!!!*)
                 let l =
-                  Memories.Operandstack.Label
+                  Memories.Operand.Label
                     (Memories.Label.BlockLabel
                        { natcont = c2; brcont = c2; typ = _bt; cmd = [ c1 ] })
                 in
@@ -140,7 +140,7 @@ let rec step modul_ call sk cache (fin : Int32.t) ft
             | Loop (_bt, lbody) ->
                 (*manca la parametrizzazione in input!!!!!*)
                 let _lab =
-                  Memories.Operandstack.Label
+                  Memories.Operand.Label
                     (Memories.Label.LoopLabel
                        {
                          natcont = c2;
@@ -159,7 +159,7 @@ let rec step modul_ call sk cache (fin : Int32.t) ft
             | If (_blocktype, _then, _else) ->
                 (*manca la parametrizzazione in input!!!!!*)
                 let l =
-                  Memories.Operandstack.Label
+                  Memories.Operand.Label
                     (Memories.Label.BlockLabel
                        {
                          natcont = c2;
@@ -339,12 +339,12 @@ let rec step modul_ call sk cache (fin : Int32.t) ft
                 let intval = v.it in
                 let _, _, ftype = getfbody modul_ (Int32.to_int intval) in
                 let resex =
-                  Memories.Operandstack.FuncRef
+                  Memories.Operand.FuncRef
                     (Wasm.Types.FuncRefType, Some intval, Some ftype.it)
                 in
                 (cmd_result (Instructions.read ms resex) p_ans, cache, SCG.empty)
             | RefNull t ->
-                let resex = Memories.Operandstack.FuncRef (t, None, None) in
+                let resex = Memories.Operand.FuncRef (t, None, None) in
                 (cmd_result (Instructions.read ms resex) p_ans, cache, SCG.empty)
             | RefIsNull -> failwith ""
             | Convert _ -> failwith "convert"
