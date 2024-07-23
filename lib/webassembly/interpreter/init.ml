@@ -26,7 +26,7 @@ let cc (c : Wasm.Ast.const) = c.it
 let init_globals (mod_ : Wasm.Ast.module_) (s : Memories.Frame.t) =
   let eval p ms =
     Eval.step mod_ (ms, p) Eval.Stack.empty Eval.Cache.empty Int32.minus_one
-      Eval.MA.bot_pa
+      ([], []) Eval.MA.bot_pa
   in
   let prepped = List.mapi (fun x y -> (Int32.of_int x, y)) mod_.it.globals in
   let rec aux (gs_idx : (int32 * Wasm.Ast.global) list) s =
@@ -90,7 +90,7 @@ let interpret_elem_segment (es : Wasm.Ast.elem_segment) (t : 'a list) =
 let init_tab (mod_ : Wasm.Ast.module_) _ms =
   let eval p ms =
     Eval.step mod_ (ms, p) Eval.Stack.empty Eval.Cache.empty Int32.minus_one
-      Eval.MA.bot_pa
+      ([], []) Eval.MA.bot_pa
   in
   let _extracted =
     List.map
@@ -170,8 +170,7 @@ let init (_mod : Wasm.Ast.module_) : Memories.Frame.t =
   init_globals _mod
     (Def
        {
-         ops =
-           [];
+         ops = [];
          mem = Memories.Linearmem.alloc_page_top;
          var =
            VM.empty

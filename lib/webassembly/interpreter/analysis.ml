@@ -35,16 +35,11 @@ let analyze fn =
       mod_.it.exports
   in
   let i = Init.init mod_ in
-  let i =
-    Memories.Frame.push_operand
-      []
-      i
-  in
   let r_start, _, _ =
     i >>=? fun _ ->
     Eval.fixpoint mod_
       ((i, startf), true)
-      Eval.Stack.empty Eval.Cache.empty fstart Eval.MA.bot_pa Eval.step
+      Eval.Stack.empty Eval.Cache.empty fstart ([], []) Eval.MA.bot_pa Eval.step
   in
   let _b, _locs, _t =
     Eval.getfbody mod_ (Int32.to_int (List.hd _entrypoints).it)
@@ -61,7 +56,7 @@ let analyze fn =
   let ar, _, _ =
     Eval.fixpoint mod_
       ((call_ms, _b), true)
-      Eval.Stack.empty Eval.Cache.empty (List.hd _entrypoints).it Eval.MA.bot_pa
-      Eval.step
+      Eval.Stack.empty Eval.Cache.empty (List.hd _entrypoints).it (t_in, _t_out)
+      Eval.MA.bot_pa Eval.step
   in
   (ar, !Eval.cg)

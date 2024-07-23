@@ -28,10 +28,10 @@ let gettype (mod_ : module_) idx =
   let t = List.nth mod_.it.types idx in
   t.it
 
-let fixpoint _module (call, ifb) stack cache fin pres stepf =
+let fixpoint _module (call, ifb) stack cache fin ft pres stepf =
   let _ms, _p = call in
   match ifb with
-  | false -> stepf _module call stack cache fin pres
+  | false -> stepf _module call stack cache fin ft pres
   | true -> (
       match Cache.call_in_cache call cache with
       | Some cached -> (
@@ -42,10 +42,11 @@ let fixpoint _module (call, ifb) stack cache fin pres stepf =
       | None -> (
           match Stack.call_in_stack call stack with
           | true -> (Bot, cache, SCG.singleton call)
-          | false -> Iterate.iterate _module call stack cache fin pres stepf))
+          | false -> Iterate.iterate _module call stack cache fin ft pres stepf)
+      )
 
 (*eval should not be called recursively*)
-let rec step modul_ call sk cache (fin : Int32.t)
+let rec step modul_ call sk cache (fin : Int32.t) ft
     (p_ans : Answer.partial_answer) : ans * Cache.t * SCG.t =
   let (ms : MS.t), (p : p) = call in
   match ms with
@@ -117,10 +118,10 @@ let rec step modul_ call sk cache (fin : Int32.t)
                   (fun (x : Memories.Label.labelcontent) ms ->
                     fixpoint modul_
                       ((ms, x.brcont), true)
-                      sk cache fin p_ans step)
+                      sk cache fin ft p_ans step)
                     l ms
                 in
-                Semantics.br depth ms p_ans cache modul_ _ff
+                Semantics.br depth ms p_ans cache modul_ ft _ff
             | Block (_bt, bbody) ->
                 (*manca la parametrizzazione in input!!!!!*)
                 let l =
@@ -130,7 +131,9 @@ let rec step modul_ call sk cache (fin : Int32.t)
                 in
                 let ms' = Cflow.enter_label l ms in
                 let a, c, g =
-                  fixpoint modul_ ((ms', bbody), false) sk cache fin p_ans step
+                  fixpoint modul_
+                    ((ms', bbody), false)
+                    sk cache fin ft p_ans step
                 in
                 (Cflow.block_result a [ c1 ], c, g)
             | Loop (_bt, lbody) ->
@@ -147,7 +150,9 @@ let rec step modul_ call sk cache (fin : Int32.t)
                 in
                 let ms' = Cflow.enter_label _lab ms in
                 let a, c, g =
-                  fixpoint modul_ ((ms', lbody), true) sk cache fin p_ans step
+                  fixpoint modul_
+                    ((ms', lbody), true)
+                    sk cache fin ft p_ans step
                 in
                 (Cflow.block_result a [ c1 ], c, g)
             | If (_blocktype, _then, _else) ->
@@ -183,12 +188,14 @@ let rec step modul_ call sk cache (fin : Int32.t)
                 print_dom_ms ms_t "true";
                 print_dom_ms ms_f "false";
                 let a_true, c', _scgt =
-                  fixpoint modul_ ((ms_t, _then), false) sk cache fin p_ans step
+                  fixpoint modul_
+                    ((ms_t, _then), false)
+                    sk cache fin ft p_ans step
                 in
                 let a_true = Cflow.block_result a_true [ c1 ] in
                 print_dom_ans a_true "\ntrue~~~~~";
                 let a_false, c'', _scgf =
-                  fixpoint modul_ ((ms_f, _else), false) sk c' fin p_ans step
+                  fixpoint modul_ ((ms_f, _else), false) sk c' fin ft p_ans step
                 in
                 let a_false = Cflow.block_result a_false [ c1 ] in
                 print_dom_ans a_false "false\n\n";
@@ -202,11 +209,11 @@ let rec step modul_ call sk cache (fin : Int32.t)
                   (fun (x : Memories.Label.labelcontent) ms ->
                     fixpoint modul_
                       ((ms, x.brcont), true)
-                      sk cache fin p_ans step)
+                      sk cache fin ft p_ans step)
                     l ms
                 in
                 let _a_t, c', scg =
-                  Semantics.br depth ms_t p_ans cache modul_ fixf
+                  Semantics.br depth ms_t p_ans cache modul_ ft fixf
                 in
                 let ans : Answer.res t =
                   match _a_t with
@@ -258,7 +265,7 @@ let rec step modul_ call sk cache (fin : Int32.t)
                 let ms''', c', g =
                   fixpoint modul_
                     ((ms'', funbody), true)
-                    sk cache fin' p_ans step
+                    sk cache fin' (_ti, _to) p_ans step
                 in
                 let _f_res =
                   MS.func_res (func_ans ms''') ms' (List.length _to)
@@ -311,7 +318,9 @@ let rec step modul_ call sk cache (fin : Int32.t)
                   List.fold_left2
                     (fun (a, c, g) m ((f, _, _), fin') ->
                       let a', c', g' =
-                        fixpoint modul_ ((m, f), true) sk c fin' p_ans step
+                        fixpoint modul_
+                          ((m, f), true)
+                          sk c fin' (_ti, _to) p_ans step
                       in
                       (Answer.j a a', c', SCG.union g g'))
                     (Bot, cache, SCG.empty) _mses_prepped funcs
@@ -344,6 +353,6 @@ let rec step modul_ call sk cache (fin : Int32.t)
             Cflow.monad_step res1 cache' (fun x ->
                 fixpoint modul_
                   ((x.nat, c2), false)
-                  sk cache' fin (pans_of_answer x) step)
+                  sk cache' fin ft (pans_of_answer x) step)
           in
           (seq_result res1 res2, cache'', SCG.union scg_h scg_t))
