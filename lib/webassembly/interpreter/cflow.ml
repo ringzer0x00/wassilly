@@ -45,11 +45,19 @@ let ite_condition ms =
   let c, ms' = cond ms in
   filter_cond c ms'
 
-let enter_label _l ms =
-  Printf.printf
-    "CAREFUL: ENTER_LABEL DOES NOT PASS ARGS, IT JUST PUSHES THE LABEL TO THE \
-     STACK\n";
-  Memories.Frame.push_operand [ _l ] ms
+let enter_label _l ms mod_ =
+  let in_, _ =
+    match _l with
+    | Memories.Operandstack.Label lab ->
+        Memories.Label.type_of_peeked_label lab
+        |> Memories.Label.extract_type_of_label mod_
+    | _ -> failwith "booooooo enter label bnoooo"
+  in
+  let vals, ms' =
+    ( MS.peek_n_operand (List.length in_) ms,
+      MS.pop_n_operand (List.length in_) ms )
+  in
+  Memories.Frame.push_operand (vals @ [ _l ]) ms'
 
 let monad_step c1 ca f =
   match c1 with Bot -> (Bot, ca, SCG.SCC.empty) | Def d -> f d
