@@ -31,6 +31,11 @@ let divs_expr vm l r =
   let r_ex = operand_to_expr vm r in
   Expression (Apronext.Texprext.binary Apronext.Texprext.Div l_ex r_ex)
 
+let rems_expr vm l r =
+  let l_ex = operand_to_expr vm l in
+  let r_ex = operand_to_expr vm r in
+  Expression (Apronext.Texprext.binary Apronext.Texprext.Mod l_ex r_ex)
+
 let add_expr vm l r =
   let l_ex = operand_to_expr vm l in
   let r_ex = operand_to_expr vm r in

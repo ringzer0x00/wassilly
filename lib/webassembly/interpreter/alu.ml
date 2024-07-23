@@ -29,8 +29,9 @@ let int_binop (o : Wasm.Ast.IntOp.binop) (ms : MS.t) =
   | Sub -> Instructions.sub ms
   | Mul -> Instructions.mul ms
   | DivS -> Instructions.divs ms
+  | RemS -> Instructions.rems ms
   | DivU -> failwith "divu @ binop @ alu"
-  | And | Or | RemS | RemU | Rotl | Rotr | Shl | ShrS | ShrU | Xor ->
+  | And | Or | RemU | Rotl | Rotr | Shl | ShrS | ShrU | Xor ->
       failwith "int_binop @ alu other instr"
 
 let float_binop (_o : Wasm.Ast.FloatOp.binop) (_ms : MS.t) =

@@ -49,6 +49,11 @@ let divs prec =
   let opsk' = binop d.ops (fun x y -> divs_expr d.var x y) |> push in
   return { ops = opsk'; var = d.var; mem = d.mem; tab = d.tab }
 
+let rems prec =
+  prec >>= fun d ->
+  let opsk' = binop d.ops (fun x y -> rems_expr d.var x y) |> push in
+  return { ops = opsk'; var = d.var; mem = d.mem; tab = d.tab }
+
 let add prec =
   prec >>= fun d ->
   let opsk' = binop d.ops (fun x y -> add_expr d.var x y) |> push in
