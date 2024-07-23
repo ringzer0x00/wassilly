@@ -18,9 +18,9 @@ let int_relop (u : Wasm.Ast.IntOp.relop) (ms : MS.t) =
   | Eq -> Instructions.eq ms
   | Ne -> Instructions.ne ms
   | LtS -> Instructions.lt_s ms
-  | GtU -> failwith "not implemented, gtu"
-  | GeU -> failwith "not implemented, GeU"
-  | LeU -> failwith "not implemented, LeU"
+  | GtU -> failwith "not implemented, gtu (UINT_MAX + 1)"
+  | GeU -> failwith "not implemented, GeU (UINT_MAX + 1)"
+  | LeU -> failwith "not implemented, LeU (UINT_MAX + 1)"
   | LtU -> failwith "not implemented LtU (UINT_MAX + 1)"
 
 let int_binop (o : Wasm.Ast.IntOp.binop) (ms : MS.t) =
