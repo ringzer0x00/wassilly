@@ -42,6 +42,7 @@ let pop_operand k : t = k >>= fun a -> update_operandstack (a.ops |> pop) k
 
 let rec pop_n_labels _ms _n =
   _ms >>= fun a ->
+  Printf.printf "popping";
   let n', sk' =
     match peek a.ops with Label _ -> (_n - 1, pop a.ops) | _ -> (_n, pop a.ops)
   in
@@ -153,7 +154,7 @@ let le (k1 : t) (k2 : t) = leq k1 k2 && not (eq k1 k2)
 let filter _ctx _c = failwith "filter not implemented"
 (*Variablememories.filter_loc ms.var c*)
 
-let new_fun_ctx k locs =
+let new_fun_ctx k locs (_typ_ : Wasm.Ast.var) =
   k >>= fun a ->
   let var' = VariableMem.new_ a.var locs in
   update_varmem var' k |> update_operandstack []

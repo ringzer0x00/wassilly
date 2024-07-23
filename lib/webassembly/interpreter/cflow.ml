@@ -83,15 +83,15 @@ let func_answer (k_to : res t) =
 let call_answer par ms_body =
   return { nat = ms_body; br = par.p_br; return = par.p_return }
 
-let prep_call ms vals mod_ locs typ_idx =
+let prep_call ms vals mod_ locs typ_idx var_typ =
   let gettype (mod_ : Wasm.Ast.module_) idx =
     let t = List.nth mod_.it.types idx in
     t.it
   in
   let typ_ = gettype mod_ (Int32.to_int typ_idx) in
-  let _ti =
+  let _ti, _to =
     (*list * list*)
-    match typ_ with FuncType (_ti, _to) -> _ti
+    match typ_ with FuncType (_ti, _to) -> (_ti, _to)
   in
   let bindings_input =
     List.mapi
@@ -106,7 +106,7 @@ let prep_call ms vals mod_ locs typ_idx =
       _ti
   in
 
-  let ms' = MS.new_fun_ctx ms (_ti @ locs) in
+  let ms' = MS.new_fun_ctx ms (_ti @ locs) var_typ in
   let ms'' =
     List.fold_right2
       (fun b v m -> MS.assign_var m Loc b v)

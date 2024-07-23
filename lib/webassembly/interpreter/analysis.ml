@@ -35,6 +35,11 @@ let analyze fn =
       mod_.it.exports
   in
   let i = Init.init mod_ in
+  let i =
+    Memories.Frame.push_operand
+      []
+      i
+  in
   let r_start, _, _ =
     i >>=? fun _ ->
     Eval.fixpoint mod_
@@ -51,7 +56,7 @@ let analyze fn =
     r_start >>=? fun d ->
     Cflow.prep_call d.return
       (unbound_input (List.length t_in) d.return)
-      mod_ _locs _t.it
+      mod_ _locs _t.it _t
   in
   let ar, _, _ =
     Eval.fixpoint mod_

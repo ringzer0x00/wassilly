@@ -9,18 +9,19 @@ let enter_block bl prec =
   let ops' = push (bl, d.ops) in
   return { ops = ops'; var = d.var; mem = d.mem; tab = d.tab }
 
-let end_of_block prec =
+let end_of_block prec mod_ =
   prec >>= fun d ->
   let _, _t =
     match peek_nth_label d.ops 0 with
     | Some (Label l) ->
         Memories.Label.type_of_peeked_label l
-        |> Memories.Label.extract_type_of_label "moduleee"
+        |> Memories.Label.extract_type_of_label mod_
     | _ -> failwith "cannot handle"
   in
   let _vals, ops' =
     (peek_n (List.length _t) d.ops, pop_n (List.length _t) d.ops)
   in
+  Printf.printf "_t length: %i, d.ops: %i" (List.length _t) (List.length d.ops);
   let prec' =
     return
       (*peek first label, discover type and blabla*)

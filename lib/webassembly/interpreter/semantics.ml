@@ -30,7 +30,7 @@ let br depth ms p_ans cache modul_ fixf =
         SCG.empty )
   | Some (Memories.Operandstack.Label (LoopLabel l)) -> fixf l ms
   | None ->
-      (*return-like case -> legacy, it should be an error!!!!*)
+      Printf.printf "(*return-like case -> legacy, it should be an error!!!!*)";
       ( Def { nat = Bot; br = p_ans.p_br; return = MS.join p_ans.p_return ms' },
         cache,
         SCG.empty )

@@ -56,11 +56,13 @@ let rec step modul_ call sk cache (fin : Int32.t)
   | Def _ -> (
       match p with
       | [] ->
-          ( (if MS.is_lsk_empty ms then end_of_func ms p_ans
-               (*this needs some work now, but the idea should be to put the control into end of block and there handle the returnlike case*)
-             else cmd_result (Instructions.end_of_block ms) p_ans),
-            cache,
-            SCG.empty )
+          if MS.is_lsk_empty ms then (
+            Printf.printf "End of Func";
+            (end_of_func ms p_ans, cache, SCG.empty))
+          else
+            let eob = Instructions.end_of_block ms modul_ in
+            Printf.printf "Not end of Func";
+            (cmd_result eob p_ans, cache, SCG.empty)
       | c1 :: c2 ->
           let (res1 : ans), cache', scg_h =
             (*as opposed to ms this should return a vector of values which is then appended to the ms's operand stack*)
@@ -120,6 +122,7 @@ let rec step modul_ call sk cache (fin : Int32.t)
                 in
                 Semantics.br depth ms p_ans cache modul_ _ff
             | Block (_bt, bbody) ->
+                (*manca la parametrizzazione in input!!!!!*)
                 let l =
                   Memories.Operandstack.Label
                     (Memories.Label.BlockLabel
@@ -131,6 +134,7 @@ let rec step modul_ call sk cache (fin : Int32.t)
                 in
                 (Cflow.block_result a [ c1 ], c, g)
             | Loop (_bt, lbody) ->
+                (*manca la parametrizzazione in input!!!!!*)
                 let _lab =
                   Memories.Operandstack.Label
                     (Memories.Label.LoopLabel
@@ -147,6 +151,7 @@ let rec step modul_ call sk cache (fin : Int32.t)
                 in
                 (Cflow.block_result a [ c1 ], c, g)
             | If (_blocktype, _then, _else) ->
+                (*manca la parametrizzazione in input!!!!!*)
                 let l =
                   Memories.Operandstack.Label
                     (Memories.Label.BlockLabel
@@ -191,10 +196,9 @@ let rec step modul_ call sk cache (fin : Int32.t)
                 let a = Cflow.test_lub_pans a p_ans in
                 (a, c'', scg)
             | BrIf _i ->
-                (*move the right stuff into Semantics.br so that Br benefits too!*)
-                let _ms_t, _ms_f = Cflow.ite_condition ms in
+                let ms_t, ms_f = Cflow.ite_condition ms in
                 let depth = Int32.to_int _i.it in
-                let _ff l ms =
+                let fixf l ms =
                   (fun (x : Memories.Label.labelcontent) ms ->
                     fixpoint modul_
                       ((ms, x.brcont), true)
@@ -202,39 +206,22 @@ let rec step modul_ call sk cache (fin : Int32.t)
                     l ms
                 in
                 let _a_t, c', scg =
-                  Semantics.br depth _ms_t p_ans cache modul_ _ff
+                  Semantics.br depth ms_t p_ans cache modul_ fixf
                 in
                 let ans : Answer.res t =
                   match _a_t with
                   | Def d ->
                       Def
                         {
-                          nat = _ms_f;
+                          nat = ms_f;
                           return = MS.join p_ans.p_return d.return;
                           br = LM.lub p_ans.p_br d.br;
                         }
                   | Bot ->
                       Def
-                        {
-                          nat = _ms_f;
-                          return = p_ans.p_return;
-                          br = p_ans.p_br;
-                        }
+                        { nat = ms_f; return = p_ans.p_return; br = p_ans.p_br }
                 in
                 (ans, c', scg)
-            (*let a_true, c', _scgt =
-                fixpoint modul_ ((ms_t, _then), false) sk cache fin p_ans step
-              in
-              let a_true = Cflow.block_result a_true [ c1 ] in
-              print_dom_ans a_true "true";
-              let a_false, c'', _scgf =
-                fixpoint modul_ ((ms_f, _else), false) sk c' fin p_ans step
-              in
-              let a_false = Cflow.block_result a_false [ c1 ] in
-              print_dom_ans a_false "false";
-              let a, scg = (MA.lub a_true a_false, SCG.union _scgt _scgf) in
-              let a = Cflow.test_lub_pans a p_ans in
-              (a, c'', scg)*)
             | Return ->
                 failwith
                   "perform adequate stack manips, write on res.return, set nat \
@@ -265,7 +252,8 @@ let rec step modul_ call sk cache (fin : Int32.t)
                     MS.pop_n_operand (List.length _ti) ms )
                 in
                 let ms'' =
-                  Cflow.prep_call ms' _vals modul_ locs typ_idx.it (*flab*)
+                  Cflow.prep_call ms' _vals modul_ locs typ_idx.it
+                    typ_idx (*flab*)
                 in
                 let ms''', c', g =
                   fixpoint modul_
@@ -315,7 +303,8 @@ let rec step modul_ call sk cache (fin : Int32.t)
                 let _mses_prepped =
                   List.map
                     (fun ((_f, _locs, (typ_idx : Wasm.Ast.var)), _) ->
-                      Cflow.prep_call _ms'' _vals modul_ _locs typ_idx.it)
+                      Cflow.prep_call _ms'' _vals modul_ _locs typ_idx.it
+                        typ_idx)
                     funcs
                 in
                 let computed, cache', scg =

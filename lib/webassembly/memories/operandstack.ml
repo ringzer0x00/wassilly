@@ -151,7 +151,7 @@ let concretize_assignment (s : stack) (mem : varmemories) (ref : operand) =
         in
         failwith "re-construct bex', analyse stuff in bex blabla"
     | FuncRef _ -> failwith "funcref @ concretize"
-    | Label _ -> failwith "label@concretize"
+    | Label _ as l -> l
   in
   List.map (fun x -> repl x ref) s
 
