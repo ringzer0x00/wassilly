@@ -14,7 +14,7 @@ let type_of_peeked_label = function BlockLabel c | LoopLabel c -> c.typ
 
 let extract_type_of_label _mod_ (t : block_type) =
   match t with
-  | Wasm.Ast.VarBlockType _var -> failwith "for now ok"
+  | Wasm.Ast.VarBlockType _var -> failwith "for now ok @ extract_type_of_label"
   | Wasm.Ast.ValBlockType vt -> (
       match vt with Some t -> ([], [ t ]) | None -> ([], []))
 
