@@ -103,6 +103,7 @@ let rec step modul_ call sk cache (fin : Int32.t) ft
                 let _ref = Memories.Operandstack.ref_of_binding _b Glob in
                 (cmd_result (Instructions.read ms _ref) p_ans, cache, SCG.empty)
             | Const num ->
+              Printf.printf "Const\n\n";
                 ( cmd_result (Instructions.const_val num ms) p_ans,
                   cache,
                   SCG.empty )
@@ -234,7 +235,7 @@ let rec step modul_ call sk cache (fin : Int32.t) ft
                   "perform adequate stack manips, write on res.return, set nat \
                    to bottom, empty label stack"
             | Call _i ->
-                Printf.printf "CALL\n\n";
+                Printf.printf "CALL %i\n\n" (Int32.to_int _i.it);
                 cg := CallSet.union (CallSet.singleton (fin, _i.it)) !cg;
                 let fin' = _i.it in
                 let funbody, locs, typ_idx =
