@@ -166,6 +166,11 @@ let init (_mod : Wasm.Ast.module_) : Memories.Frame.t =
         tab = [];
       }
   in
+  let _ =
+    match _mod.it.imports with
+    | [] -> ()
+    | _ -> failwith "imports are present, program rejected"
+  in
   let _tab_initialized = [ init_tab _mod ms_start ] in
   init_globals _mod
     (Def
