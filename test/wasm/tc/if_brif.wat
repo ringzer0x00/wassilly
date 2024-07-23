@@ -9,12 +9,12 @@
     (then
       i32.const 3
       local.get 0
-      br_if 0
+      br_if 1
     )
     (else
-    local.get 0
-          local.get 0
-      br_if 0
+      local.get 0
+      local.get 0
+      br_if 1
     )
   )
 )

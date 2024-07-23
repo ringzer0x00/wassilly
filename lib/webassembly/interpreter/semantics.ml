@@ -28,7 +28,11 @@ let br depth ms p_ans cache modul_ ft fixf =
           },
         cache,
         SCG.empty )
-  | Some (Memories.Operandstack.Label (LoopLabel l)) -> fixf l ms
+  | Some (Memories.Operandstack.Label (LoopLabel l)) ->
+      let ms'' = MS.pop_n_labels ms' (depth + 1) in
+      let ms''' = MS.push_operand _vals ms'' in
+      fixf l ms'''
+      (*this is wrong... probably, i think i should do stack manips beforehand*)
   | None ->
       Printf.printf "(*return-like case -> legacy, it should be an error!!!!*)";
       let ms'' =
