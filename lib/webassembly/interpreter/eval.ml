@@ -110,28 +110,15 @@ let rec step modul_ call sk cache (fin : Int32.t)
             | Drop -> (cmd_result (MS.pop_operand ms) p_ans, cache, SCG.empty)
             | Nop -> (cmd_result ms p_ans, cache, SCG.empty)
             | Br i ->
-                (*check this br, its probably wrong*)
-                let idx = i.it |> Int32.to_int in
-                let l = MS.peek_nth_label ms idx in
-                let _t =
-                  match l with
-                  | Some (Memories.Operandstack.Label l) ->
-                      Memories.Label.type_of_peeked_label l
-                  | Some _ -> failwith "cannot do it"
-                  | None -> failwith "cannot pop that deep"
-                in
-                let ms' =
-                  failwith
-                    "MS.pop_n_labels ms (idx + 1) | MS.pop_n_labels ms idx"
-                in
-                let ff l ms =
+                let depth = Int32.to_int i.it in
+                let _ff l ms =
                   (fun (x : Memories.Label.labelcontent) ms ->
                     fixpoint modul_
                       ((ms, x.brcont), true)
                       sk cache fin p_ans step)
                     l ms
                 in
-                Semantics.br l ms' p_ans cache ff
+                Semantics.br depth ms p_ans cache modul_ _ff
             | Block (_bt, bbody) ->
                 let l =
                   Memories.Operandstack.Label
@@ -206,23 +193,7 @@ let rec step modul_ call sk cache (fin : Int32.t)
             | BrIf _i ->
                 (*move the right stuff into Semantics.br so that Br benefits too!*)
                 let _ms_t, _ms_f = Cflow.ite_condition ms in
-                let l = MS.peek_nth_label ms (Int32.to_int _i.it) in
-                let _, _t =
-                  match l with
-                  | Some (Memories.Operandstack.Label l) ->
-                      Memories.Label.type_of_peeked_label l
-                      |> Memories.Label.extract_type_of_label modul_
-                  | Some _ -> failwith "cannot do it"
-                  | None ->
-                      failwith
-                        "(until funcs have a block) this is the reference case"
-                in
-                let _vals, _ms_t =
-                  ( MS.peek_n_operand (List.length _t) _ms_t,
-                    MS.pop_n_operand (List.length _t) _ms_t )
-                in
-                let _ms_t = MS.pop_n_labels ms (Int32.to_int _i.it + 1) in
-                let _ms_t = MS.push_operand _vals _ms_t in
+                let depth = Int32.to_int _i.it in
                 let _ff l ms =
                   (fun (x : Memories.Label.labelcontent) ms ->
                     fixpoint modul_
@@ -230,7 +201,9 @@ let rec step modul_ call sk cache (fin : Int32.t)
                       sk cache fin p_ans step)
                     l ms
                 in
-                let _a_t, c', scg = Semantics.br l _ms_t p_ans cache _ff in
+                let _a_t, c', scg =
+                  Semantics.br depth _ms_t p_ans cache modul_ _ff
+                in
                 let ans : Answer.res t =
                   match _a_t with
                   | Def d ->
