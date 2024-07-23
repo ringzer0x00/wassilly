@@ -183,7 +183,9 @@ let rec step modul_ call sk cache (fin : Int32.t)
                 let print_dom_ans (a : Answer.res t) s =
                   match a with
                   | Bot -> Printf.printf "Bot @ If (ans_dom) %s\n" s
-                  | Def d -> print_dom_ms d.nat s
+                  | Def d ->
+                      Printf.printf "Def @ if: \n";
+                      print_dom_ms d.nat s
                 in
                 Printf.printf "Doms for MS_t, MS_f";
                 print_dom_ms ms_t "true";
@@ -192,16 +194,17 @@ let rec step modul_ call sk cache (fin : Int32.t)
                   fixpoint modul_ ((ms_t, _then), false) sk cache fin p_ans step
                 in
                 let a_true = Cflow.block_result a_true [ c1 ] in
-                print_dom_ans a_true "true";
+                print_dom_ans a_true "\ntrue~~~~~";
                 let a_false, c'', _scgf =
                   fixpoint modul_ ((ms_f, _else), false) sk c' fin p_ans step
                 in
                 let a_false = Cflow.block_result a_false [ c1 ] in
-                print_dom_ans a_false "false";
+                print_dom_ans a_false "false\n\n";
                 let a, scg = (MA.lub a_true a_false, SCG.union _scgt _scgf) in
                 let a = Cflow.test_lub_pans a p_ans in
                 (a, c'', scg)
             | BrIf _i ->
+                (*move the right stuff into Semantics.br so that Br benefits too!*)
                 let _ms_t, _ms_f = Cflow.ite_condition ms in
                 let l = MS.peek_nth_label ms (Int32.to_int _i.it) in
                 let _, _t =
@@ -219,6 +222,7 @@ let rec step modul_ call sk cache (fin : Int32.t)
                     MS.pop_n_operand (List.length _t) _ms_t )
                 in
                 let _ms_t = MS.pop_n_labels ms (Int32.to_int _i.it + 1) in
+                let _ms_t = MS.push_operand _vals _ms_t in
                 let _ff l ms =
                   (fun (x : Memories.Label.labelcontent) ms ->
                     fixpoint modul_

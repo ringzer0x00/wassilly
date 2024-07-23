@@ -26,7 +26,8 @@ let end_of_block prec =
       (*peek first label, discover type and blabla*)
       { ops = ops'; var = d.var; mem = d.mem; tab = d.tab }
   in
-  Memories.Frame.pop_n_labels prec' 1
+  let prec'' = Memories.Frame.pop_n_labels prec' 1 in
+  Memories.Frame.push_operand _vals prec''
 
 let brpeek prec n = prec >>=? fun d -> peek_nth_label d.ops n
 

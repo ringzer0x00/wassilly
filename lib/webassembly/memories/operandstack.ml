@@ -204,7 +204,7 @@ let jw_operand (mem1, o1) (mem2, o2) operation =
 
 let join (m1, s1) (m2, s2) =
   (*two memories are needed, one for locals and one for globals*)
-  Printf.printf "~~ %i, %i" (List.length s1) (List.length s2);
+  Printf.printf "Joining: %i, %i\n" (List.length s1) (List.length s2);
   List.map2 (fun x y -> jw_operand (m1, x) (m2, y) ival_join) s1 s2
 
 let widen (m1, s1) (m2, s2) =
