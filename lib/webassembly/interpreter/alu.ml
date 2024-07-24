@@ -55,3 +55,16 @@ let float_relop (o : Wasm.Ast.FloatOp.relop) (ms : MS.t) =
   | Le -> Instructions.le_s ms
   | Lt -> Instructions.lt_s ms
   | Ne -> Instructions.ne ms
+
+let int_cvtop (_o : Wasm.Ast.IntOp.cvtop) (_ms : MS.t) =
+  match _o with
+  | ExtendSI32 | ExtendUI32 | ReinterpretFloat | TruncSF32 | TruncSF64
+  | TruncSatSF32 | TruncSatSF64 | TruncSatUF32 | WrapI64 | TruncUF32 | TruncUF64
+  | TruncSatUF64 ->
+      failwith "cvt int"
+
+let float_cvtop (_o : Wasm.Ast.FloatOp.cvtop) (_ms : MS.t) =
+  match _o with
+  | ConvertSI32 | ConvertUI32 | ConvertSI64 | ConvertUI64 | PromoteF32
+  | DemoteF64 | ReinterpretInt ->
+      failwith "cvt int"

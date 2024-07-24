@@ -232,9 +232,17 @@ let rec step modul_ call sk cache (fin : Int32.t) ft
                 in
                 (ans, c', scg)
             | Return ->
-                failwith
-                  "perform adequate stack manips, write on res.return, set nat \
-                   to bottom, empty label stack"
+                let _, _t = ft in
+                let _retvals = MS.peek_n_operand (List.length _t) ms in
+                let ms' = MS.update_operandstack _retvals ms in
+                ( Def
+                    {
+                      nat = Bot;
+                      br = LM.empty;
+                      return = MS.join p_ans.p_return ms';
+                    },
+                  cache,
+                  SCG.empty )
             | Call _i ->
                 Printf.printf "CALL %i\n\n" (Int32.to_int _i.it);
                 cg := CallSet.union (CallSet.singleton (fin, _i.it)) !cg;
@@ -347,7 +355,8 @@ let rec step modul_ call sk cache (fin : Int32.t) ft
                 let resex = Memories.Operand.FuncRef (t, None, None) in
                 (cmd_result (Instructions.read ms resex) p_ans, cache, SCG.empty)
             | RefIsNull -> failwith ""
-            | Convert _ -> failwith "convert"
+            | Convert _c ->
+                (cmd_result (Ops.eval_cvtop _c ms) p_ans, cache, SCG.empty)
             | _ ->
                 Wasm.Print.instr Stdlib.stdout 100 c1;
                 failwith "other commands"
