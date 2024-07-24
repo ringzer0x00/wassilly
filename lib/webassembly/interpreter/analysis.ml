@@ -16,8 +16,8 @@ let load_mod fn =
 let unbound_input _size (k : Memories.Frame.t) =
   k >>=? fun x ->
   Array.make _size
-    (Memories.Operandstack.Expression
-       (Memories.Operandstack.const_expr x.var Apronext.Intervalext.top))
+    (Memories.Operand.Expression
+       (Memories.Operand.const_expr x.var Apronext.Intervalext.top))
   |> Array.to_list
 
 let analyze fn =
@@ -39,7 +39,7 @@ let analyze fn =
     i >>=? fun _ ->
     Eval.fixpoint mod_
       ((i, startf), true)
-      Eval.Stack.empty Eval.Cache.empty fstart Eval.MA.bot_pa Eval.step
+      Eval.Stack.empty Eval.Cache.empty fstart ([], []) Eval.MA.bot_pa Eval.step
   in
   let _b, _locs, _t =
     Eval.getfbody mod_ (Int32.to_int (List.hd _entrypoints).it)
@@ -51,12 +51,12 @@ let analyze fn =
     r_start >>=? fun d ->
     Cflow.prep_call d.return
       (unbound_input (List.length t_in) d.return)
-      mod_ _locs _t.it
+      mod_ _locs _t.it _t
   in
   let ar, _, _ =
     Eval.fixpoint mod_
       ((call_ms, _b), true)
-      Eval.Stack.empty Eval.Cache.empty (List.hd _entrypoints).it Eval.MA.bot_pa
-      Eval.step
+      Eval.Stack.empty Eval.Cache.empty (List.hd _entrypoints).it (t_in, _t_out)
+      Eval.MA.bot_pa Eval.step
   in
   (ar, !Eval.cg)

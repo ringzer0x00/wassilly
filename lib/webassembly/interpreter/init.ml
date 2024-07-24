@@ -25,7 +25,8 @@ let cc (c : Wasm.Ast.const) = c.it
 
 let init_globals (mod_ : Wasm.Ast.module_) (s : Memories.Frame.t) =
   let eval p ms =
-    Eval.step mod_ (ms, p) Eval.Stack.empty Eval.Cache.empty (Int32.minus_one) Eval.MA.bot_pa
+    Eval.step mod_ (ms, p) Eval.Stack.empty Eval.Cache.empty Int32.minus_one
+      ([], []) Eval.MA.bot_pa
   in
   let prepped = List.mapi (fun x y -> (Int32.of_int x, y)) mod_.it.globals in
   let rec aux (gs_idx : (int32 * Wasm.Ast.global) list) s =
@@ -88,7 +89,8 @@ let interpret_elem_segment (es : Wasm.Ast.elem_segment) (t : 'a list) =
   references that are formed in code with instructions like ref.func.*)
 let init_tab (mod_ : Wasm.Ast.module_) _ms =
   let eval p ms =
-    Eval.step mod_ (ms, p) Eval.Stack.empty Eval.Cache.empty (Int32.minus_one) Eval.MA.bot_pa
+    Eval.step mod_ (ms, p) Eval.Stack.empty Eval.Cache.empty Int32.minus_one
+      ([], []) Eval.MA.bot_pa
   in
   let _extracted =
     List.map
@@ -114,7 +116,9 @@ let init_tab (mod_ : Wasm.Ast.module_) _ms =
           match _offset_value with
           | Expression ex ->
               Apronext.Abstractext.bound_texpr Apronext.Apol.man
-                (match _ms with Def d -> d.var.ad | Bot -> failwith "bot @ init table")
+                (match _ms with
+                | Def d -> d.var.ad
+                | Bot -> failwith "bot @ init table")
                 ex
               |> Apronext.Intervalext.to_float |> fst |> Float.to_int
           | _ -> failwith "errore in init"
@@ -160,8 +164,12 @@ let init (_mod : Wasm.Ast.module_) : Memories.Frame.t =
           VM.empty
             (Apronext.Apol.top (Datastructures.Aprondomain.make_env [||] [||]));
         tab = [];
-        lsk = [];
       }
+  in
+  let _ =
+    match _mod.it.imports with
+    | [] -> ()
+    | _ -> failwith "imports are present, program rejected"
   in
   let _tab_initialized = [ init_tab _mod ms_start ] in
   init_globals _mod
@@ -173,7 +181,6 @@ let init (_mod : Wasm.Ast.module_) : Memories.Frame.t =
            VM.empty
              (Apronext.Apol.top (Datastructures.Aprondomain.make_env [||] [||]));
          tab = _tab_initialized;
-         lsk = [];
        })
 (* Data Segments
 

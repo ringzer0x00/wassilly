@@ -10,7 +10,7 @@ let intbool (exp : Memories.Operandstack.operand) (ms : MS.ms) =
   (*Top*)
   (*sat soving shenanigans.
     is it zero, non-zero or can it be both?*)
-  let t, f = Memories.Operandstack.boole_filter exp ms.var in
+  let t, f = Memories.Operand.boole_filter exp ms.var in
   let vm_t' : MS.VariableMem.t =
     { loc = ms.var.loc; glob = ms.var.glob; ad = t }
   in
@@ -45,7 +45,19 @@ let ite_condition ms =
   let c, ms' = cond ms in
   filter_cond c ms'
 
-let enter_label l ms = MS.push_label l ms
+let enter_label _l ms mod_ =
+  let in_, _ =
+    match _l with
+    | Memories.Operand.Label lab ->
+        Memories.Label.type_of_peeked_label lab
+        |> Memories.Label.extract_type_of_label mod_
+    | _ -> failwith "booooooo enter label bnoooo"
+  in
+  let vals, ms' =
+    ( MS.peek_n_operand (List.length in_) ms,
+      MS.pop_n_operand (List.length in_) ms )
+  in
+  Memories.Frame.push_operand (vals @ [ _l ]) ms'
 
 let monad_step c1 ca f =
   match c1 with Bot -> (Bot, ca, SCG.SCC.empty) | Def d -> f d
@@ -83,15 +95,15 @@ let func_answer (k_to : res t) =
 let call_answer par ms_body =
   return { nat = ms_body; br = par.p_br; return = par.p_return }
 
-let prep_call ms vals mod_ locs typ_idx =
+let prep_call ms vals mod_ locs typ_idx var_typ =
   let gettype (mod_ : Wasm.Ast.module_) idx =
     let t = List.nth mod_.it.types idx in
     t.it
   in
   let typ_ = gettype mod_ (Int32.to_int typ_idx) in
-  let _ti =
+  let _ti, _to =
     (*list * list*)
-    match typ_ with FuncType (_ti, _to) -> _ti
+    match typ_ with FuncType (_ti, _to) -> (_ti, _to)
   in
   let bindings_input =
     List.mapi
@@ -106,7 +118,7 @@ let prep_call ms vals mod_ locs typ_idx =
       _ti
   in
 
-  let ms' = MS.new_fun_ctx ms (_ti @ locs) in
+  let ms' = MS.new_fun_ctx ms (_ti @ locs) var_typ in
   let ms'' =
     List.fold_right2
       (fun b v m -> MS.assign_var m Loc b v)

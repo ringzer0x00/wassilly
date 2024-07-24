@@ -1,6 +1,6 @@
-open Memories.Operandstack
+open Memories.Operand
 
-let const (n : Wasm.Ast.num) (vm : Memories.Operandstack.varmemories) =
+let const (n : Wasm.Ast.num) (vm : varmemories) =
   let v =
     match n.it with
     | F32 c ->
@@ -30,6 +30,11 @@ let divs_expr vm l r =
   let l_ex = operand_to_expr vm l in
   let r_ex = operand_to_expr vm r in
   Expression (Apronext.Texprext.binary Apronext.Texprext.Div l_ex r_ex)
+
+let rems_expr vm l r =
+  let l_ex = operand_to_expr vm l in
+  let r_ex = operand_to_expr vm r in
+  Expression (Apronext.Texprext.binary Apronext.Texprext.Mod l_ex r_ex)
 
 let add_expr vm l r =
   let l_ex = operand_to_expr vm l in
@@ -65,6 +70,11 @@ let gt_s_expr vm l r =
   let r_ex = operand_to_expr vm r in
   BooleanExpression (Apronext.Tconsext.gt (*~typ:Apron.Texpr0.Int*) l_ex r_ex)
 
+let lt_s_expr vm l r =
+  let l_ex = operand_to_expr vm l in
+  let r_ex = operand_to_expr vm r in
+  BooleanExpression (Apronext.Tconsext.lt (*~typ:Apron.Texpr0.Int*) l_ex r_ex)
+
 let le_s_expr vm l r =
   let l_ex = operand_to_expr vm l in
   let r_ex = operand_to_expr vm r in
@@ -74,6 +84,11 @@ let eq_expr vm l r =
   let l_ex = operand_to_expr vm l in
   let r_ex = operand_to_expr vm r in
   BooleanExpression (Apronext.Tconsext.eq l_ex r_ex)
+
+let ne_expr vm l r =
+  let l_ex = operand_to_expr vm l in
+  let r_ex = operand_to_expr vm r in
+  BooleanExpression (Apronext.Tconsext.diseq l_ex r_ex)
 
 let eqz_expr vm o =
   let l_ex = operand_to_expr vm o in

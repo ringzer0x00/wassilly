@@ -6,10 +6,10 @@ open Datastructures.Monad.DefBot
 
 let wVal ms1 ms2 = Value.widen ms1 ms2
 
-let rec iterate funcs call stack cache1 fin pres evalf =
+let rec iterate funcs call stack cache1 fin ft pres evalf =
   let stackWidened, callWidened = wStack stack call in
   let valNew, cache2, scg =
-    evalf funcs callWidened stackWidened cache1 fin pres
+    evalf funcs callWidened stackWidened cache1 fin ft pres
   in
   if SCG.mem callWidened scg then
     let valOld =
@@ -26,6 +26,6 @@ let rec iterate funcs call stack cache1 fin pres evalf =
     in
     let cache3 = Cache.Cache.add callWidened (stable, valWidened) cache2 in
     if Value.le valOld valWidened then
-      iterate funcs call stack cache3 fin pres evalf
+      iterate funcs call stack cache3 fin ft pres evalf
     else (valWidened, cache3, SCG.diff scg (SCG.singleton callWidened))
   else (valNew, cache2, scg)
