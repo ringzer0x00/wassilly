@@ -63,12 +63,21 @@ let neg_expr vm o =
 
 let sqrt_expr vm o =
   let o_ex = operand_to_expr vm o in
-  Expression (Apronext.Texprext.unary Apronext.Texprext.Sqrt o_ex, type_of_operand o)
+  Expression
+    (Apronext.Texprext.unary Apronext.Texprext.Sqrt o_ex, type_of_operand o)
 
 let ge_s_expr vm l r =
   let l_ex = operand_to_expr vm l in
   let r_ex = operand_to_expr vm r in
   BooleanExpression (Apronext.Tconsext.geq (*~typ:Apron.Texpr0.Int*) l_ex r_ex)
+
+let ge_u_expr vm l r =
+  let _l_ex = operand_to_expr vm l in
+  let _r_ex = operand_to_expr vm r in
+  let _t = size_of_type (type_of_operand l) in
+  failwith
+    "BooleanExpression (Apronext.Tconsext.geq (*~typ:Apron.Texpr0.Int*) l_ex \
+     r_ex)"
 
 let gt_s_expr vm l r =
   let l_ex = operand_to_expr vm l in

@@ -19,6 +19,10 @@ let type_of_operand = function
   | GVarRef (_, wasmNumeric) -> wasmNumeric
   | _ -> failwith "cannot extract type"
 
+let size_of_type = function
+  | Wasm.Types.I32Type | Wasm.Types.F32Type -> 32
+  | Wasm.Types.I64Type | Wasm.Types.F64Type -> 64
+
 let print_operand = function
   | BooleanExpression _ -> Printf.printf "Boolex;"
   | Expression (e, _) ->
@@ -35,6 +39,7 @@ let is_label = function Label _ -> true | _ -> false
 let const_expr (mem : varmemories) inter =
   Apronext.Texprext.cst mem.ad.env (Apronext.Coeffext.Interval inter)
 
+let max_val = function Wasm.Types.I32Type -> failwith "" | _ -> failwith ""
 let var_expr (mem : varmemories) var = Apronext.Texprext.var mem.ad.env var
 
 let ref_to_apronvar op =
