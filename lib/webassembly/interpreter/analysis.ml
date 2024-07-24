@@ -59,4 +59,5 @@ let analyze fn =
       Eval.Stack.empty Eval.Cache.empty (List.hd _entrypoints).it (t_in, _t_out)
       Eval.MA.bot_pa Eval.step
   in
+  let ar = Eval.MS.func_res (Eval.func_ans ar) call_ms (List.length _t_out) in
   (ar, !Eval.cg)

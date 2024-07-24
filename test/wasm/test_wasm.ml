@@ -7,13 +7,13 @@ let p path = Interpreter.Analysis.analyze path
 
 let fib, _g =
   p
-    "/home/ringzero/gitrepos/modular_chaotic_implicit_apron/test/wasm/tc/if_br2.wasm"
+    "/home/ringzero/gitrepos/modular_chaotic_implicit_apron/test/wasm/tc/fib.wasm"
 
 let _ = Fixpoint.Callgraph.CallGraph.print _g
 
 let fr =
   fib >>=? fun x ->
-  x.return >>=? fun ms -> ms
+  x
 
 let sk_read (h : Memories.Operandstack.operand) =
   match h with
