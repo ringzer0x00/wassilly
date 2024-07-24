@@ -172,7 +172,8 @@ let func_res _k_from _k_to tp =
   let _peeked_conc =
     List.map
       (fun x ->
-        Operand.Expression (Operand.concretize_in_exp from.var x))
+        Operand.Expression
+          (Operand.concretize_in_exp from.var x, Operand.type_of_operand x))
       (peek_n_operand tp _k_from)
   in
   Printf.printf "==================== stack from':\n";

@@ -13,12 +13,23 @@ let load_mod fn =
   let bytes = read_whole_file fn in
   load fn bytes
 
-let unbound_input _size (k : Memories.Frame.t) =
+let unbound_input t_in (k : Memories.Frame.t) =
   k >>=? fun x ->
-  Array.make _size
+  let _size = List.length t_in in
+  List.map
+    (fun t ->
+      let t' =
+        match t with
+        | Wasm.Types.NumType t' -> t'
+        | _ -> failwith "failure, not numtype as input"
+      in
+      Memories.Operand.Expression
+        (Memories.Operand.const_expr x.var Apronext.Intervalext.top, t'))
+    t_in
+(*Array.make _size
     (Memories.Operand.Expression
        (Memories.Operand.const_expr x.var Apronext.Intervalext.top))
-  |> Array.to_list
+  |> Array.to_list*)
 
 let analyze fn =
   let mod_ = load_mod fn in
@@ -49,9 +60,7 @@ let analyze fn =
   in
   let call_ms =
     r_start >>=? fun d ->
-    Cflow.prep_call d.return
-      (unbound_input (List.length t_in) d.return)
-      mod_ _locs _t.it _t
+    Cflow.prep_call d.return (unbound_input t_in d.return) mod_ _locs _t.it _t
   in
   let ar, _, _ =
     Eval.fixpoint mod_

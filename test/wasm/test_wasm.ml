@@ -10,14 +10,11 @@ let fib, _g =
     "/home/ringzero/gitrepos/modular_chaotic_implicit_apron/test/wasm/tc/fib.wasm"
 
 let _ = Fixpoint.Callgraph.CallGraph.print _g
-
-let fr =
-  fib >>=? fun x ->
-  x
+let fr = fib >>=? fun x -> x
 
 let sk_read (h : Memories.Operandstack.operand) =
   match h with
-  | Expression e -> e
+  | Expression (e, _) -> e
   | LVarRef _ -> failwith "lvref"
   | _ -> failwith "not expr not lvar @ ops"
 

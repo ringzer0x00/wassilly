@@ -27,7 +27,9 @@ let concretize_assignment (s : t) (mem : varmemories) (ref : operand) =
 let concretize_ret (s : t) (mem : varmemories) =
   let global_bs =
     VariableMem.M.bindings mem.glob
-    |> List.map (fun x -> Operand.GVarRef (fst x))
+    |> List.map (fun x ->
+           let b = fst x in
+           Operand.GVarRef (b, b.t))
   in
   let rec concretize_gref stack gbindings =
     match gbindings with

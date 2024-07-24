@@ -3,18 +3,25 @@ module VariableMem = Variablemem.VariableMem
 type aval = Apronext.Texprext.t (*this has to b*)
 type constr = Apronext.Tconsext.t (*this has to b*)
 type varmemories = VariableMem.t
+type wasmNumeric = Wasm.Types.num_type
 
 type operand =
   | BooleanExpression of constr
-  | Expression of aval
-  | LVarRef of VariableMem.binding
-  | GVarRef of VariableMem.binding
+  | Expression of aval * wasmNumeric
+  | LVarRef of VariableMem.binding * wasmNumeric
+  | GVarRef of VariableMem.binding * wasmNumeric
   | FuncRef of Wasm.Types.ref_type * int32 option * int32 option
   | Label of Label.label
 
+let type_of_operand = function
+  | Expression (_, wasmNumeric) -> wasmNumeric
+  | LVarRef (_, wasmNumeric) -> wasmNumeric
+  | GVarRef (_, wasmNumeric) -> wasmNumeric
+  | _ -> failwith "cannot extract type"
+
 let print_operand = function
   | BooleanExpression _ -> Printf.printf "Boolex;"
-  | Expression e ->
+  | Expression (e, _) ->
       Printf.printf "Expr:";
       Apronext.Texprext.print Format.std_formatter e;
       Printf.printf ";"
@@ -32,8 +39,8 @@ let var_expr (mem : varmemories) var = Apronext.Texprext.var mem.ad.env var
 
 let ref_to_apronvar op =
   match op with
-  | LVarRef i -> VariableMem.apronvar_of_binding i VariableMem.Loc
-  | GVarRef i -> VariableMem.apronvar_of_binding i VariableMem.Glob
+  | LVarRef (i, _) -> VariableMem.apronvar_of_binding i VariableMem.Loc
+  | GVarRef (i, _) -> VariableMem.apronvar_of_binding i VariableMem.Glob
   | Expression _ -> failwith "ref to apronvar @ operandstack - expr case"
   | BooleanExpression _ ->
       failwith "ref to apronvar @ operandstack - bexpr case"
@@ -41,7 +48,9 @@ let ref_to_apronvar op =
   | Label _ -> failwith "apronvar of label lmao"
 
 let ref_of_binding b gl =
-  match gl with VariableMem.Glob -> GVarRef b | VariableMem.Loc -> LVarRef b
+  match gl with
+  | VariableMem.Glob -> GVarRef (b, b.t)
+  | VariableMem.Loc -> LVarRef (b, b.t)
 
 let boole_as_int c (mem : varmemories) =
   let sat c = Apronext.Abstractext.sat_tcons Apronext.Apol.man mem.ad c in
@@ -63,7 +72,7 @@ let boole_filter o (mem : varmemories) =
 
 let operand_to_expr (mem : varmemories) op =
   match op with
-  | Expression a -> a
+  | Expression (a, _) -> a
   | LVarRef _ as r -> ref_to_apronvar r |> var_expr mem
   | GVarRef _ as r -> ref_to_apronvar r |> var_expr mem
   | BooleanExpression constr -> const_expr mem (boole_as_int constr mem)
@@ -72,9 +81,10 @@ let operand_to_expr (mem : varmemories) op =
 
 let concretize (mem : varmemories) op =
   match op with
-  | Expression e -> Apronext.Abstractext.bound_texpr Apronext.Apol.man mem.ad e
-  | LVarRef i -> VariableMem.lookup mem i VariableMem.Loc
-  | GVarRef i -> VariableMem.lookup mem i VariableMem.Glob
+  | Expression (e, _) ->
+      Apronext.Abstractext.bound_texpr Apronext.Apol.man mem.ad e
+  | LVarRef (i, _) -> VariableMem.lookup mem i VariableMem.Loc
+  | GVarRef (i, _) -> VariableMem.lookup mem i VariableMem.Glob
   | BooleanExpression c -> boole_as_int c mem
   | FuncRef _ -> failwith "idk @ concretize funcref"
   | Label _ -> failwith "cannot concretize label"
@@ -101,22 +111,22 @@ let rec replace_var_in_exp destr (ref : operand) (mem : varmemories) =
 
 let repl operand to_replace (mem : varmemories) =
   match operand with
-  | Expression exp ->
+  | Expression (exp, t) ->
       let v =
         Apronext.Texprext.of_expr mem.ad.env
           (replace_var_in_exp (Apronext.Texprext.to_expr exp) operand mem)
       in
-      Expression v
-  | LVarRef _ as o ->
+      Expression (v, t)
+  | LVarRef (_, t) as o ->
       Printf.printf "Concretize LVarRef\n";
       let v_expr = concretize_in_exp mem o in
       Printf.printf "LVarRef Concretized as:\n";
       Apronext.Texprext.print Format.std_formatter v_expr;
-      if operand = to_replace then Expression v_expr else to_replace
-  | GVarRef _ as o ->
+      if operand = to_replace then Expression (v_expr, t) else to_replace
+  | GVarRef (_, t) as o ->
       Printf.printf "Concretize GVarRef\n";
       let v_expr = concretize_in_exp mem o in
-      if operand = to_replace then Expression v_expr else to_replace
+      if operand = to_replace then Expression (v_expr, t) else to_replace
   | BooleanExpression bex ->
       let exp = Apronext.Tconsext.get_texpr1 bex in
       let _v =
@@ -131,6 +141,7 @@ let jw_operand (mem1, o1) (mem2, o2) operation =
   (*two memories are needed, one for locals and one for globals*)
   if o1 = o2 then o1
   else
+    let t = type_of_operand o1 in
     let a = concretize mem1 o1 in
     let b = concretize mem2 o2 in
     Printf.printf "J/W operands:";
@@ -140,7 +151,7 @@ let jw_operand (mem1, o1) (mem2, o2) operation =
     Apron.Interval.print Format.std_formatter b;
     Printf.printf "\n-----------------\n";
 
-    Expression (const_expr mem1 (operation a b))
+    Expression (const_expr mem1 (operation a b), t)
 
 let ival_leq = Apronext.Intervalext.is_leq
 let ival_eq = Apronext.Intervalext.equal

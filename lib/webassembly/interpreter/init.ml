@@ -114,7 +114,7 @@ let init_tab (mod_ : Wasm.Ast.module_) _ms =
         let _offset_value = Memories.Frame.peek_operand off |> List.hd in
         let _extr_offset_int =
           match _offset_value with
-          | Expression ex ->
+          | Expression (ex, _) ->
               Apronext.Abstractext.bound_texpr Apronext.Apol.man
                 (match _ms with
                 | Def d -> d.var.ad
