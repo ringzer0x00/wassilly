@@ -142,6 +142,13 @@ let repl operand to_replace (mem : varmemories) =
   | FuncRef _ -> failwith "funcref @ concretize"
   | Label _ as l -> l
 
+let convert_extend vm op dt =
+  match op with
+  | Expression (e, _) -> Expression (e, dt)
+  | (LVarRef _ | GVarRef _) as r -> Expression (concretize_in_exp vm r, dt)
+  | BooleanExpression _ as c -> Expression (concretize_in_exp vm c, dt)
+  | _ -> failwith "operand conversion (extension)"
+
 let jw_operand (mem1, o1) (mem2, o2) operation =
   (*two memories are needed, one for locals and one for globals*)
   if o1 = o2 then o1

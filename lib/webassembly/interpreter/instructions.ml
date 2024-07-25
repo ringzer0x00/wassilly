@@ -120,3 +120,13 @@ let eqz prec =
   prec >>= fun d ->
   let opsk' = unop d.ops (fun x -> eqz_expr d.var x) |> push in
   return { ops = opsk'; var = d.var; mem = d.mem; tab = d.tab }
+
+(*conversion*)
+let extend_s_i32 prec =
+  prec >>= fun d ->
+  let opsk' =
+    unop d.ops (fun x ->
+        Memories.Operand.convert_extend d.var x Wasm.Types.I64Type)
+    |> push
+  in
+  return { ops = opsk'; var = d.var; mem = d.mem; tab = d.tab }
