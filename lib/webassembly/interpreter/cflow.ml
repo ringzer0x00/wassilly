@@ -6,7 +6,7 @@ module LM = Fixpoint.Labelmap.LabelMap
 
 type abool = Datastructures.Abstractbit.t
 
-let intbool (exp : Memories.Operandstack.operand) (ms : MS.ms) =
+let intbool (exp : Memories.Operand.operand) (ms : MS.ms) =
   (*Top*)
   (*sat soving shenanigans.
     is it zero, non-zero or can it be both?*)

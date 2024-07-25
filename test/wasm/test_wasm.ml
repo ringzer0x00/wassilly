@@ -12,7 +12,7 @@ let fib, _g =
 let _ = Fixpoint.Callgraph.CallGraph.print _g
 let fr = fib >>=? fun x -> x
 
-let sk_read (h : Memories.Operandstack.operand) =
+let sk_read (h : Memories.Operand.operand) =
   match h with
   | Expression (e, _) -> e
   | LVarRef _ -> failwith "lvref"

@@ -1,4 +1,5 @@
 open Memories.Frame
+open Memories.Operand
 open Memories.Operandstack
 open Exprs_math
 open Datastructures.Monad.DefBot
@@ -125,8 +126,6 @@ let eqz prec =
 let extend_s_i32 prec =
   prec >>= fun d ->
   let opsk' =
-    unop d.ops (fun x ->
-        Memories.Operand.convert_extend d.var x Wasm.Types.I64Type)
-    |> push
+    cvtop d.ops (fun x -> convert_extend d.var x Wasm.Types.I64Type) |> push
   in
   return { ops = opsk'; var = d.var; mem = d.mem; tab = d.tab }

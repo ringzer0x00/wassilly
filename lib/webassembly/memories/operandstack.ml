@@ -1,14 +1,14 @@
 module SK = Datastructures.Liststack
 module VariableMem = Variablemem.VariableMem
+open Operand
 
 (*| Label*)
-type operand = Operand.operand
 type t = operand list
 type varmemories = VariableMem.t
 
 let print_stack s =
   Printf.printf "[";
-  List.iter (fun x -> Operand.print_operand x) s;
+  List.iter (fun x -> print_operand x) s;
   Printf.printf "]\n"
 
 let empty : t = []
@@ -75,6 +75,11 @@ let eq (m1, s1) (m2, s2) =
 let le os1 os2 = leq os1 os2 && not (eq os1 os2)
 
 let unop s f =
+  let operand, s = (peek_n 1 s |> List.hd, pop_n 1 s) in
+  let res = f operand in
+  (res, s)
+
+let cvtop s f =
   let operand, s = (peek_n 1 s |> List.hd, pop_n 1 s) in
   let res = f operand in
   (res, s)
