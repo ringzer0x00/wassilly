@@ -13,7 +13,7 @@ let load_mod fn =
   let bytes = read_whole_file fn in
   load fn bytes
 
-let unbound_input t_in (k : Memories.Frame.t) =
+let unbound_input t_in (k : Memories.Memorystate.t) =
   k >>=? fun x ->
   let _size = List.length t_in in
   List.map

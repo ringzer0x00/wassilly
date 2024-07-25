@@ -23,7 +23,7 @@ let listnth_i32 l i = List.nth l (Int32.to_int i)
 
 let cc (c : Wasm.Ast.const) = c.it
 
-let init_globals (mod_ : Wasm.Ast.module_) (s : Memories.Frame.t) =
+let init_globals (mod_ : Wasm.Ast.module_) (s : Memories.Memorystate.t) =
   let eval p ms =
     Eval.step mod_ (ms, p) Eval.Stack.empty Eval.Cache.empty Int32.minus_one
       ([], []) Eval.MA.bot_pa
@@ -40,14 +40,14 @@ let init_globals (mod_ : Wasm.Ast.module_) (s : Memories.Frame.t) =
           | _ -> failwith "cannot handle these now @init"
         in
         let binding : VMKey.t = { i; t = nty } in
-        let s' = Memories.Frame.bind_vars binding Glob s in
+        let s' = Memories.Memorystate.bind_vars binding Glob s in
         let r, _, _ = eval gl.it.ginit.it s' in
         (*do other stuff*)
         let r_nat =
           match r with Def d -> d.return | Bot -> failwith "diobo"
         in
-        let exp = Memories.Frame.peek_operand r_nat |> List.hd in
-        let nat = Memories.Frame.assign_var s' Glob binding exp in
+        let exp = Memories.Memorystate.peek_operand r_nat |> List.hd in
+        let nat = Memories.Memorystate.assign_var s' Glob binding exp in
         aux t nat
   in
   aux prepped s
@@ -111,7 +111,7 @@ let init_tab (mod_ : Wasm.Ast.module_) _ms =
           | Def d -> d.return
           | Bot -> failwith "failure @ table init"
         in
-        let _offset_value = Memories.Frame.peek_operand off |> List.hd in
+        let _offset_value = Memories.Memorystate.peek_operand off |> List.hd in
         let _extr_offset_int =
           match _offset_value with
           | Expression (ex, _) ->
@@ -131,7 +131,7 @@ let init_tab (mod_ : Wasm.Ast.module_) _ms =
             (fun map ((_idx, x) : int32 * Wasm.Ast.const) ->
               let _r, _, _ = eval x.it _ms in
               let _res =
-                Memories.Frame.peek_operand
+                Memories.Memorystate.peek_operand
                   (match _r with Def d -> d.return | Bot -> failwith "init")
                 |> List.hd
               in
@@ -153,7 +153,7 @@ let init_tab (mod_ : Wasm.Ast.module_) _ms =
     (Memories.Table.T.bindings r |> List.length);
   r
 
-let init (_mod : Wasm.Ast.module_) : Memories.Frame.t =
+let init (_mod : Wasm.Ast.module_) : Memories.Memorystate.t =
   (*always alloc a memory page*)
   let ms_start : Eval.MS.ms t =
     Def

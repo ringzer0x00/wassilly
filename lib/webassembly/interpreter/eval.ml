@@ -1,5 +1,5 @@
 open Datastructures.Monad.DefBot
-module MS = Memories.Frame
+module MS = Memories.Memorystate
 module LM = Fixpoint.Labelmap.LabelMap
 module MA = Fixpoint.Answer
 

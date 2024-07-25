@@ -1,5 +1,5 @@
 module Command = Language.Command.Command
-module Memory = Memories.Frame
+module Memory = Memories.Memorystate
 open Datastructures.Monad.DefBot
 
 module LabelMap = struct

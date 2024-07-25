@@ -1,30 +1,39 @@
-module MS = Memories.Frame
+module MS = Memories.Memorystate
 module LM = Labelmap.LabelMap
 open Datastructures.Monad.DefBot
 
 (*jmp map label(corpo) -> MS*)
 type partial_answer = { p_br : LM.t; p_return : MS.t }
+
+let p_br p = p.p_br
+let p_ret p = p.p_return
+
 type res = { nat : MS.t; br : LM.t; return : MS.t }
 
+let nat a = a.nat
+let br a = a.br
+let ret a = a.return
 let bot_pa = { p_br = LM.empty; p_return = Bot }
 
 let lowlevel_join r1 r2 =
   {
-    nat = MS.join r1.nat r2.nat;
-    return = MS.join r1.return r2.return;
-    br = LM.lub r1.br r2.br;
+    nat = MS.join (nat r1) (nat r2);
+    return = MS.join (ret r1) (ret r2);
+    br = LM.lub (br r1) (br r2);
   }
 
 let lowlevel_widen r1 r2 =
   {
-    return = MS.widen r1.return r2.return;
-    br = LM.widen r1.br r2.br;
-    nat = MS.widen r1.nat r2.nat;
+    nat = MS.widen (nat r1) (nat r2);
+    return = MS.widen (ret r1) (ret r2);
+    br = LM.widen (br r1) (br r2);
   }
 
 let j x y =
   match (x, y) with
-  | Bot, Bot -> Printf.printf "BOTBOT"; Bot
+  | Bot, Bot ->
+      Printf.printf "BOTBOT";
+      Bot
   | Def a, Bot | Bot, Def a -> Def a
   | Def a, Def b -> return (lowlevel_join a b)
 

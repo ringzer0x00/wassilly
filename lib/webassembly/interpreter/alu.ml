@@ -1,4 +1,4 @@
-module MS = Memories.Frame
+module MS = Memories.Memorystate
 module OS = Memories.Operandstack
 module VM = Memories.Variablemem.VariableMem
 

@@ -9,6 +9,11 @@ type ms = {
   tab : Tables.t;
 }
 
+let ops ms = ms.ops
+let var ms = ms.var
+let mem ms = ms.mem
+let tab ms = ms.tab
+
 type 'a tt = 'a t
 type t = ms tt
 
@@ -148,8 +153,6 @@ let eq (k1 : t) (k2 : t) =
       && Linearmem.eq k1.mem k2.mem && Tables.eq k1.tab k2.tab
 
 let le (k1 : t) (k2 : t) = leq k1 k2 && not (eq k1 k2)
-let filter _ctx _c = failwith "filter not implemented"
-(*Variablememories.filter_loc ms.var c*)
 
 let new_fun_ctx k locs (_typ_ : Wasm.Ast.var) =
   k >>= fun a ->

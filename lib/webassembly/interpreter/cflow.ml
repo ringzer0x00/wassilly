@@ -1,11 +1,12 @@
 open Datastructures.Monad.DefBot
 open Fixpoint.Answer
-module MS = Memories.Frame
+module MS = Memories.Memorystate
 module SCG = Fixpoint.Scg
 module LM = Fixpoint.Labelmap.LabelMap
 
 type abool = Datastructures.Abstractbit.t
 
+(*NOTE: this belongs to operand*)
 let intbool (exp : Memories.Operand.operand) (ms : MS.ms) =
   (*Top*)
   (*sat soving shenanigans.
@@ -57,7 +58,7 @@ let enter_label _l ms mod_ =
     ( MS.peek_n_operand (List.length in_) ms,
       MS.pop_n_operand (List.length in_) ms )
   in
-  Memories.Frame.push_operand (vals @ [ _l ]) ms'
+  Memories.Memorystate.push_operand (vals @ [ _l ]) ms'
 
 let monad_step c1 ca f =
   match c1 with Bot -> (Bot, ca, SCG.SCC.empty) | Def d -> f d

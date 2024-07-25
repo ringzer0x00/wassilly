@@ -1,4 +1,4 @@
-module MS = Memories.Frame
+module MS = Memories.Memorystate
 
 let eval_binop (op : Wasm.Ast.binop) ms =
   match op with

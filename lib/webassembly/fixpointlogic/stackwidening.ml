@@ -1,5 +1,5 @@
 open Call
-module Memory = Memories.Frame
+module Memory = Memories.Memorystate
 module Cache = Cache.Cache
 
 let wStack stack ((env1, expr) as call : Call.t) =

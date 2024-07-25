@@ -1,4 +1,4 @@
-open Memories.Frame
+open Memories.Memorystate
 open Memories.Operand
 open Memories.Operandstack
 open Exprs_math
@@ -28,8 +28,8 @@ let end_of_block prec mod_ =
       (*peek first label, discover type and blabla*)
       { ops = ops'; var = d.var; mem = d.mem; tab = d.tab }
   in
-  let prec'' = Memories.Frame.pop_n_labels prec' 1 in
-  Memories.Frame.push_operand _vals prec''
+  let prec'' = Memories.Memorystate.pop_n_labels prec' 1 in
+  Memories.Memorystate.push_operand _vals prec''
 
 let brpeek prec n = prec >>=? fun d -> peek_nth_label d.ops n
 
