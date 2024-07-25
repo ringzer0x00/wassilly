@@ -8,6 +8,7 @@ type module_ = Wasm.Ast.module_ (*or ' (?)*)
 type p = Language.Command.Command.t
 
 open Fixpoint
+open Fixpoint.Answer
 module Cache = Cache.Cache
 module Stack = Stack.Stack
 module SCG = Scg.SCC
@@ -46,12 +47,12 @@ let fixpoint _module (call, ifb) stack cache fin ft pres stepf =
       )
 
 (*eval should not be called recursively*)
-let rec step modul_ call sk cache (fin : Int32.t) ft
-    (p_ans : Answer.partial_answer) : ans * Cache.t * SCG.t =
+let rec step modul_ call sk cache (fin : Int32.t) ft p_ans :
+    ans * Cache.t * SCG.t =
   let (ms : MS.t), (p : p) = call in
   match ms with
   | Bot ->
-      ( Def { nat = Bot; return = p_ans.p_return; br = p_ans.p_br },
+      ( return { nat = Bot; return = p_ans.p_return; br = p_ans.p_br },
         cache,
         SCG.empty )
   | Def _ -> (
@@ -217,17 +218,17 @@ let rec step modul_ call sk cache (fin : Int32.t) ft
                 let _a_t, c', scg =
                   Semantics.br depth ms_t p_ans cache modul_ ft fixf
                 in
-                let ans : Answer.res t =
+                let ans =
                   match _a_t with
                   | Def d ->
-                      Def
+                      return
                         {
                           nat = ms_f;
                           return = MS.join p_ans.p_return d.return;
                           br = LM.lub p_ans.p_br d.br;
                         }
                   | Bot ->
-                      Def
+                      return
                         { nat = ms_f; return = p_ans.p_return; br = p_ans.p_br }
                 in
                 (ans, c', scg)
@@ -235,7 +236,7 @@ let rec step modul_ call sk cache (fin : Int32.t) ft
                 let _, _t = ft in
                 let _retvals = MS.peek_n_operand (List.length _t) ms in
                 let ms' = MS.update_operandstack _retvals ms in
-                ( Def
+                ( return
                     {
                       nat = Bot;
                       br = LM.empty;
