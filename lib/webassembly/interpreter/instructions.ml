@@ -4,6 +4,8 @@ open Memories.Operandstack
 open Exprs_math
 open Datastructures.Monad.DefBot
 
+type wn = Wasm.Types.num_type
+
 (*-- controlflow*)
 let enter_block bl prec =
   prec >>= fun d ->
@@ -125,7 +127,7 @@ let eqz prec =
 (*conversion*)
 let extend_s_i32 prec =
   prec >>= fun d ->
-  let opsk' =
-    cvtop d.ops (fun x -> convert_extend d.var x Wasm.Types.I64Type) |> push
-  in
+  let opsk' = cvtop d.ops (fun x -> convert_extend d.var x I64Type) |> push in
   return { ops = opsk'; var = d.var; mem = d.mem; tab = d.tab }
+
+let extend_u_i32 _prec = failwith "extend unsign"

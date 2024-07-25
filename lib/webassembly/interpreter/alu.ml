@@ -66,7 +66,7 @@ let float_relop (o : Wasm.Ast.FloatOp.relop) (ms : MS.t) =
 
 let int_cvtop (_o : Wasm.Ast.IntOp.cvtop) (_ms : MS.t) =
   match _o with
-  | ExtendSI32 -> failwith "just change type"
+  | ExtendSI32 -> Instructions.extend_s_i32 _ms
   | ExtendUI32 -> failwith "convert to unsigned and then change type"
   | WrapI64 -> failwith "i64 to i32 (reducing the value mod 2^32)"
   | ReinterpretFloat -> failwith "float -> int (bits)"
