@@ -36,7 +36,11 @@ let int_binop (o : Wasm.Ast.IntOp.binop) (ms : MS.t) =
 
 let float_binop (_o : Wasm.Ast.FloatOp.binop) (_ms : MS.t) =
   match _o with
-  | Add | CopySign | Div | Max | Min | Mul | Sub -> failwith "float binop"
+  | Add -> Instructions.add _ms
+  | Sub -> Instructions.sub _ms
+  | Div -> Instructions.divs _ms
+  | Mul -> Instructions.mul _ms
+  | CopySign | Max | Min -> failwith "float binop"
 
 let float_testop (_t : Wasm.Ast.FloatOp.testop) (_ms : MS.t) =
   match _t with _ -> failwith "no float testop?"
@@ -45,7 +49,11 @@ let float_unop (o : Wasm.Ast.FloatOp.unop) (ms : MS.t) =
   match o with
   | Neg -> Instructions.neg ms
   | Sqrt -> Instructions.sqrt ms
-  | Abs | Ceil | Floor | Nearest | Trunc -> failwith "float @ alu"
+  | Abs -> failwith "absolute value"
+  | Ceil -> failwith "round up"
+  | Floor -> failwith "round down"
+  | Nearest -> failwith "round to nearest int"
+  | Trunc -> failwith "discard fractional, float -> float"
 
 let float_relop (o : Wasm.Ast.FloatOp.relop) (ms : MS.t) =
   match o with
@@ -58,13 +66,20 @@ let float_relop (o : Wasm.Ast.FloatOp.relop) (ms : MS.t) =
 
 let int_cvtop (_o : Wasm.Ast.IntOp.cvtop) (_ms : MS.t) =
   match _o with
-  | ExtendSI32 | ExtendUI32 | ReinterpretFloat | TruncSF32 | TruncSF64
-  | TruncSatSF32 | TruncSatSF64 | TruncSatUF32 | WrapI64 | TruncUF32 | TruncUF64
-  | TruncSatUF64 ->
+  | ExtendSI32 -> failwith "just change type"
+  | ExtendUI32 -> failwith "convert to unsigned and then change type"
+  | WrapI64 -> failwith "i64 to i32 (reducing the value mod 2^32)"
+  | ReinterpretFloat -> failwith "float -> int (bits)"
+  | TruncSF32 | TruncSF64 | TruncSatSF32 | TruncSatSF64 | TruncSatUF32
+  | TruncUF32 | TruncUF64 | TruncSatUF64 ->
       failwith "cvt int"
 
 let float_cvtop (_o : Wasm.Ast.FloatOp.cvtop) (_ms : MS.t) =
   match _o with
-  | ConvertSI32 | ConvertUI32 | ConvertSI64 | ConvertUI64 | PromoteF32
-  | DemoteF64 | ReinterpretInt ->
-      failwith "cvt int"
+  | ConvertSI32 -> failwith "int32 to float32"
+  | ConvertUI32 -> failwith "int32 -> unsigned int32 -> float"
+  | ConvertSI64 -> failwith "see above"
+  | ConvertUI64 -> failwith "see above"
+  | PromoteF32 -> failwith "f32 to f64"
+  | DemoteF64 -> failwith "f64 to f32"
+  | ReinterpretInt -> failwith "int -> float (bits)"
