@@ -5,7 +5,9 @@ module VM = Memories.Variablemem.VariableMem
 type ad = VM.aprondomain
 
 let int_unop (_u : Wasm.Ast.IntOp.unop) (_ : MS.t) =
-  match _u with Clz | Ctz | ExtendS _ | Popcnt -> failwith "unop int @ alu"
+  match _u with
+  | Clz (* X *) | Ctz (* X *) | ExtendS _ (* not sure *) | Popcnt (* X *) ->
+      failwith "unop int @ alu"
 
 let int_testop (_u : Wasm.Ast.IntOp.testop) (ms : MS.t) =
   match _u with Eqz -> Instructions.eqz ms
@@ -31,7 +33,12 @@ let int_binop (o : Wasm.Ast.IntOp.binop) (ms : MS.t) =
   | DivS -> Instructions.divs ms
   | RemS -> Instructions.rems ms
   | DivU -> failwith "divu @ binop @ alu"
-  | And | Or | RemU | Rotl | Rotr | Shl | ShrS | ShrU | Xor ->
+  | And (*X*)
+  | Or (*X*)
+  | RemU | Rotl | Rotr | Shl (* ~ *)
+  | ShrS (* ~ *)
+  | ShrU (* ~ *)
+  | Xor (*X*) ->
       failwith "int_binop @ alu other instr"
 
 let float_binop (_o : Wasm.Ast.FloatOp.binop) (_ms : MS.t) =
