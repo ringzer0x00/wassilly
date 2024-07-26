@@ -17,9 +17,10 @@ let of_interval interval type_ =
       tuple_appl Int64.bits_of_float val_
       |> tuple_appl s_int64_to_binary_array_twos_complement_msb
 
-let split_in_bytes (a : int array) =
+(*needed to facilitate writing in memory. these are supposed to work on abstract types, not concrete*)
+let split_in_bytes a =
   let l = Array.length a / 8 in
-  let _res = Array.make l (Array.make 8 0) in
+  let _res = Array.make l (Array.make 8 a.(0)) in
   Array.iteri
     (fun i x ->
       let byte_pos = i / 8 in
