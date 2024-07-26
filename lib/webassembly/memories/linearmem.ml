@@ -15,7 +15,8 @@ let pageconcat (pold : t) (pnew : t) : t = Array.concat [ pold; pnew ]
 let size m = Array.length m / wasm_page_size
 
 let write_byte_raw b o (m : t) =
-  m.(o) <- b;
+  let c = Array.copy m in
+  c.(o) <- b;
   m
 
 let write_byte_weak b o m =
