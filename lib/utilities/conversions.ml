@@ -8,7 +8,6 @@ let s_int32_to_binary_array_twos_complement_msb (num : Int32.t) : int array =
   let size = 32 in
   let result = Array.make size 0 in
 
-  (*diocane*)
   let rec convert idx n =
     if idx < 0 then result
     else (
