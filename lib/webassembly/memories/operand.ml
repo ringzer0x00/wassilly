@@ -94,6 +94,12 @@ let concretize (mem : varmemories) op =
   | FuncRef _ -> failwith "idk @ concretize funcref"
   | Label _ -> failwith "cannot concretize label"
 
+let operand_to_bits mem op =
+  let _typ_ = type_of_operand op in
+  let _interval = concretize mem op in
+  let _size = size_of_type _typ_ in
+  failwith ""
+
 let concretize_in_exp (mem : varmemories) op =
   concretize mem op |> const_expr mem
 
