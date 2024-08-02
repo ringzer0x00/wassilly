@@ -1,21 +1,22 @@
 open Datastructures.Monad.DefBot
 
-let destroy_monad = function Bot -> failwith "bot @ destroymonad" | Def d -> d
+exception Empty
+
 let p path = Interpreter.Analysis.analyze path
 (*"./tc/fib.wasm"*)
 
-let fib = p "./tc/if.wasm"
+let fib, _g =
+  p
+    "/home/ringzero/gitrepos/modular_chaotic_implicit_apron/test/wasm/tc/fib_return.wasm"
 
-let fr =
-  match (destroy_monad fib).return with
-  | Bot -> failwith "bot @ result"
-  | Def ms -> ms
+let _ = Fixpoint.Callgraph.CallGraph.print _g
+let fr = fib >>=? fun x -> x
 
-let ops =
-  match List.hd fr.ops with
-  | Expression e -> e
+let sk_read (h : Memories.Operand.operand) =
+  match h with
+  | Expression (e, _) -> e
   | LVarRef _ -> failwith "lvref"
   | _ -> failwith "not expr not lvar @ ops"
 
-let length = List.length fr.ops
-let r = Apronext.Texprext.print Format.std_formatter ops
+let print o = Apronext.Texprext.print Format.std_formatter o
+let ops = List.iter (fun x -> sk_read x |> print) fr.ops
