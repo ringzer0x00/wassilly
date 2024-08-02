@@ -2,6 +2,4 @@
 
 
 todo: 
-- call (importante)
-- filter (dopo call)
-- brif (meh per ora, dovrebbe essere banale)
+- memory, import management, externally mutable tables
