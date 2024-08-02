@@ -1,3 +1,6 @@
+(** Aliases from the [Apronext] library.  **)
+
+
 type dom = Apronext.Apol.t
 type var = Apron.Var.t
 type expr = Apronext.Texprext.t

@@ -1,3 +1,4 @@
+(**  [DefBot] Monad, basically a Maybe Monad. **)
 module DefBot = struct
   exception UndefinedDefBot
 
@@ -18,6 +19,7 @@ module DefBot = struct
   let ( >=>? ) = compose
 end
 
+(**  [Writer] Monad. **)
 module Writer = struct
   type 'a t = 'a * string
 

@@ -1,5 +1,6 @@
 type t = Zero | One | Top
-(*put here bit operations*)
+
+(** Abstract operations between [Bit]s. *)
 
 let join b1 b2 =
   match (b1, b2) with
@@ -9,6 +10,9 @@ let join b1 b2 =
   | One, One -> One
 
 let widen = join
+
+(** Inclusion between [Bit]s. *)
+
 let eq b1 b2 = b1 = b2
 
 let leq b1 b2 =
@@ -49,3 +53,5 @@ let filter_until arr filter =
     | h :: t -> if h = filter then acc else apply_filter t [ h ] @ acc
   in
   apply_filter l [] |> Array.of_list
+
+(** [Bit]shifts **)

@@ -3,12 +3,18 @@ type t = Abstractbit.t array
 let def_init = Abstractbit.Zero
 let def_init_top = Abstractbit.Top
 
+(** Abstract [Byte] allocation, set to [Zero]. *)
 let alloc_byte : t = Array.make 8 def_init
+
+(** Abstract [Byte] allocation, set to [Top]. *)
 let alloc_byte_top : t = Array.make 8 def_init_top
 
+(** Abstract operations between [Byte]s. *)
 let join b1 b2 = Array.map2 (fun fst snd -> Abstractbit.join fst snd) b1 b2
+
 let widen = join
 
+(** Inclusion operations between [Byte]s. *)
 let byte_leq b1 b2 =
   Array.for_all2 (fun fst snd -> Abstractbit.leq fst snd) b1 b2
 

@@ -1,5 +1,7 @@
 module Bit = Datastructures.Abstractbit
 
+(* these should produce an expression containing an interval *)
+
 let bitwise_and_or_eval arr =
   let inf =
     Array.fold_left
