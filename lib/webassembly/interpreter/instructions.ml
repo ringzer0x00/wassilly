@@ -7,11 +7,6 @@ open Datastructures.Monad.DefBot
 type wn = Wasm.Types.num_type
 
 (*-- controlflow*)
-let enter_block bl prec =
-  prec >>= fun d ->
-  let ops' = push (bl, d.ops) in
-  return { ops = ops'; var = d.var; mem = d.mem; tab = d.tab }
-
 let end_of_block prec mod_ =
   prec >>= fun d ->
   let _, _t =
