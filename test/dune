@@ -2,8 +2,6 @@
  (name test_chaotic_implicitgraph)
  (modes exe byte)
  (libraries
-  segalang_test
-  test_monolith
   test_wasm
   interpreter
   chaotic_implicitgraph

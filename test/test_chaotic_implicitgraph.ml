@@ -1,5 +1,3 @@
-module SLT = Segalang_test
-module MON = Test_monolith
 module WASM = Test_wasm
 
 (*open OUnit2
