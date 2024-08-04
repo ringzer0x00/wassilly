@@ -52,6 +52,33 @@ let init_globals (mod_ : Wasm.Ast.module_) (s : Memories.Memorystate.t) =
   in
   aux prepped s
 
+let init_mem (mod_ : Wasm.Ast.module_) (s : Memories.Memorystate.t) =
+  let _eval p ms =
+    Eval.step mod_ (ms, p) Eval.Stack.empty Eval.Cache.empty Int32.minus_one
+      ([], []) Eval.MA.bot_pa
+  in
+  let prepped = mod_.it.datas in
+  let rec aux (gs_idx : Wasm.Ast.data_segment list) s =
+    match gs_idx with
+    | [] -> s
+    | gl :: t ->
+        let interpret_data_segment (ds : Wasm.Ast.data_segment) _m =
+          let segment_mode, _init = (ds.it.dmode, ds.it.dinit) in
+          match segment_mode.it with
+          | Wasm.Ast.Declarative -> assert false
+          | Wasm.Ast.Passive -> _m
+          | Wasm.Ast.Active { index = _; offset = _offset } ->
+              Printf.printf "init: %a ; " output_bytes (String.to_bytes _init);
+              Printf.printf "size: %i\n" (String.length _init);
+              Printf.printf "val: %i\n" (Int32.to_int (Bytes.get_int32_le (String.to_bytes _init) 0));
+
+              failwith "no se puedeee"
+        in
+        let s' = interpret_data_segment gl s in
+        aux t s'
+  in
+  aux prepped s
+
 let interpret_elem_segment (es : Wasm.Ast.elem_segment) (t : 'a list) =
   let m, _val_to_copy, _type = (es.it.emode, es.it.einit, es.it.etype) in
   let _ =
@@ -160,6 +187,8 @@ let init (_mod : Wasm.Ast.module_) : Memories.Memorystate.t =
       {
         ops = [];
         mem = Memories.Linearmem.alloc_page_top;
+        (*https://webassembly.github.io/spec/core/text/values.html#strings
+          hex speratated by \. use int_of_string with appropriate shit*)
         var =
           VM.empty
             (Apronext.Apol.top (Datastructures.Aprondomain.make_env [||] [||]));
@@ -172,16 +201,20 @@ let init (_mod : Wasm.Ast.module_) : Memories.Memorystate.t =
     | _ -> failwith "imports are present, program rejected"
   in
   let _tab_initialized = [ init_tab _mod ms_start ] in
-  init_globals _mod
-    (Def
-       {
-         ops = [];
-         mem = Memories.Linearmem.alloc_page_top;
-         var =
-           VM.empty
-             (Apronext.Apol.top (Datastructures.Aprondomain.make_env [||] [||]));
-         tab = _tab_initialized;
-       })
+  let globs_initialized =
+    init_globals _mod
+      (Def
+         {
+           ops = [];
+           mem = Memories.Linearmem.alloc_page_top;
+           var =
+             VM.empty
+               (Apronext.Apol.top
+                  (Datastructures.Aprondomain.make_env [||] [||]));
+           tab = _tab_initialized;
+         })
+  in
+  init_mem _mod globs_initialized
 (* Data Segments
 
    The initial contents of a memory are zero bytes. Data segments can be used to initialize a range of memory from a static vector of bytes.
@@ -200,15 +233,10 @@ let init (_mod : Wasm.Ast.module_) : Memories.Memorystate.t =
 
 (*do things with memories, tables, globals, produce material to build a Frame*)
 
-let interpret_data_segment (ds : Wasm.Ast.data_segment) _m =
-  let segment_mode, _init = (ds.it.dmode, ds.it.dinit) in
-  match segment_mode.it with
-  | Wasm.Ast.Declarative -> assert false
-  | Wasm.Ast.Passive -> _m
-  | Wasm.Ast.Active { index = _; offset = _offset } -> (
-      match _init with
-      | "" | _ ->
-          (* index is ignored as there is at most one memory*)
-          failwith
-            "write _init (content) into _idx of _m at _offset.\n\
-            \          _init is string, figure out how to convert it")
+(*(
+  match _init with
+  | "" | _ ->
+      (* index is ignored as there is at most one memory*)
+      failwith
+        "write _init (content) into _idx of _m at _offset.\n\
+        \          _init is string, figure out how to convert it")*)

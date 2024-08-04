@@ -7,7 +7,7 @@ let p path = Interpreter.Analysis.analyze path
 
 let fib, _g =
   p
-    "/home/ringzero/gitrepos/modular_chaotic_implicit_apron/test/wasm/tc/fib_return.wasm"
+    "/home/ringzero/gitrepos/wassilly/test/wasm/microbenchmarks/indirect-call-index-expr-load-interprocedural-result/main2.wasm"
 
 let _ = Fixpoint.Callgraph.CallGraph.print _g
 let fr = fib >>=? fun x -> x
