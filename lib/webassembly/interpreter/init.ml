@@ -68,6 +68,7 @@ let init_mem (mod_ : Wasm.Ast.module_) (s : Memories.Memorystate.t) =
           | Wasm.Ast.Declarative -> assert false
           | Wasm.Ast.Passive -> _m
           | Wasm.Ast.Active { index = _; offset = _offset } ->
+            (*each "piece" is 1byte (1 word) -> can become sequence -> can become list *)
               Printf.printf "init: %a ; " output_bytes (String.to_bytes _init);
               Printf.printf "size: %i\n" (String.length _init);
               Printf.printf "val: %i\n" (Int32.to_int (Bytes.get_int32_le (String.to_bytes _init) 0));

@@ -1,6 +1,7 @@
 open Utilities.Tuple
 open Utilities.Conversions
 
+(*this doesnt make sense, i should manage the creation of abstract bytes straight from bytes instead of int array*)
 let of_interval interval type_ =
   let val_ = Apronext.Intervalext.to_float interval in
   ( (match type_ with
