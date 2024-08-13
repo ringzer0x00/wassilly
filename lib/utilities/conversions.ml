@@ -1,10 +1,15 @@
+type binary_interval = {
+  min : Datastructures.Abstractbyte.t;
+  max : Datastructures.Abstractbyte.t;
+}
+
 type numeric =
   | Float32 of float
   | Float64 of float
   | Integer32 of Int32.t
   | Integer64 of Int64.t
 
-let s_int32_to_binary_array_twos_complement_msb (num : Int32.t) : int array =
+let s_int32_to_binary_array_twos_complement_msb (num : Int32.t) =
   let size = 32 in
   let result = Array.make size 0 in
 
@@ -21,9 +26,9 @@ let s_int32_to_binary_array_twos_complement_msb (num : Int32.t) : int array =
     else num
   in
 
-  convert (size - 1) num'
+  convert (size - 1) num' |> Datastructures.Abstractbyte.of_int_array
 
-let s_int64_to_binary_array_twos_complement_msb (num : Int64.t) : int array =
+let s_int64_to_binary_array_twos_complement_msb (num : Int64.t) =
   let size = 64 in
   let result = Array.make size 0 in
 
@@ -40,7 +45,7 @@ let s_int64_to_binary_array_twos_complement_msb (num : Int64.t) : int array =
     else num
   in
 
-  convert (size - 1) num'
+  convert (size - 1) num' |> Datastructures.Abstractbyte.of_int_array
 
 let int32_binary_to_decimal msb_to_lsb_binary_array =
   let rec aux acc power = function
@@ -96,8 +101,8 @@ let float32_binary_to_decimal_wrapped arr =
 let float64_binary_to_decimal_wrapped arr =
   Float64 (int64_binary_to_decimal arr |> Int64.float_of_bits)
 
-let float32_to_binary_array (num : float) : int array =
+let float32_to_binary_array (num : float) =
   Int32.bits_of_float num |> s_int32_to_binary_array_twos_complement_msb
 
-let float64_to_binary_array (num : float) : int array =
+let float64_to_binary_array (num : float) =
   Int64.bits_of_float num |> s_int64_to_binary_array_twos_complement_msb

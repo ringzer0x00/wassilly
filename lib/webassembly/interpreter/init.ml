@@ -71,6 +71,7 @@ let init_mem (mod_ : Wasm.Ast.module_) (s : Memories.Memorystate.t) =
               (*each "piece" is 1byte (1 word) -> can become sequence -> can become list *)
               let b = String.to_bytes _init in
               let _bseq = Bytes.to_seq b in
+              let _ = Char.code (*goes to int from char*) in
               Printf.printf "init: %a ; " output_bytes b;
               Printf.printf "size: %i\n" (Bytes.length b);
               Printf.printf "val: %i\n"

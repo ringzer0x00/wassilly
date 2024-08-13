@@ -24,3 +24,13 @@ let byte_le b1 b2 =
   Array.for_all2
     (fun fst snd -> Abstractbit.leq fst snd && not (Abstractbit.eq fst snd))
     b1 b2
+
+(* creation *)
+let of_int_array a =
+  Array.map
+    (fun x ->
+      match x with
+      | 0 -> Abstractbit.Zero
+      | 1 -> Abstractbit.One
+      | _ -> failwith "cannot create array from int")
+    a
