@@ -1,8 +1,3 @@
-type binary_interval = {
-  min : Datastructures.Abstractbyte.t;
-  max : Datastructures.Abstractbyte.t;
-}
-
 type numeric =
   | Float32 of float
   | Float64 of float

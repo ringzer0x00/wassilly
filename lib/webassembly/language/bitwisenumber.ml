@@ -1,10 +1,17 @@
 open Utilities.Tuple
 open Utilities.Conversions
 
+type binary_interval = {
+  min : Datastructures.Abstractbyte.t;
+  max : Datastructures.Abstractbyte.t;
+  t : Wasm.Types.num_type;
+}
+
 (*this doesnt make sense, i should manage the creation of abstract bytes straight from bytes instead of int array*)
 let of_interval interval type_ =
   let val_ = Apronext.Intervalext.to_float interval in
-  ( (match type_ with
+  let min, max =
+    match type_ with
     | Wasm.Types.I32Type ->
         tuple_appl Int32.of_float val_
         |> tuple_appl s_int32_to_binary_array_twos_complement_msb
@@ -16,8 +23,9 @@ let of_interval interval type_ =
         |> tuple_appl s_int32_to_binary_array_twos_complement_msb
     | F64Type ->
         tuple_appl Int64.bits_of_float val_
-        |> tuple_appl s_int64_to_binary_array_twos_complement_msb),
-    type_ )
+        |> tuple_appl s_int64_to_binary_array_twos_complement_msb
+  in
+  { min; max; t = type_ }
 
 (*needed to facilitate writing in memory.*)
 let split_in_bytesized_arrays a =
