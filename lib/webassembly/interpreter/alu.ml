@@ -4,9 +4,10 @@ module VM = Memories.Variablemem.VariableMem
 
 type ad = VM.aprondomain
 
-let int_unop (_u : Wasm.Ast.IntOp.unop) (_ : MS.t) =
+let int_unop (_u : Wasm.Ast.IntOp.unop) (ms : MS.t) =
   match _u with
-  | Clz (* X *) | Ctz (* X *) | ExtendS _ (* not sure *) | Popcnt (* X *) ->
+  | Popcnt (* X *) -> Instructions.popcnt ms
+  | Clz (* X *) | Ctz (* X *) | ExtendS _ (* not sure *) ->
       failwith "unop int @ alu"
 
 let int_testop (_u : Wasm.Ast.IntOp.testop) (ms : MS.t) =

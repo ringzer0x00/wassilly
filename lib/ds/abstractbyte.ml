@@ -34,3 +34,25 @@ let of_int_array a =
       | 1 -> Abstractbit.One
       | _ -> failwith "cannot create array from int")
     a
+
+let of_min_max _mi _ma =
+  let a =
+    Array.map2 (fun a b -> Abstractbit.combine a b) _mi _ma |> Array.to_list
+  in
+  (*once you find Both, from that Both *all* is Both*)
+  let rec meaow arr acc =
+    Printf.printf "MEAOW CALLED\n\n\n\n";
+    match arr with
+    | [] -> Array.of_list acc
+    | h :: t ->
+        let x', t', r =
+          match h with
+          | Abstractbit.Top ->
+              ( Abstractbit.Top,
+                [],
+                Array.to_list (Array.make (List.length t) Abstractbit.Top) )
+          | _ as rest -> (rest, t, [])
+        in
+        meaow t' (acc @ [ x' ] @ r)
+  in
+  meaow a

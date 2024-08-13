@@ -107,3 +107,8 @@ let ne_expr vm l r =
 let eqz_expr vm o =
   let l_ex = operand_to_expr vm o in
   BooleanExpression (Apronext.Tconsext.make l_ex Apronext.Tconsext.EQ)
+
+let popcnt_expr vm o =
+  let _i = Memories.Operand.concretize vm o in
+  let _l_ex = Language.Bitwisenumber.of_interval _i (type_of_operand o) in
+  failwith "Lex"

@@ -73,6 +73,11 @@ let sqrt prec =
   let opsk' = unop d.ops (fun x -> sqrt_expr d.var x) |> push in
   return { ops = opsk'; var = d.var; mem = d.mem; tab = d.tab }
 
+let popcnt prec =
+  prec >>= fun d ->
+  let opsk' = unop d.ops (fun x -> popcnt_expr d.var x) |> push in
+  return { ops = opsk'; var = d.var; mem = d.mem; tab = d.tab }
+
 let read prec v =
   prec >>= fun d ->
   let ops' = push (v, d.ops) in

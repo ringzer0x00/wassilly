@@ -32,8 +32,8 @@ let of_interval interval type_ =
   { min; max; t = type_ }
 
 let binary_interval_to_abstract_bitwise bi =
-  let min, max, t = (bi.min, bi.max, bi.t) in
-  { val_ = Datastructures.Abstractbyte.join min max; t }
+  let _min, _max, _t = (bi.min, bi.max, bi.t) in
+  failwith "SBAGLIATO: { val_ = Datastructures.Abstractbyte.join min max; t }"
 
 (*needed to facilitate writing in memory.*)
 let split_in_bytesized_arrays a =

@@ -17,6 +17,7 @@ let type_of_operand = function
   | Expression (_, wasmNumeric) -> wasmNumeric
   | LVarRef (_, wasmNumeric) -> wasmNumeric
   | GVarRef (_, wasmNumeric) -> wasmNumeric
+  | BooleanExpression _ -> Wasm.Types.I32Type
   | _ -> failwith "cannot extract type"
 
 let size_of_type = function

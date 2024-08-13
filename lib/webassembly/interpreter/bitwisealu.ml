@@ -1,4 +1,5 @@
 module Bit = Datastructures.Abstractbit
+module Byte = Datastructures.Abstractbyte
 
 (* these should produce an expression containing an interval *)
 

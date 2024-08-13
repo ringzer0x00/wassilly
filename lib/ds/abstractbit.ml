@@ -10,6 +10,7 @@ let join b1 b2 =
   | One, One -> One
 
 let widen = join
+let combine b' b'' = if b' = b'' then b' else Top
 
 (** Inclusion between [Bit]s. *)
 
@@ -55,4 +56,3 @@ let filter_until arr filter =
   apply_filter l [] |> Array.of_list
 
 (** [Bit]shifts **)
-
