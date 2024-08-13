@@ -7,7 +7,11 @@ type binary_interval = {
   t : Wasm.Types.num_type;
 }
 
-(*this doesnt make sense, i should manage the creation of abstract bytes straight from bytes instead of int array*)
+type abstract_bitwise = {
+  val_ : Datastructures.Abstractbyte.t;
+  t : Wasm.Types.num_type;
+}
+
 let of_interval interval type_ =
   let val_ = Apronext.Intervalext.to_float interval in
   let min, max =
@@ -26,6 +30,10 @@ let of_interval interval type_ =
         |> tuple_appl s_int64_to_binary_array_twos_complement_msb
   in
   { min; max; t = type_ }
+
+let binary_interval_to_abstract_bitwise bi =
+  let min, max, t = (bi.min, bi.max, bi.t) in
+  { val_ = Datastructures.Abstractbyte.join min max; t }
 
 (*needed to facilitate writing in memory.*)
 let split_in_bytesized_arrays a =
