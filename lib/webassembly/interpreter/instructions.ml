@@ -72,6 +72,11 @@ let l_or prec =
   let opsk' = binop d.ops (fun x y -> lor_expr d.var x y) |> push in
   return { ops = opsk'; var = d.var; mem = d.mem; tab = d.tab }
 
+let l_xor prec =
+  prec >>= fun d ->
+  let opsk' = binop d.ops (fun x y -> lxor_expr d.var x y) |> push in
+  return { ops = opsk'; var = d.var; mem = d.mem; tab = d.tab }
+
 (* -- unops*)
 let neg prec =
   prec >>= fun d ->

@@ -41,6 +41,7 @@ let int_binop (o : Wasm.Ast.IntOp.binop) (ms : MS.t) =
   | DivU -> failwith "divu @ binop @ alu"
   | And -> Instructions.l_and ms
   | Or -> Instructions.l_or ms
+  | Xor (*X*) -> Instructions.l_xor ms
   | RemU (*~~*)
   | Rotl (*~~*)
   | Rotr (*~~*)
@@ -50,8 +51,7 @@ let int_binop (o : Wasm.Ast.IntOp.binop) (ms : MS.t) =
   | ShrS
     (* ~ *)
     (*~~*)
-  | ShrU (* ~ *)
-  | Xor (*X*) ->
+  | ShrU (* ~ *) ->
       failwith "int_binop @ alu other instr"
 
 let float_binop (_o : Wasm.Ast.FloatOp.binop) (_ms : MS.t) =
