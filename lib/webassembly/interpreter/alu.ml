@@ -9,8 +9,11 @@ let int_unop (_u : Wasm.Ast.IntOp.unop) (ms : MS.t) =
   | Popcnt -> Instructions.popcnt ms
   | Clz -> Instructions.clz ms
   | Ctz -> Instructions.ctz ms
-  (*~~*)
-  | ExtendS _ (* not sure *) -> failwith "unop int @ alu"
+  | ExtendS _ps (* not sure *) ->
+      let _ =
+        match _ps with Pack16 | Pack32 | Pack64 | Pack8 -> failwith ""
+      in
+      failwith "unop int @ alu"
 
 let int_testop (_u : Wasm.Ast.IntOp.testop) (ms : MS.t) =
   match _u with Eqz -> Instructions.eqz ms
@@ -41,17 +44,13 @@ let int_binop (o : Wasm.Ast.IntOp.binop) (ms : MS.t) =
   | DivU -> failwith "divu @ binop @ alu"
   | And -> Instructions.l_and ms
   | Or -> Instructions.l_or ms
-  | Xor (*X*) -> Instructions.l_xor ms
+  | Xor -> Instructions.l_xor ms
   | RemU (*~~*)
   | Rotl (*~~*)
   | Rotr (*~~*)
-  | Shl
-    (*~~*)
-    (*~~*)
-  | ShrS
-    (* ~ *)
-    (*~~*)
-  | ShrU (* ~ *) ->
+  | Shl (*~~*)
+  | ShrS (*~~*)
+  | ShrU (*~~*) ->
       failwith "int_binop @ alu other instr"
 
 let float_binop (_o : Wasm.Ast.FloatOp.binop) (_ms : MS.t) =
@@ -60,7 +59,20 @@ let float_binop (_o : Wasm.Ast.FloatOp.binop) (_ms : MS.t) =
   | Sub -> Instructions.sub _ms
   | Div -> Instructions.divs _ms
   | Mul -> Instructions.mul _ms
-  | CopySign (*~~*) | Max (*~~*) | Min (*~~*) -> failwith "float binop"
+  | CopySign
+    (* copy just the sing bit from second to the first number :>
+       - `id`,
+       - *-1 (and swap sup and inf),
+       - LUB between `id` and *-1 (?) *)
+  | Max (*max of the two vals*)
+  | Min 
+    (*inf =  cases (l.inf,l.sup) (r.inf,r.sup): 
+      - l.inf < r.inf -> l.inf
+      - l.inf >= r.inf -> r.inf
+      sup = cases (l.inf,l.sup) (r.inf,r.sup):
+      - l.sup < r.sup -> l.sup
+      - l.sup >= r.sup -> r.sup *) ->
+      failwith "float binop"
 
 let float_testop (_t : Wasm.Ast.FloatOp.testop) (_ms : MS.t) =
   match _t with _ -> failwith "no float testop?"
