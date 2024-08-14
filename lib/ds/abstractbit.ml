@@ -10,7 +10,6 @@ let join b1 b2 =
   | One, One -> One
 
 let widen = join
-let combine b' b'' = if b' = b'' then b' else Top
 
 (** Inclusion between [Bit]s. *)
 

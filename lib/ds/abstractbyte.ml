@@ -37,7 +37,7 @@ let of_int_array a =
 
 let of_min_max _mi _ma =
   let a =
-    Array.map2 (fun a b -> Abstractbit.combine a b) _mi _ma |> Array.to_list
+    Array.map2 (fun a b -> Abstractbit.join a b) _mi _ma |> Array.to_list
   in
   (*once you find Both, from that Both *all* is Both*)
   let rec meaow arr acc =
@@ -55,4 +55,4 @@ let of_min_max _mi _ma =
         in
         meaow t' (acc @ [ x' ] @ r)
   in
-  meaow a
+  meaow a []
