@@ -7,7 +7,7 @@ let p path = Interpreter.Analysis.analyze path
 
 let fib, _g =
   p
-    "/home/ringzero/gitrepos/wassilly/test/wasm/tc/popcnt.wasm"
+    "/home/ringzero/gitrepos/wassilly/test/wasm/tc/or.wasm"
 
 let _ = Fixpoint.Callgraph.CallGraph.print _g
 let fr = fib >>=? fun x -> x

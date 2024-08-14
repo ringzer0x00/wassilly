@@ -62,10 +62,14 @@ let sub prec =
   let opsk' = binop d.ops (fun x y -> sub_expr d.var x y) |> push in
   return { ops = opsk'; var = d.var; mem = d.mem; tab = d.tab }
 
-
 let l_and prec =
   prec >>= fun d ->
   let opsk' = binop d.ops (fun x y -> land_expr d.var x y) |> push in
+  return { ops = opsk'; var = d.var; mem = d.mem; tab = d.tab }
+
+let l_or prec =
+  prec >>= fun d ->
+  let opsk' = binop d.ops (fun x y -> lor_expr d.var x y) |> push in
   return { ops = opsk'; var = d.var; mem = d.mem; tab = d.tab }
 
 (* -- unops*)

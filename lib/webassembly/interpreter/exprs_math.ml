@@ -147,3 +147,20 @@ let land_expr vm _o1 _o2 =
   let _rmin, _rmax = Bitwisealu.l_and _labit _rabit in
   let v = Apronext.Intervalext.of_int _rmin _rmax in
   Expression (const_expr vm v, _l_ex.t)
+
+  let lor_expr vm _o1 _o2 =
+    let _l, _r =
+      (Memories.Operand.concretize vm _o1, Memories.Operand.concretize vm _o2)
+    in
+    let _l_ex, _r_ex =
+      ( Language.Bitwisenumber.of_interval _l (type_of_operand _o1),
+        Language.Bitwisenumber.of_interval _r (type_of_operand _o2) )
+    in
+    let _labit, _rabit =
+      ( Datastructures.Abstractbyte.of_min_max _l_ex.min _l_ex.max,
+        Datastructures.Abstractbyte.of_min_max _r_ex.min _r_ex.max )
+    in
+    let _rmin, _rmax = Bitwisealu.l_or _labit _rabit in
+    let v = Apronext.Intervalext.of_int _rmin _rmax in
+    Expression (const_expr vm v, _l_ex.t)
+  
