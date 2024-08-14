@@ -115,3 +115,19 @@ let popcnt_expr vm o =
   let _rmin, _rmax = Bitwisealu.popcount _abit in
   let v = Apronext.Intervalext.of_int _rmin _rmax in
   Expression (const_expr vm v, _l_ex.t)
+
+let clz_expr vm o =
+  let _i = Memories.Operand.concretize vm o in
+  let _l_ex = Language.Bitwisenumber.of_interval _i (type_of_operand o) in
+  let _abit = Datastructures.Abstractbyte.of_min_max _l_ex.min _l_ex.max in
+  let _rmin, _rmax = Bitwisealu.clz _abit in
+  let v = Apronext.Intervalext.of_int _rmin _rmax in
+  Expression (const_expr vm v, _l_ex.t)
+
+let ctz_expr vm o =
+  let _i = Memories.Operand.concretize vm o in
+  let _l_ex = Language.Bitwisenumber.of_interval _i (type_of_operand o) in
+  let _abit = Datastructures.Abstractbyte.of_min_max _l_ex.min _l_ex.max in
+  let _rmin, _rmax = Bitwisealu.ctz _abit in
+  let v = Apronext.Intervalext.of_int _rmin _rmax in
+  Expression (const_expr vm v, _l_ex.t)
