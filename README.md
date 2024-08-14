@@ -7,4 +7,5 @@ todo:
 
 
 short term todos:
-bitwise operations test
+
+- bitwise operations test: clz, ctz

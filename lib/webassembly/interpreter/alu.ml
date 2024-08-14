@@ -39,7 +39,7 @@ let int_binop (o : Wasm.Ast.IntOp.binop) (ms : MS.t) =
   | DivS -> Instructions.divs ms
   | RemS -> Instructions.rems ms
   | DivU -> failwith "divu @ binop @ alu"
-  | And (*X*)
+  | And -> Instructions.l_and ms
   | Or (*X*)
   | RemU (*~~*)
   | Rotl (*~~*)

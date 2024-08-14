@@ -14,7 +14,7 @@ let bitwise_and_or_eval arr =
       (fun c x -> match x with Bit.One | Bit.Top -> c + 1 | Bit.Zero -> c)
       0 arr
   in
-  (sup, inf)
+  (inf, sup)
 
 let l_xor l r = Array.map2 (fun x y -> Bit.l_xor x y) l r |> bitwise_and_or_eval
 let l_and l r = Array.map2 (fun x y -> Bit.l_and x y) l r |> bitwise_and_or_eval
