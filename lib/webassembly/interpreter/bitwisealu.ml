@@ -42,4 +42,4 @@ let popcount ba =
       (fun c x -> match x with Bit.One | Bit.Top -> c + 1 | Bit.Zero -> c)
       0 ba
   in
-  (max, min)
+  (min, max)

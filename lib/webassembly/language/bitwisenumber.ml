@@ -13,21 +13,32 @@ type abstract_bitwise = {
 }
 
 let of_interval interval type_ =
-  let val_ = Apronext.Intervalext.to_float interval in
   let min, max =
-    match type_ with
-    | Wasm.Types.I32Type ->
-        tuple_appl Int32.of_float val_
-        |> tuple_appl s_int32_to_binary_array_twos_complement_msb
-    | I64Type ->
-        tuple_appl Int64.of_float val_
-        |> tuple_appl s_int64_to_binary_array_twos_complement_msb
-    | F32Type ->
-        tuple_appl Int32.bits_of_float val_
-        |> tuple_appl s_int32_to_binary_array_twos_complement_msb
-    | F64Type ->
-        tuple_appl Int64.bits_of_float val_
-        |> tuple_appl s_int64_to_binary_array_twos_complement_msb
+    match Apronext.Intervalext.is_top interval with
+    | true -> (
+        match type_ with
+        | Wasm.Types.I32Type | F32Type ->
+            ( Array.make 32 Datastructures.Abstractbit.Zero,
+              Array.make 32 Datastructures.Abstractbit.One )
+        | I64Type | F64Type ->
+            ( Array.make 64 Datastructures.Abstractbit.Zero,
+              Array.make 64 Datastructures.Abstractbit.One ))
+    | false -> (
+        let val_ = Apronext.Intervalext.to_float interval in
+        Printf.printf "val_: %f" (fst val_);
+        match type_ with
+        | Wasm.Types.I32Type ->
+            tuple_appl Int32.of_float val_
+            |> tuple_appl s_int32_to_binary_array_twos_complement_msb
+        | I64Type ->
+            tuple_appl Int64.of_float val_
+            |> tuple_appl s_int64_to_binary_array_twos_complement_msb
+        | F32Type ->
+            tuple_appl Int32.bits_of_float val_
+            |> tuple_appl s_int32_to_binary_array_twos_complement_msb
+        | F64Type ->
+            tuple_appl Int64.bits_of_float val_
+            |> tuple_appl s_int64_to_binary_array_twos_complement_msb)
   in
   { min; max; t = type_ }
 
