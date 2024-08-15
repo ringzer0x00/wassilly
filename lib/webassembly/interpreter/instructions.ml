@@ -81,6 +81,11 @@ let l_xor prec =
   let opsk' = binop d.ops (fun x y -> lxor_expr d.var x y) |> push in
   return { ops = opsk'; var = d.var; mem = d.mem; tab = d.tab }
 
+let l_shift prec =
+  prec >>= fun d ->
+  let opsk' = binop d.ops (fun x y -> lshift_expr d.var x y) |> push in
+  return { ops = opsk'; var = d.var; mem = d.mem; tab = d.tab }
+
 (* -- unops*)
 let neg prec =
   prec >>= fun d ->
@@ -95,6 +100,34 @@ let sqrt prec =
 let abs prec =
   prec >>= fun d ->
   let opsk' = unop d.ops (fun x -> abs_expr d.var x) |> push in
+  return { ops = opsk'; var = d.var; mem = d.mem; tab = d.tab }
+
+let ceil prec =
+  prec >>= fun d ->
+  let opsk' =
+    unop d.ops (fun x -> round d.var x Apronext.Texprext.Up) |> push
+  in
+  return { ops = opsk'; var = d.var; mem = d.mem; tab = d.tab }
+
+let floor prec =
+  prec >>= fun d ->
+  let opsk' =
+    unop d.ops (fun x -> round d.var x Apronext.Texprext.Down) |> push
+  in
+  return { ops = opsk'; var = d.var; mem = d.mem; tab = d.tab }
+
+let nearest prec =
+  prec >>= fun d ->
+  let opsk' =
+    unop d.ops (fun x -> round d.var x Apronext.Texprext.Near) |> push
+  in
+  return { ops = opsk'; var = d.var; mem = d.mem; tab = d.tab }
+
+let trunc prec =
+  prec >>= fun d ->
+  let opsk' =
+    unop d.ops (fun x -> round d.var x Apronext.Texprext.Zero) |> push
+  in
   return { ops = opsk'; var = d.var; mem = d.mem; tab = d.tab }
 
 let popcnt prec =
