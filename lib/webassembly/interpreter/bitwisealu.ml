@@ -47,8 +47,14 @@ let popcount ba =
 let shift_left _ba _by =
   (*shift by zero: id*)
   let size = Array.length _ba in
-  match _by with
-  | 0 -> _ba
-  | _ ->
-      let _m = _by mod size in
-      failwith "shift"
+  (*32*)
+  let _m = _by mod size in
+  (*1*)
+  let _remaining =
+    Array.sub _ba _m (size - _m)
+    (*1 32-1*)
+    (*pos(_m) len(size-_m)*)
+  in
+  let _fill = Array.make _m Bit.Zero in
+  let _res = Array.append _remaining _fill in
+  failwith "shift"
