@@ -48,9 +48,9 @@ let int_binop (o : Wasm.Ast.IntOp.binop) (ms : MS.t) =
   | RemU (*~~*)
   | Rotl (*~~*)
   | Rotr (*~~*)
-  | Shl (*~~*)
-  | ShrS (*~~*)
-  | ShrU (*~~*) ->
+  | Shl (*x^2*)
+  | ShrS (* sign-preserving shift *)
+  | ShrU (* sign-ignoring shift *) ->
       failwith "int_binop @ alu other instr"
 
 let float_binop (_o : Wasm.Ast.FloatOp.binop) (_ms : MS.t) =
@@ -65,8 +65,8 @@ let float_binop (_o : Wasm.Ast.FloatOp.binop) (_ms : MS.t) =
        - *-1 (and swap sup and inf),
        - LUB between `id` and *-1 (?) *)
   | Max (*max of the two vals*)
-  | Min 
-    (*inf =  cases (l.inf,l.sup) (r.inf,r.sup): 
+  | Min
+    (*inf =  cases (l.inf,l.sup) (r.inf,r.sup):
       - l.inf < r.inf -> l.inf
       - l.inf >= r.inf -> r.inf
       sup = cases (l.inf,l.sup) (r.inf,r.sup):
@@ -81,11 +81,11 @@ let float_unop (o : Wasm.Ast.FloatOp.unop) (ms : MS.t) =
   match o with
   | Neg -> Instructions.neg ms
   | Sqrt -> Instructions.sqrt ms
-  | Abs (*~~*) -> Instructions.abs ms
-  | Ceil (*~~*) -> failwith "round up"
-  | Floor (*~~*) -> failwith "round down"
-  | Nearest (*~~*) -> failwith "round to nearest int"
-  | Trunc (*~~*) -> failwith "discard fractional, float -> float"
+  | Abs -> Instructions.abs ms
+  | Ceil -> failwith "round up" (*apron: up*)
+  | Floor -> failwith "round down" (*apron: down*)
+  | Nearest -> failwith "round to nearest int" (*apron: near*)
+  | Trunc -> failwith "discard fractional" (*apron: zero*)
 
 let float_relop (o : Wasm.Ast.FloatOp.relop) (ms : MS.t) =
   match o with
@@ -113,5 +113,5 @@ let float_cvtop (_o : Wasm.Ast.FloatOp.cvtop) (_ms : MS.t) =
   | ConvertSI64 -> failwith "see above"
   | ConvertUI64 -> failwith "see above"
   | PromoteF32 -> failwith "f32 to f64"
-  | DemoteF64 -> failwith "f64 to f32"
+  | DemoteF64 -> failwith "f64 to f32" (*Single precision*)
   | ReinterpretInt -> failwith "int -> float (bits)"

@@ -160,4 +160,9 @@ let extend_s_i32 prec =
   let opsk' = cvtop d.ops (fun x -> convert_extend d.var x I64Type) |> push in
   return { ops = opsk'; var = d.var; mem = d.mem; tab = d.tab }
 
+let demote_f64 prec =
+  prec >>= fun d ->
+  let opsk' = cvtop d.ops (fun x -> demote_f64 d.var x) |> push in
+  return { ops = opsk'; var = d.var; mem = d.mem; tab = d.tab }
+
 let extend_u_i32 _prec = failwith "extend unsign"

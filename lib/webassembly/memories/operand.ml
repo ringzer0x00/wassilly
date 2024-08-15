@@ -40,6 +40,9 @@ let is_label = function Label _ -> true | _ -> false
 let const_expr (mem : varmemories) inter =
   Apronext.Texprext.cst mem.ad.env (Apronext.Coeffext.Interval inter)
 
+let cast_expr (mem : varmemories) inter t r =
+  Apronext.Texprext.unop Apronext.Texprext.Cast (const_expr mem inter) t r
+
 let max_val = function Wasm.Types.I32Type -> failwith "" | _ -> failwith ""
 let var_expr (mem : varmemories) var = Apronext.Texprext.var mem.ad.env var
 
@@ -155,6 +158,10 @@ let convert_extend vm op dt =
   | (LVarRef _ | GVarRef _) as r -> Expression (concretize_in_exp vm r, dt)
   | BooleanExpression _ as c -> Expression (concretize_in_exp vm c, dt)
   | _ -> failwith "operand conversion (extension)"
+
+let demote_f64 ?(rnd = Apronext.Texprext.Zero) vm op =
+  let i = concretize vm op in
+  Expression (cast_expr vm i Apronext.Texprext.Single rnd, Wasm.Types.F32Type)
 
 let jw_operand (mem1, o1) (mem2, o2) operation =
   (*two memories are needed, one for locals and one for globals*)
