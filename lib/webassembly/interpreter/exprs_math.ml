@@ -32,8 +32,12 @@ let mul_expr vm l r =
 let divs_expr vm l r =
   let l_ex = operand_to_expr vm l in
   let r_ex = operand_to_expr vm r in
-  Expression
-    (Apronext.Texprext.binary Apronext.Texprext.Div l_ex r_ex, type_of_operand l)
+  match Apronext.Intervalext.equal_int (concretize vm r) 0 with
+  | true -> failwith "div by zero"
+  | false ->
+      Expression
+        ( Apronext.Texprext.binary Apronext.Texprext.Div l_ex r_ex,
+          type_of_operand l )
 
 let rems_expr vm l r =
   let l_ex = operand_to_expr vm l in

@@ -44,8 +44,12 @@ let mul prec =
 
 let divs prec =
   prec >>= fun d ->
-  let opsk' = binop d.ops (fun x y -> divs_expr d.var x y) |> push in
-  return { ops = opsk'; var = d.var; mem = d.mem; tab = d.tab }
+  let divisor = concretize d.var (peek d.ops) in
+  match Apronext.Intervalext.equal_int divisor 0 with
+  | true -> Bot
+  | false ->
+      let opsk' = binop d.ops (fun x y -> divs_expr d.var x y) |> push in
+      return { ops = opsk'; var = d.var; mem = d.mem; tab = d.tab }
 
 let rems prec =
   prec >>= fun d ->
