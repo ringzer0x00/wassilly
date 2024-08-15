@@ -81,7 +81,7 @@ let float_unop (o : Wasm.Ast.FloatOp.unop) (ms : MS.t) =
   match o with
   | Neg -> Instructions.neg ms
   | Sqrt -> Instructions.sqrt ms
-  | Abs (*~~*) -> failwith "absolute value"
+  | Abs (*~~*) -> Instructions.abs ms
   | Ceil (*~~*) -> failwith "round up"
   | Floor (*~~*) -> failwith "round down"
   | Nearest (*~~*) -> failwith "round to nearest int"

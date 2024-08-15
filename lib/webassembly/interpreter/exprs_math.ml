@@ -1,23 +1,25 @@
 open Memories.Operand
+module I = Apronext.Intervalext
+module S = Apronext.Scalarext
 
 let const (n : Wasm.Ast.num) (vm : varmemories) =
   let v, t =
     match n.it with
     | F32 c ->
         let c = Wasm.F32.to_float c in
-        (Apronext.Intervalext.of_float c c, Wasm.Types.F32Type)
+        (I.of_float c c, Wasm.Types.F32Type)
     | F64 c ->
         let c = Wasm.F64.to_float c in
-        (Apronext.Intervalext.of_float c c, Wasm.Types.F64Type)
+        (I.of_float c c, Wasm.Types.F64Type)
     | I32 c ->
         let c = Wasm.I32.to_int_s c in
         Printf.printf "\n\nConst: %i\n" c;
-        let interval = Apronext.Intervalext.of_int c c in
-        Apronext.Intervalext.print Format.std_formatter interval;
+        let interval = I.of_int c c in
+        I.print Format.std_formatter interval;
         (interval, Wasm.Types.I32Type)
     | I64 c ->
         let c = Wasm.I64.to_int_s c in
-        (Apronext.Intervalext.of_int c c, Wasm.Types.I64Type)
+        (I.of_int c c, Wasm.Types.I64Type)
   in
   Expression (const_expr vm v, t)
 
@@ -66,6 +68,25 @@ let sqrt_expr vm o =
   Expression
     (Apronext.Texprext.unary Apronext.Texprext.Sqrt o_ex, type_of_operand o)
 
+let abs_expr vm o =
+  let bigger x y = match S.cmp x y < 0 with true -> y | false -> x in
+  let max = I.of_scalar (S.of_int 0) (S.of_infty 1) in
+  let ival, t = (concretize vm o, type_of_operand o) in
+  let inf, sup = (ival.inf, ival.sup) in
+  let r =
+    match I.is_top ival with
+    | true -> max
+    | false -> (
+        match (S.sgn inf, S.sgn sup) with
+        (*-1: negative, 0: null(zero), +1: positive*)
+        | 0, 0 | 0, 1 | 1, 1 -> ival
+        | -1, 0 -> I.of_scalar (S.of_int 0) (S.neg inf)
+        | -1, 1 -> I.of_scalar (S.of_int 0) (bigger (S.neg inf) sup)
+        | 1, -1 -> failwith "bottom interval"
+        | _ -> failwith "there shouldnt be any other combination")
+  in
+  Expression (const_expr vm r, t)
+
 let ge_s_expr vm l r =
   let l_ex = operand_to_expr vm l in
   let r_ex = operand_to_expr vm r in
@@ -113,7 +134,7 @@ let popcnt_expr vm o =
   let _l_ex = Language.Bitwisenumber.of_interval _i (type_of_operand o) in
   let _abit = Datastructures.Abstractbyte.of_min_max _l_ex.min _l_ex.max in
   let _rmin, _rmax = Bitwisealu.popcount _abit in
-  let v = Apronext.Intervalext.of_int _rmin _rmax in
+  let v = I.of_int _rmin _rmax in
   Expression (const_expr vm v, _l_ex.t)
 
 let clz_expr vm o =
@@ -121,7 +142,7 @@ let clz_expr vm o =
   let _l_ex = Language.Bitwisenumber.of_interval _i (type_of_operand o) in
   let _abit = Datastructures.Abstractbyte.of_min_max _l_ex.min _l_ex.max in
   let _rmin, _rmax = Bitwisealu.clz _abit in
-  let v = Apronext.Intervalext.of_int _rmin _rmax in
+  let v = I.of_int _rmin _rmax in
   Expression (const_expr vm v, _l_ex.t)
 
 let ctz_expr vm o =
@@ -129,7 +150,7 @@ let ctz_expr vm o =
   let _l_ex = Language.Bitwisenumber.of_interval _i (type_of_operand o) in
   let _abit = Datastructures.Abstractbyte.of_min_max _l_ex.min _l_ex.max in
   let _rmin, _rmax = Bitwisealu.ctz _abit in
-  let v = Apronext.Intervalext.of_int _rmin _rmax in
+  let v = I.of_int _rmin _rmax in
   Expression (const_expr vm v, _l_ex.t)
 
 let land_expr vm _o1 _o2 =
@@ -145,7 +166,7 @@ let land_expr vm _o1 _o2 =
       Datastructures.Abstractbyte.of_min_max _r_ex.min _r_ex.max )
   in
   let _rmin, _rmax = Bitwisealu.l_and _labit _rabit in
-  let v = Apronext.Intervalext.of_int _rmin _rmax in
+  let v = I.of_int _rmin _rmax in
   Expression (const_expr vm v, _l_ex.t)
 
 let lor_expr vm _o1 _o2 =
@@ -161,7 +182,7 @@ let lor_expr vm _o1 _o2 =
       Datastructures.Abstractbyte.of_min_max _r_ex.min _r_ex.max )
   in
   let _rmin, _rmax = Bitwisealu.l_or _labit _rabit in
-  let v = Apronext.Intervalext.of_int _rmin _rmax in
+  let v = I.of_int _rmin _rmax in
   Expression (const_expr vm v, _l_ex.t)
 
 let lxor_expr vm _o1 _o2 =
@@ -177,5 +198,5 @@ let lxor_expr vm _o1 _o2 =
       Datastructures.Abstractbyte.of_min_max _r_ex.min _r_ex.max )
   in
   let _rmin, _rmax = Bitwisealu.l_xor _labit _rabit in
-  let v = Apronext.Intervalext.of_int _rmin _rmax in
+  let v = I.of_int _rmin _rmax in
   Expression (const_expr vm v, _l_ex.t)
