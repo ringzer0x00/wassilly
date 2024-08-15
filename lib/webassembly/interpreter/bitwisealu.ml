@@ -43,3 +43,12 @@ let popcount ba =
       0 ba
   in
   (min, max)
+
+let shift_left _ba _by =
+  (*shift by zero: id*)
+  let size = Array.length _ba in
+  match _by with
+  | 0 -> _ba
+  | _ ->
+      let _m = _by mod size in
+      failwith "shift"
