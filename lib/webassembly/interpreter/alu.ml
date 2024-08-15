@@ -106,12 +106,12 @@ let int_cvtop (_o : Wasm.Ast.IntOp.cvtop) (_ms : MS.t) =
   | TruncUF32 | TruncUF64 | TruncSatUF64 ->
       failwith "cvt int"
 
-let float_cvtop (_o : Wasm.Ast.FloatOp.cvtop) (_ms : MS.t) =
+let float_cvtop (_o : Wasm.Ast.FloatOp.cvtop) (ms : MS.t) =
   match _o with
+  | DemoteF64 -> Instructions.demote_f64 ms
   | ConvertSI32 -> failwith "int32 to float32"
   | ConvertUI32 -> failwith "int32 -> unsigned int32 -> float"
   | ConvertSI64 -> failwith "see above"
   | ConvertUI64 -> failwith "see above"
   | PromoteF32 -> failwith "f32 to f64"
-  | DemoteF64 -> failwith "f64 to f32" (*Single precision*)
   | ReinterpretInt -> failwith "int -> float (bits)"

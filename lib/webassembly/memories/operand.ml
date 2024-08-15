@@ -159,9 +159,9 @@ let convert_extend vm op dt =
   | BooleanExpression _ as c -> Expression (concretize_in_exp vm c, dt)
   | _ -> failwith "operand conversion (extension)"
 
-let demote_f64 ?(rnd = Apronext.Texprext.Zero) vm op =
+let demote ?(rnd = Apronext.Texprext.Zero) vm op dt =
   let i = concretize vm op in
-  Expression (cast_expr vm i Apronext.Texprext.Single rnd, Wasm.Types.F32Type)
+  Expression (cast_expr vm i Apronext.Texprext.Single rnd, dt)
 
 let jw_operand (mem1, o1) (mem2, o2) operation =
   (*two memories are needed, one for locals and one for globals*)
