@@ -212,5 +212,7 @@ let lshift_expr vm l r =
   let lb = Datastructures.Abstractbyte.of_min_max lb.min lb.max in
   match S.equal_int (I.range _by) 0 with
   (*range == 0*)
-  | true -> let _r = Bitwisealu.shift_left lb (Float.to_int (S.to_float _by.inf)) in failwith "manipulate bitwise res"
+  | true ->
+      let _r = Bitwisealu.shift_left lb (Float.to_int (S.to_float _by.inf)) in
+      failwith "manipulate bitwise res"
   | false -> Expression (const_expr vm I.top, type_of_operand l)
