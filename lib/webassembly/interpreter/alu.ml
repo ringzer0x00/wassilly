@@ -26,13 +26,10 @@ let int_relop (u : Wasm.Ast.IntOp.relop) (ms : MS.t) =
   | Eq -> Instructions.eq ms
   | Ne -> Instructions.ne ms
   | LtS -> Instructions.lt_s ms
-  | GeU -> Instructions.ge_u ms (* ~~ *)
-  (*~~*)
-  | GtU -> failwith "gtu (s+(2^size))"
-  (*~~*)
-  | LeU -> failwith "LeU (s+(2^size))"
-  (*~~*)
-  | LtU -> failwith "LtU (s+(2^size))"
+  | GeU -> Instructions.cmpstub ms
+  | GtU -> Instructions.cmpstub ms
+  | LeU -> Instructions.cmpstub ms
+  | LtU -> Instructions.cmpstub ms
 
 let int_binop (o : Wasm.Ast.IntOp.binop) (ms : MS.t) =
   match o with

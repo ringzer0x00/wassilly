@@ -23,11 +23,16 @@ let const (n : Wasm.Ast.num) (vm : varmemories) =
   in
   Expression (const_expr vm v, t)
 
-let unsign _ _ =
-  (*let i = concretize operand*)
-  (*let inf, sup = i.inf, i.sup*)
-  (*let n' n =
-    if n < 0 then UINT_MAX+1+n else n*)
+let unsign vm o =
+  let _i = concretize vm o in
+  (*let max =
+      match type_of_operand o with
+      | Wasm.Types.I32Type -> 4294967295
+      | I64Type -> failwith ""
+      | _ -> failwith "not supported in unsign"
+    in
+    let inf, sup = (i.inf, i.sup) in
+    let n' n = if S.cmp n (S.of_int 0) < 0 then max + 1 + n else n in*)
   (*let a,b = (n' inf), (n' sup)*)
   (*if a > b then Interval b a else Interval a b*)
   failwith ""
@@ -137,6 +142,10 @@ let ne_expr vm l r =
   let l_ex = operand_to_expr vm l in
   let r_ex = operand_to_expr vm r in
   BooleanExpression (Apronext.Tconsext.diseq l_ex r_ex)
+
+let cmpstub_expr vm _ _ =
+  let i = I.of_int 0 1 in
+  Expression (const_expr vm i, Wasm.Types.I32Type)
 
 let eqz_expr vm o =
   let l_ex = operand_to_expr vm o in

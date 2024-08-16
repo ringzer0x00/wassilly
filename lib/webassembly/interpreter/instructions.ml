@@ -156,11 +156,6 @@ let ge_s prec =
   let opsk' = binop d.ops (fun x y -> ge_s_expr d.var x y) |> push in
   return { ops = opsk'; var = d.var; mem = d.mem; tab = d.tab }
 
-let ge_u prec =
-  prec >>= fun d ->
-  let opsk' = binop d.ops (fun x y -> ge_u_expr d.var x y) |> push in
-  return { ops = opsk'; var = d.var; mem = d.mem; tab = d.tab }
-
 let gt_s prec =
   prec >>= fun d ->
   let opsk' = binop d.ops (fun x y -> gt_s_expr d.var x y) |> push in
@@ -184,6 +179,11 @@ let eq prec =
 let ne prec =
   prec >>= fun d ->
   let opsk' = binop d.ops (fun x -> ne_expr d.var x) |> push in
+  return { ops = opsk'; var = d.var; mem = d.mem; tab = d.tab }
+
+let cmpstub prec =
+  prec >>= fun d ->
+  let opsk' = binop d.ops (fun x -> cmpstub_expr d.var x) |> push in
   return { ops = opsk'; var = d.var; mem = d.mem; tab = d.tab }
 
 let eqz prec =
