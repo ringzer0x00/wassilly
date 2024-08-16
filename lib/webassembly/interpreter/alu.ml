@@ -97,15 +97,24 @@ let float_relop (o : Wasm.Ast.FloatOp.relop) (ms : MS.t) =
 
 let int_cvtop (_o : Wasm.Ast.IntOp.cvtop) (ms : MS.t) =
   match _o with
-  | ExtendSI32 -> Instructions.extend_s_i32 ms
-  | ExtendUI32 (*~~*) -> failwith "convert to unsigned and then change type"
+  | ExtendSI32 (*extend to 64bit version, keep sign*) ->
+      Instructions.extend_s_i32 ms
+  | ExtendUI32 (*re-interpret and extend to 64bit version*) ->
+      failwith "convert to unsigned and then change type"
   | WrapI64 (*~~*) -> failwith "i64 to i32 (reducing the value mod 2^32)"
   | ReinterpretFloat (*~~*) ->
       failwith "-0 as a floating point -> -2147483648"
       (*cannot use apron cast, must use bits*)
-  | TruncSF32 | TruncSF64 | TruncSatSF32 | TruncSatSF64 | TruncSatUF32
-  | TruncUF32 | TruncUF64 | TruncSatUF64 ->
-      failwith "cvt int"
+  | TruncSF32 | TruncSF64 -> failwith "just apron rounding"
+  | TruncUF32 | TruncUF64 -> failwith "unsigned"
+  | TruncSatSF32 | TruncSatSF64 | TruncSatUF32 | TruncSatUF64 ->
+      failwith "sat????"
+(*
+   The semantics are the same as the corresponding non-_sat instructions, except:
+    Instead of trapping on positive or negative overflow, they return the maximum or minimum integer value, respectively, and do not trap. 
+    (This behavior is also referred to as "saturating".)
+    Instead of trapping on NaN, they return 0 and do not trap.
+*)
 
 let float_cvtop (_o : Wasm.Ast.FloatOp.cvtop) (ms : MS.t) =
   match _o with
