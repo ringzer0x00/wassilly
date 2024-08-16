@@ -57,4 +57,4 @@ let shift_left _ba _by =
   in
   let _fill = Array.make _m Bit.Zero in
   let _res = Array.append _remaining _fill in
-  failwith "shift"
+  _res

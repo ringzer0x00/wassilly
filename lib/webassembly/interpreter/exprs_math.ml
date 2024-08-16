@@ -23,6 +23,15 @@ let const (n : Wasm.Ast.num) (vm : varmemories) =
   in
   Expression (const_expr vm v, t)
 
+let unsign _ _ =
+  (*let i = concretize operand*)
+  (*let inf, sup = i.inf, i.sup*)
+  (*let n' n =
+    if n < 0 then UINT_MAX+1+n else n*)
+  (*let a,b = (n' inf), (n' sup)*)
+  (*if a > b then Interval b a else Interval a b*)
+  failwith ""
+
 let mul_expr vm l r =
   let l_ex = operand_to_expr vm l in
   let r_ex = operand_to_expr vm r in
@@ -214,5 +223,5 @@ let lshift_expr vm l r =
   (*range == 0*)
   | true ->
       let _r = Bitwisealu.shift_left lb (Float.to_int (S.to_float _by.inf)) in
-      failwith "manipulate bitwise res"
+      Expression (const_expr vm I.top, type_of_operand l)
   | false -> Expression (const_expr vm I.top, type_of_operand l)
