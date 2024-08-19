@@ -56,3 +56,11 @@ let of_min_max _mi _ma =
         meaow t' (acc @ [ x' ] @ r)
   in
   meaow a []
+
+let as_min_max a =
+  Array.map
+    (fun x ->
+      match x with
+      | Abstractbit.Top -> (Abstractbit.Zero, Abstractbit.One)
+      | _ as d -> (d, d))
+    a
