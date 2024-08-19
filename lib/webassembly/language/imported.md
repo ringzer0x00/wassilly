@@ -17,6 +17,9 @@ Example:
 
   meaning: nothing is bound except for $l0_i32  
 
+`calls: ...`
+set of functions the function calls
+
 `post: memory[$l0_i32]=($l1_i32*2)`
   the memory at abstract offset $l0_i32 is set to 42
 `),...]`
