@@ -1,5 +1,6 @@
 open Utilities.Tuple
 open Utilities.Conversions
+open Typing
 
 type byte = {
   min : Datastructures.Abstractbyte.t;
@@ -9,15 +10,11 @@ type byte = {
 type binary_interval = {
   min : Datastructures.Abstractbyte.t;
   max : Datastructures.Abstractbyte.t;
-  t : Wasm.Types.num_type;
+  t : num;
 }
 
-type abstract_byte = {val_ : Datastructures.Abstractbyte.t}
-
-type abstract_bitwise = {
-  val_ : Datastructures.Abstractbyte.t;
-  t : Wasm.Types.num_type;
-}
+type abstract_byte = { val_ : Datastructures.Abstractbyte.t }
+type abstract_bitwise = { val_ : Datastructures.Abstractbyte.t; t : num }
 
 let byte_of_interval interval =
   let min, max =
@@ -32,12 +29,12 @@ let byte_of_interval interval =
   in
   { min; max }
 
-let of_interval interval type_ =
+let of_interval interval (type_ : num) =
   let min, max =
     match Apronext.Intervalext.is_top interval with
     | true -> (
         match type_ with
-        | Wasm.Types.I32Type | F32Type ->
+        | I32Type | F32Type ->
             ( Array.make 32 Datastructures.Abstractbit.Zero,
               Array.make 32 Datastructures.Abstractbit.One )
         | I64Type | F64Type ->
@@ -47,7 +44,7 @@ let of_interval interval type_ =
         let val_ = Apronext.Intervalext.to_float interval in
         Printf.printf "val_: %f" (fst val_);
         match type_ with
-        | Wasm.Types.I32Type ->
+        | I32Type ->
             tuple_appl Int32.of_float val_
             |> tuple_appl s_int32_to_binary_array_twos_complement_msb
         | I64Type ->
@@ -64,4 +61,4 @@ let of_interval interval type_ =
 
 let binary_interval_to_abstract_bitwise bi =
   let min, max, t = (bi.min, bi.max, bi.t) in
-  { val_ = Datastructures.Abstractbyte.of_min_max min max; t=t }
+  { val_ = Datastructures.Abstractbyte.of_min_max min max; t }
