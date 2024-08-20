@@ -1,16 +1,36 @@
 open Utilities.Tuple
 open Utilities.Conversions
 
+type byte = {
+  min : Datastructures.Abstractbyte.t;
+  max : Datastructures.Abstractbyte.t;
+}
+
 type binary_interval = {
   min : Datastructures.Abstractbyte.t;
   max : Datastructures.Abstractbyte.t;
   t : Wasm.Types.num_type;
 }
 
+type abstract_byte = {val_ : Datastructures.Abstractbyte.t}
+
 type abstract_bitwise = {
   val_ : Datastructures.Abstractbyte.t;
   t : Wasm.Types.num_type;
 }
+
+let byte_of_interval interval =
+  let min, max =
+    match Apronext.Intervalext.is_top interval with
+    | true ->
+        ( Array.make 8 Datastructures.Abstractbit.Zero,
+          Array.make 8 Datastructures.Abstractbit.One )
+    | false ->
+        let _val_ = Apronext.Intervalext.to_float interval in
+        tuple_appl Int32.of_float _val_
+        |> tuple_appl s_int32_to_binary_array_twos_complement_msb
+  in
+  { min; max }
 
 let of_interval interval type_ =
   let min, max =

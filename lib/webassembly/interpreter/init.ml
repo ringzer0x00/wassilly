@@ -76,6 +76,14 @@ let init_mem (mod_ : Wasm.Ast.module_) (s : Memories.Memorystate.t) =
                   (fun x -> Printf.printf "CHAR: %i\n" (Char.code x))
                   _bseq (*goes to int from char*)
               in
+              let miao =
+                Seq.map (fun x -> Char.code x) _bseq
+                |> Array.of_seq
+                |> Array.map (fun x ->
+                       Language.Bitwisenumber.byte_of_interval
+                         (Apronext.Intervalext.of_int x x))
+              in
+              Printf.printf "MIAO: %i\n" (Array.length miao);
               Printf.printf "init: %a ; " output_bytes b;
               Printf.printf "size: %i\n" (Bytes.length b);
               Printf.printf "val: %i\n"

@@ -4,6 +4,25 @@ type numeric =
   | Integer32 of Int32.t
   | Integer64 of Int64.t
 
+let s_int8_to_binary_array_twos_complement_msb num =
+  let size = 8 in
+  let result = Array.make size 0 in
+
+  let rec convert idx n =
+    if idx < 0 then result
+    else (
+      result.(idx) <- Int32.to_int n land 1;
+      convert (idx - 1) (Int32.shift_right_logical n 1))
+  in
+
+  let num' =
+    if num < Int32.min_int then
+      Int32.sub Int32.max_int (Int32.add (Int32.neg num) 1l)
+    else num
+  in
+
+  convert (size - 1) num' |> Datastructures.Abstractbyte.of_int_array
+
 let s_int32_to_binary_array_twos_complement_msb (num : Int32.t) =
   let size = 32 in
   let result = Array.make size 0 in
