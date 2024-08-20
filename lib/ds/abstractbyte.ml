@@ -64,3 +64,15 @@ let as_min_max a =
       | Abstractbit.Top -> (Abstractbit.Zero, Abstractbit.One)
       | _ as d -> (d, d))
     a
+
+(*needed to facilitate writing in memory.*)
+let split_in_bytesized_arrays a =
+  let l = Array.length a / 8 in
+  let _res = Array.make l (Array.make 8 a.(0)) in
+  Array.iteri
+    (fun i x ->
+      let byte_pos = i / 8 in
+      let pos_in_byte = i mod 8 in
+      _res.(byte_pos).(pos_in_byte) <- x)
+    a;
+  _res
