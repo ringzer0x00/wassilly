@@ -224,6 +224,7 @@ let lxor_expr vm _o1 _o2 =
   Expression (const_expr vm v, _l_ex.t)
 
 let lshift_expr vm l r =
+  (*stub really, always gives top*)
   let _by = Memories.Operand.concretize vm r in
   let l_i = Memories.Operand.concretize vm l in
   let lb = Language.Bitwisenumber.of_interval l_i (type_of_operand l) in

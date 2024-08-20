@@ -35,6 +35,20 @@ let of_int_array a =
       | _ -> failwith "cannot create array from int")
     a
 
+let to_int_array =
+  Array.map (fun x ->
+      match x with
+      | Abstractbit.Zero -> 0
+      | Abstractbit.One -> 1
+      | _ -> failwith "cannot doooo")
+
+let to_int_array_minmax =
+  Array.map (fun x ->
+      match x with
+      | Abstractbit.Zero -> (0, 0)
+      | Abstractbit.One -> (1, 1)
+      | Abstractbit.Top -> (0, 1))
+
 let of_min_max _mi _ma =
   let a =
     Array.map2 (fun a b -> Abstractbit.join a b) _mi _ma |> Array.to_list
