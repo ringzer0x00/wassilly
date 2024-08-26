@@ -44,10 +44,10 @@ let int_binop (o : Wasm.Ast.IntOp.binop) (ms : MS.t) =
   | Xor -> Instructions.l_xor ms
   | Shl -> Instructions.l_shift ms
   | RemU -> failwith "remu"
-  | Rotl -> Instructions.l_shift ms (*todo*)
-  | Rotr -> Instructions.l_shift ms (*todo*)
-  | ShrS -> Instructions.l_shift ms (*todo*)
-  | ShrU -> Instructions.l_shift ms (*todo*)
+  | Rotl -> Instructions.shift_stub ms (*todo*)
+  | Rotr -> Instructions.shift_stub ms (*todo*)
+  | ShrS -> Instructions.shift_stub ms (*todo*)
+  | ShrU -> Instructions.shift_stub ms (*todo*)
 
 let float_binop (_o : Wasm.Ast.FloatOp.binop) (_ms : MS.t) =
   match _o with

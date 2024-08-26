@@ -223,6 +223,8 @@ let lxor_expr vm _o1 _o2 =
   let v = I.of_int _rmin _rmax in
   Expression (const_expr vm v, _l_ex.t)
 
+let shift_stub_expr vm l _ = Expression (const_expr vm I.top, type_of_operand l)
+
 let lshift_expr vm l r =
   (*stub really, always gives top*)
   let _by = Memories.Operand.concretize vm r in

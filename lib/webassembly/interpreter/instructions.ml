@@ -86,6 +86,11 @@ let l_shift prec =
   let opsk' = binop d.ops (fun x y -> lshift_expr d.var x y) |> push in
   return { ops = opsk'; var = d.var; mem = d.mem; tab = d.tab }
 
+let shift_stub prec =
+  prec >>= fun d ->
+  let opsk' = binop d.ops (fun x y -> shift_stub_expr d.var x y) |> push in
+  return { ops = opsk'; var = d.var; mem = d.mem; tab = d.tab }
+
 (* -- unops*)
 let neg prec =
   prec >>= fun d ->
