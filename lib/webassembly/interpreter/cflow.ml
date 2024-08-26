@@ -89,9 +89,7 @@ let seq_answer r1 r2 =
       return = MS.join res1.return res2.return;
     }
 
-let func_answer (k_to : res t) =
-  (*unsure about this, maybe i need the natural cont too?*)
-  k_to >>= fun to_ -> to_.return
+let func_answer (k_to : res t) = k_to >>= fun to_ -> to_.return
 
 let call_answer par ms_body =
   return { nat = ms_body; br = par.p_br; return = par.p_return }

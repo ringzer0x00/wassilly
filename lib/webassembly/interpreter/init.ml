@@ -53,7 +53,7 @@ let init_globals (mod_ : Wasm.Ast.module_) (s : Memories.Memorystate.t) =
   aux prepped s
 
 let init_mem (mod_ : Wasm.Ast.module_) (s : Memories.Memorystate.t) =
-  let _eval p ms =
+  let eval p ms =
     Eval.step mod_ (ms, p) Eval.Stack.empty Eval.Cache.empty Int32.minus_one
       ([], []) Eval.MA.bot_pa
   in
@@ -62,12 +62,27 @@ let init_mem (mod_ : Wasm.Ast.module_) (s : Memories.Memorystate.t) =
     match gs_idx with
     | [] -> s
     | gl :: t ->
-        let interpret_data_segment (ds : Wasm.Ast.data_segment) _m =
+        let interpret_data_segment (ds : Wasm.Ast.data_segment)
+            (_m : Memories.Memorystate.t) =
           let segment_mode, _init = (ds.it.dmode, ds.it.dinit) in
           match segment_mode.it with
           | Wasm.Ast.Declarative -> assert false
           | Wasm.Ast.Passive -> _m
           | Wasm.Ast.Active { index = _; offset = _offset } ->
+              let _offstate, _, _ = eval (cc _offset) _m in
+              let _offset, ret =
+                match _offstate with
+                | Def d ->
+                    ( Memories.Memorystate.peek_operand d.return |> List.hd,
+                      d.return )
+                | Bot -> failwith "diobo @ initmem"
+              in
+              let _vm = match ret with Bot -> failwith "" | Def d -> d.var in
+              let offset =
+                Apronext.Intervalext.to_float
+                  (Memories.Operand.concretize _vm _offset)
+                |> fst |> Float.to_int
+              in
               (*each "piece" is 1byte (1 char) (1 word) -> can become sequence -> can become list *)
               let b = String.to_bytes _init in
               let _bseq = Bytes.to_seq b in
@@ -76,6 +91,7 @@ let init_mem (mod_ : Wasm.Ast.module_) (s : Memories.Memorystate.t) =
                   (fun x -> Printf.printf "CHAR: %i\n" (Char.code x))
                   _bseq (*goes to int from char*)
               in
+              let _mapped = Seq.mapi (fun i x -> (i + offset, x)) _bseq in
               let miao =
                 Seq.map (fun x -> Char.code x) _bseq
                 |> Array.of_seq
