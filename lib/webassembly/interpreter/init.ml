@@ -91,25 +91,25 @@ let init_mem (mod_ : Wasm.Ast.module_) (s : Memories.Memorystate.t) =
                   (fun x -> Printf.printf "CHAR: %i\n" (Char.code x))
                   _bseq (*goes to int from char*)
               in
-              let _mapped = Seq.mapi (fun i x -> (i + offset, x)) _bseq in
-              let miao =
+              let mapped_bits =
                 Seq.map (fun x -> Char.code x) _bseq
                 |> Array.of_seq
-                |> Array.map (fun x ->
-                       Language.Bitwisenumber.byte_of_interval
-                         (Apronext.Intervalext.of_int x x))
+                |> Array.mapi (fun i x ->
+                       ( i + offset,
+                         Language.Bitwisenumber.byte_of_interval
+                           (Apronext.Intervalext.of_int x x) ))
               in
-              Printf.printf "MIAO: %i\n" (Array.length miao);
+              Printf.printf "MIAO: %i\n" (Array.length mapped_bits);
               Printf.printf "init: %a ; " output_bytes b;
               Printf.printf "size: %i\n" (Bytes.length b);
               Printf.printf "val: %i\n"
                 (Int32.to_int (Bytes.get_int32_le (String.to_bytes _init) 0));
-              let _ =
-                Seq.mapi
-                (*byte, idx -> write (convert byte to abstract bits) @ idx+offset*)
+              let _m' =
+                Array.fold_left (fun m (_to, _val) -> m) _m mapped_bits
               in
-              failwith "no se puedeee"
+              failwith "no se puede"
         in
+
         let s' = interpret_data_segment gl s in
         aux t s'
   in
