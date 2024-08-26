@@ -25,7 +25,7 @@ let byte_of_interval interval =
     | false ->
         let _val_ = Apronext.Intervalext.to_float interval in
         tuple_appl Int32.of_float _val_
-        |> tuple_appl s_int32_to_binary_array_twos_complement_msb
+        |> tuple_appl s_int8_to_binary_array_twos_complement_msb
   in
   { min; max }
 

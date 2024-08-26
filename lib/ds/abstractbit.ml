@@ -55,3 +55,9 @@ let filter_until arr filter =
   apply_filter l [] |> Array.of_list
 
 (** [Bit]shifts **)
+
+(** Print **)
+let print = function
+  | Zero -> Printf.printf "Zero"
+  | One -> Printf.printf "One"
+  | Top -> Printf.printf "Top"

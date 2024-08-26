@@ -97,3 +97,6 @@ let split_in_bytesized_arrays a =
 let as_int_arrays a =
   let min, max = as_min_max a in
   (to_int_array min, to_int_array max)
+
+let print_byte b = 
+  Array.iter (fun x -> Abstractbit.print x) b

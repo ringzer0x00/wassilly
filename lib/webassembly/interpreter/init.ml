@@ -104,10 +104,26 @@ let init_mem (mod_ : Wasm.Ast.module_) (s : Memories.Memorystate.t) =
               Printf.printf "size: %i\n" (Bytes.length b);
               Printf.printf "val: %i\n"
                 (Int32.to_int (Bytes.get_int32_le (String.to_bytes _init) 0));
-              let _m' =
-                Array.fold_left (fun m (_to, _val) -> m) _m mapped_bits
+              let m' =
+                Array.fold_left
+                  (fun m (_to, (_val : Language.Bitwisenumber.byte)) ->
+                    let b =
+                      Datastructures.Abstractbyte.join _val.min _val.max
+                    in
+                    let _ =
+                      Printf.printf "to write: ";
+                      Datastructures.Abstractbyte.print_byte b;
+                      Printf.printf "\n"
+                    in
+                    Memories.Memorystate.write_mem_raw m _to b)
+                  _m mapped_bits
               in
-              failwith "no se puede"
+              let _ =
+                match m' with
+                | Def d -> Memories.Linearmem.printmem d.mem
+                | Bot -> failwith "memoryyyy"
+              in
+              m'
         in
 
         let s' = interpret_data_segment gl s in
@@ -222,7 +238,7 @@ let init (_mod : Wasm.Ast.module_) : Memories.Memorystate.t =
     Def
       {
         ops = [];
-        mem = Memories.Linearmem.alloc_page_top;
+        mem = Memories.Linearmem.alloc_page;
         (*https://webassembly.github.io/spec/core/text/values.html#strings
           hex speratated by \. use int_of_string with appropriate shit*)
         var =
@@ -242,7 +258,7 @@ let init (_mod : Wasm.Ast.module_) : Memories.Memorystate.t =
       (Def
          {
            ops = [];
-           mem = Memories.Linearmem.alloc_page_top;
+           mem = Memories.Linearmem.alloc_page;
            var =
              VM.empty
                (Apronext.Apol.top

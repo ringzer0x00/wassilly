@@ -17,7 +17,7 @@ let size m = Array.length m / wasm_page_size
 let internal_write_byte_raw b o (m : t) =
   let c = Array.copy m in
   c.(o) <- b;
-  m
+  c
 
 let internal_write_byte_weak b o m =
   let b' = AByte.join m.(o) b in
@@ -43,3 +43,10 @@ let eq (lm1 : t) (lm2 : t) =
 
 let le (lm1 : t) (lm2 : t) = leq lm1 lm2 && not (eq lm1 lm2)
 let read _ _ _ = failwith "read m-pos for n bytes"
+
+let printmem (mem : t) =
+  Array.iter
+    (fun x ->
+      AByte.print_byte x;
+      Printf.printf "\n")
+    mem
