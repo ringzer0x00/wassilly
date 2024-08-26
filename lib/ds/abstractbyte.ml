@@ -72,12 +72,15 @@ let of_min_max _mi _ma =
   meaow a []
 
 let as_min_max a =
-  Array.map
-    (fun x ->
-      match x with
-      | Abstractbit.Top -> (Abstractbit.Zero, Abstractbit.One)
-      | _ as d -> (d, d))
-    a
+  let mm =
+    Array.map
+      (fun x ->
+        match x with
+        | Abstractbit.Top -> (Abstractbit.Zero, Abstractbit.One)
+        | _ as d -> (d, d))
+      a
+  in
+  (Array.map (fun x -> fst x) mm, Array.map (fun x -> snd x) mm)
 
 (*needed to facilitate writing in memory.*)
 let split_in_bytesized_arrays a =
@@ -90,3 +93,7 @@ let split_in_bytesized_arrays a =
       _res.(byte_pos).(pos_in_byte) <- x)
     a;
   _res
+
+let as_int_arrays a =
+  let min, max = as_min_max a in
+  (to_int_array min, to_int_array max)

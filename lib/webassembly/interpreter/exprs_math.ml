@@ -233,5 +233,24 @@ let lshift_expr vm l r =
   (*range == 0*)
   | true ->
       let _r = Bitwisealu.shift_left lb (Float.to_int (S.to_float _by.inf)) in
+      let min, max = Datastructures.Abstractbyte.as_int_arrays _r in
+      let _ =
+        match Array.length min with
+        | 32 ->
+            let _ =
+              ( Utilities.Conversions.int32_binary_to_decimal (Array.to_list min),
+                Utilities.Conversions.int32_binary_to_decimal
+                  (Array.to_list max) )
+            in
+            failwith "make interval"
+        | 64 ->
+            let _ =
+              ( Utilities.Conversions.int64_binary_to_decimal (Array.to_list min),
+                Utilities.Conversions.int64_binary_to_decimal
+                  (Array.to_list max) )
+            in
+            failwith "make interval"
+        | _ -> failwith "other lengths not allowed"
+      in
       Expression (const_expr vm I.top, type_of_operand l)
   | false -> Expression (const_expr vm I.top, type_of_operand l)

@@ -102,7 +102,7 @@ let int_cvtop (_o : Wasm.Ast.IntOp.cvtop) (ms : MS.t) =
   | ReinterpretFloat (*~~*) ->
       failwith "-0 as a floating point -> -2147483648"
       (*cannot use apron cast, must use bits*)
-  | TruncSF32 | TruncSF64 -> failwith "just apron rounding"
+  | TruncSF32 | TruncSF64 -> failwith ""
   | TruncUF32 | TruncUF64 -> failwith "unsigned"
   | TruncSatSF32 | TruncSatSF64 | TruncSatUF32 | TruncSatUF64 ->
       failwith "sat????"
