@@ -234,23 +234,29 @@ let lshift_expr vm l r =
   | true ->
       let _r = Bitwisealu.shift_left lb (Float.to_int (S.to_float _by.inf)) in
       let min, max = Datastructures.Abstractbyte.as_int_arrays _r in
-      let _ =
+      let ival =
         match Array.length min with
         | 32 ->
-            let _ =
+            let mi, ma =
               ( Utilities.Conversions.int32_binary_to_decimal (Array.to_list min),
                 Utilities.Conversions.int32_binary_to_decimal
                   (Array.to_list max) )
             in
-            failwith "make interval"
+            Apronext.Intervalext.of_int
+              (Int32.min mi ma |> Int32.to_int)
+              (Int32.max mi ma |> Int32.to_int)
         | 64 ->
-            let _ =
+            let mi, ma =
               ( Utilities.Conversions.int64_binary_to_decimal (Array.to_list min),
                 Utilities.Conversions.int64_binary_to_decimal
                   (Array.to_list max) )
             in
-            failwith "make interval"
+            let mi, ma =
+              ( Int64.to_string (Int64.min mi ma),
+                Int64.to_string (Int64.max mi ma) )
+            in
+            Apronext.Intervalext.of_mpqf (Mpqf.of_string mi) (Mpqf.of_string ma)
         | _ -> failwith "other lengths not allowed"
       in
-      Expression (const_expr vm I.top, type_of_operand l)
+      Expression (const_expr vm ival, type_of_operand l)
   | false -> Expression (const_expr vm I.top, type_of_operand l)
