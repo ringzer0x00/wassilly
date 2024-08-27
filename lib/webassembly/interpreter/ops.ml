@@ -29,9 +29,14 @@ let eval_cvtop (op : Wasm.Ast.cvtop) ms =
       Alu.float_cvtop floatop ms
 
 let eval_loadop (op : Wasm.Ast.loadop) _ms =
+  (* align = 0,1,2,3 for load_8, load_16,load_32, load_64*)
+  (* offset is the memory index *)
   match op with
-  | { ty = Wasm.Types.I32Type; align = _i; offset = _i32; pack = _p } ->
-      failwith "l i32"
+  | { ty = Wasm.Types.I32Type; align = _i; offset = _i32; pack = _p } -> (
+      Printf.printf "align?:%i , offset?:%i\n" _i (Int32.to_int _i32);
+
+      match _p with None -> failwith "no pack" | Some _ -> failwith "pack"
+      (*pack is like 8, 16, can be None*))
   | { ty = Wasm.Types.I64Type; align = _i; offset = _i32; pack = _p } ->
       failwith "load i64"
   | { ty = Wasm.Types.F32Type; align = _i; offset = _i32; pack = _p } ->
