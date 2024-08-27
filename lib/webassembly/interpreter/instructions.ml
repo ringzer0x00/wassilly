@@ -208,3 +208,6 @@ let demote_f64 prec =
   return { ops = opsk'; var = d.var; mem = d.mem; tab = d.tab }
 
 let extend_u_i32 _prec = failwith "extend unsign"
+
+(*memory ops*)
+let load _ = failwith ""

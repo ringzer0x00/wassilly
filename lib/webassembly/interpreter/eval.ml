@@ -358,6 +358,8 @@ let rec step modul_ call sk cache (fin : Int32.t) ft p_ans :
             | RefIsNull -> failwith ""
             | Convert _c ->
                 (cmd_result (Ops.eval_cvtop _c ms) p_ans, cache, SCG.empty)
+            | Load _l ->
+                (cmd_result (Ops.eval_loadop _l ms) p_ans, cache, SCG.empty)
             | _ ->
                 Wasm.Print.instr Stdlib.stdout 100 c1;
                 failwith "other commands"
