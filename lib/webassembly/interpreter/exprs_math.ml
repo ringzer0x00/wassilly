@@ -284,15 +284,56 @@ let load_i32 vm _mem _o _t =
       failwith ""
 
 let load_standard vm _mem _o _t =
-  let w, _s =
+  let _w, _s =
     match _t with
     | Wasm.Types.I32Type | F32Type -> (4, 32)
     | Wasm.Types.I64Type | F64Type -> (8, 64)
   in
   let c = Memories.Operand.concretize vm _o in
+
+  let start_from, start_to =
+    I.to_float c |> Utilities.Tuple.tuple_appl Float.to_int
+  in
+  let _addrs =
+    List.init (start_to - start_from + 1) (fun x -> start_from + x)
+  in
+  let addrs_list_set =
+    List.map (fun f -> List.init _w (fun x -> f + x)) _addrs
+  in
+  let reads =
+    List.map
+      (fun addr_list ->
+        List.map (fun a -> Memories.Linearmem.read_byte a _mem) addr_list)
+      addrs_list_set
+  in
+  let reads' =
+    List.map
+      (fun r -> List.fold_left (fun acc v -> Array.append acc v) [||] r)
+      reads
+  in
+  let read =
+    List.fold_left
+      (fun r x -> Datastructures.Abstractbyte.join r x)
+      (List.nth reads' 0) reads'
+  in
+  let min, max = Datastructures.Abstractbyte.as_int_arrays read in
+  let min, max =
+    ( Utilities.Conversions.int32_binary_to_decimal (Array.to_list min)
+      |> Int32.to_int,
+      Utilities.Conversions.int32_binary_to_decimal (Array.to_list max)
+      |> Int32.to_int )
+  in
+  let _i = if max > min then I.of_int min max else I.of_int max min in
+  Expression (const_expr vm _i, _t)
+(*
   match S.equal_int (I.range c) 0 with
-  | false -> Expression (const_expr vm I.top, _t)
-  | true ->
+  | false ->
+      let start_from, start_to =
+        I.to_float c |> Utilities.Tuple.tuple_appl Float.to_int
+      in
+      let addrs = List.init (start_to - start_from) (fun x -> start_from + x) in
+      failwith "Expression (const_expr vm I.top, _t)"
+  (**)| true ->
       let from = fst (I.to_float c) |> Float.to_int in
       let addrs = List.init w (fun x -> from + x) in
       let reads =
@@ -308,3 +349,4 @@ let load_standard vm _mem _o _t =
       in
       let _i = if max > min then I.of_int min max else I.of_int max min in
       Expression (const_expr vm _i, _t)
+*)
