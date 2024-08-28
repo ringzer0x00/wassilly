@@ -263,4 +263,22 @@ let lshift_expr vm l r =
       Expression (const_expr vm ival, type_of_operand l)
   | false -> Expression (const_expr vm I.top, type_of_operand l)
 
-let load_i32 vm _mem _o _t = Expression (const_expr vm I.top, _t)
+let load_i32 vm _mem _o _t =
+  let c = Memories.Operand.concretize vm _o in
+  match S.equal_int (I.range c) 0 with
+  | false -> Expression (const_expr vm I.top, _t)
+  | true ->
+      let zer = fst (I.to_float c) |> Float.to_int in
+      let b0, b1, b2, b3 =
+        ( Memories.Linearmem.read_byte zer _mem,
+          Memories.Linearmem.read_byte (zer + 1) _mem,
+          Memories.Linearmem.read_byte (zer + 2) _mem,
+          Memories.Linearmem.read_byte (zer + 3) _mem )
+      in
+      let _ =
+        Datastructures.Abstractbyte.print_byte b0;
+        Datastructures.Abstractbyte.print_byte b1;
+        Datastructures.Abstractbyte.print_byte b2;
+        Datastructures.Abstractbyte.print_byte b3
+      in
+      failwith ""

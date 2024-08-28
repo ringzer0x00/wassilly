@@ -14,6 +14,10 @@ let alloc_page_top : page = Array.make wasm_page_size AByte.alloc_byte_top
 let pageconcat (pold : t) (pnew : t) : t = Array.concat [ pold; pnew ]
 let size m = Array.length m / wasm_page_size
 
+
+let read_byte o (m : t) =
+  m.(o)
+
 let internal_write_byte_raw b o (m : t) =
   let c = Array.copy m in
   c.(o) <- b;
