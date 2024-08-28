@@ -296,6 +296,9 @@ let load_standard vm _mem _o _t =
       let _from = fst (I.to_float c) |> Float.to_int in
       let addrs = List.init w (fun x -> _from + x) in
       let _ = List.iter (fun x -> Printf.printf "%i;" x) addrs in
-      let x = Array.make w Datastructures.Abstractbyte.alloc_byte in
-      let _ = Array.fold_left (fun acc b -> Array.append acc b) [||] x in
+      let reads =
+        List.map (fun a -> Memories.Linearmem.read_byte a _mem) addrs
+      in
+      let v = List.fold_left (fun acc v -> Array.append acc v) [||] reads in
+      let _ = Datastructures.Abstractbyte.print_byte v in
       failwith ""
