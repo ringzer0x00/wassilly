@@ -28,23 +28,38 @@ let eval_cvtop (op : Wasm.Ast.cvtop) ms =
   | Wasm.Values.F32 floatop | Wasm.Values.F64 floatop ->
       Alu.float_cvtop floatop ms
 
-let eval_loadop (op : Wasm.Ast.loadop) _ms =
+let eval_loadop ({ ty; align; offset; pack } : Wasm.Ast.loadop) _ms =
+  let _ =
+    assert (Int32.equal Int32.zero offset);
+    match pack with None -> assert true | Some (_psize, _xt) -> assert false
+  in
+
+  Printf.printf "align?:%i , offset?:%i\n" align (Int32.to_int offset);
   (* align = 0,1,2,3 for load_8, load_16,load_32, load_64*)
   (* offset is the memory index *)
-  match op with
-  | { ty = Wasm.Types.I32Type; align = _i; offset = _i32; pack = _p } -> (
-      Printf.printf "align?:%i , offset?:%i\n" _i (Int32.to_int _i32);
-
-      match _p with None -> failwith "no pack" | Some _ -> failwith "pack"
-      (*pack is like 8, 16, can be None*))
-  | { ty = Wasm.Types.I64Type; align = _i; offset = _i32; pack = _p } ->
-      failwith "load i64"
-  | { ty = Wasm.Types.F32Type; align = _i; offset = _i32; pack = _p } ->
-      failwith "load f32"
-  | { ty = Wasm.Types.F64Type; align = _i; offset = _i32; pack = _p } ->
-      failwith "load f64"
+  match ty with
+  | Wasm.Types.I32Type ->
+      failwith "load ii32"
+      (*Wasm.Types
+        type pack_size = Pack8 | Pack16 | Pack32 | Pack64
+        type extension = SX | ZX*)
+  | Wasm.Types.I64Type -> failwith "load i64"
+  | Wasm.Types.F32Type -> failwith "load f32"
+  | Wasm.Types.F64Type -> failwith "load f64"
 (*
 type loadop = (num_type, (pack_size * extension) option) memop*)
 
-(*
-type storeop = (num_type, pack_size option) memop*)
+let eval_storeop ({ ty; align; offset; pack } : Wasm.Ast.storeop) _ms =
+  let _ =
+    assert (Int32.equal Int32.zero offset);
+    match pack with None -> assert true | Some _psize -> assert false
+  in
+
+  Printf.printf "align?:%i , offset?:%i\n" align (Int32.to_int offset);
+  match ty with
+  | Wasm.Types.I32Type -> failwith "store ii32"
+  | Wasm.Types.I64Type -> failwith "store i64"
+  | Wasm.Types.F32Type -> failwith "store f32"
+  | Wasm.Types.F64Type -> failwith "store f64"
+
+let eval_storeop (_op : Wasm.Ast.storeop) _ms = failwith "store"
