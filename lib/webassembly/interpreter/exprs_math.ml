@@ -293,12 +293,18 @@ let load_standard vm _mem _o _t =
   match S.equal_int (I.range c) 0 with
   | false -> Expression (const_expr vm I.top, _t)
   | true ->
-      let _from = fst (I.to_float c) |> Float.to_int in
-      let addrs = List.init w (fun x -> _from + x) in
-      let _ = List.iter (fun x -> Printf.printf "%i;" x) addrs in
+      let from = fst (I.to_float c) |> Float.to_int in
+      let addrs = List.init w (fun x -> from + x) in
       let reads =
         List.map (fun a -> Memories.Linearmem.read_byte a _mem) addrs
       in
       let v = List.fold_left (fun acc v -> Array.append acc v) [||] reads in
-      let _ = Datastructures.Abstractbyte.print_byte v in
-      failwith ""
+      let min, max = Datastructures.Abstractbyte.as_int_arrays v in
+      let min, max =
+        ( Utilities.Conversions.int32_binary_to_decimal (Array.to_list min)
+          |> Int32.to_int,
+          Utilities.Conversions.int32_binary_to_decimal (Array.to_list max)
+          |> Int32.to_int )
+      in
+      let _i = if max > min then I.of_int min max else I.of_int max min in
+      Expression (const_expr vm _i, _t)
