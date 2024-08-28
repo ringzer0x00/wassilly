@@ -211,6 +211,9 @@ let extend_u_i32 _prec = failwith "extend unsign"
 
 (*memory ops*)
 let load_i32 prec =
-  prec >>= fun d ->(* vm _mem _lm _o *)
-  let opsk' = unop d.ops (fun x -> load_i32 d.var d.mem x Wasm.Types.I32Type) |> push in
+  prec >>= fun d ->
+  (* vm _mem _lm _o *)
+  let opsk' =
+    unop d.ops (fun x -> load_standard d.var d.mem x Wasm.Types.I32Type) |> push
+  in
   return { ops = opsk'; var = d.var; mem = d.mem; tab = d.tab }

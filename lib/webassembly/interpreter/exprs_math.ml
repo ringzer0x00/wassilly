@@ -282,3 +282,20 @@ let load_i32 vm _mem _o _t =
         Datastructures.Abstractbyte.print_byte b3
       in
       failwith ""
+
+let load_standard vm _mem _o _t =
+  let w, _s =
+    match _t with
+    | Wasm.Types.I32Type | F32Type -> (4, 32)
+    | Wasm.Types.I64Type | F64Type -> (8, 64)
+  in
+  let c = Memories.Operand.concretize vm _o in
+  match S.equal_int (I.range c) 0 with
+  | false -> Expression (const_expr vm I.top, _t)
+  | true ->
+      let _from = fst (I.to_float c) |> Float.to_int in
+      let addrs = List.init w (fun x -> _from + x) in
+      let _ = List.iter (fun x -> Printf.printf "%i;" x) addrs in
+      let x = Array.make w Datastructures.Abstractbyte.alloc_byte in
+      let _ = Array.fold_left (fun acc b -> Array.append acc b) [||] x in
+      failwith ""
