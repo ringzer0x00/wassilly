@@ -2,6 +2,8 @@ open Memories.Operand
 module I = Apronext.Intervalext
 module S = Apronext.Scalarext
 
+let tappl = Utilities.Tuple.tuple_appl
+
 let const (n : Wasm.Ast.num) (vm : varmemories) =
   let v, t =
     match n.it with
@@ -289,11 +291,20 @@ let load_standard vm _mem _o _t =
     | Wasm.Types.I32Type | F32Type -> (4, 32)
     | Wasm.Types.I64Type | F64Type -> (8, 64)
   in
+  let conv_f b =
+    match _t with
+    | I32Type ->
+        Utilities.Conversions.int32_binary_to_decimal b |> Int32.to_string
+    | I64Type ->
+        Utilities.Conversions.int64_binary_to_decimal b |> Int64.to_string
+    | F32Type ->
+        Utilities.Conversions.float32_binary_to_decimal b |> Float.to_string
+    | F64Type ->
+        Utilities.Conversions.float64_binary_to_decimal b |> Float.to_string
+  in
   let c = Memories.Operand.concretize vm _o in
 
-  let start_from, start_to =
-    I.to_float c |> Utilities.Tuple.tuple_appl Float.to_int
-  in
+  let start_from, start_to = I.to_float c |> tappl Float.to_int in
   let _addrs =
     List.init (start_to - start_from + 1) (fun x -> start_from + x)
   in
@@ -316,20 +327,21 @@ let load_standard vm _mem _o _t =
       (fun r x -> Datastructures.Abstractbyte.join r x)
       (List.nth reads' 0) reads'
   in
-  let min, max = Datastructures.Abstractbyte.as_int_arrays read in
-  let min, max =
-    ( Utilities.Conversions.int32_binary_to_decimal (Array.to_list min)
-      |> Int32.to_int,
-      Utilities.Conversions.int32_binary_to_decimal (Array.to_list max)
-      |> Int32.to_int )
+  let lim1, lim2 =
+    Datastructures.Abstractbyte.as_int_arrays read
+    |> tappl Array.to_list |> tappl conv_f |> tappl Mpqf.of_string
+    |> tappl S.of_mpqf
   in
-  let _i = if max > min then I.of_int min max else I.of_int max min in
-  Expression (const_expr vm _i, _t)
+  let i =
+    if S.cmp lim1 lim2 <= 0 then I.of_scalar lim1 lim2
+    else I.of_scalar lim2 lim1
+  in
+  Expression (const_expr vm i, _t)
 (*
   match S.equal_int (I.range c) 0 with
   | false ->
       let start_from, start_to =
-        I.to_float c |> Utilities.Tuple.tuple_appl Float.to_int
+        I.to_float c |> t_appl Float.to_int
       in
       let addrs = List.init (start_to - start_from) (fun x -> start_from + x) in
       failwith "Expression (const_expr vm I.top, _t)"

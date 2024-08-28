@@ -109,8 +109,14 @@ let int32_binary_to_decimal_wrapped arr =
 let int64_binary_to_decimal_wrapped arr =
   Integer64 (int64_binary_to_decimal arr)
 
+let float32_binary_to_decimal arr =
+  int32_binary_to_decimal arr |> Int32.float_of_bits
+
 let float32_binary_to_decimal_wrapped arr =
   Float32 (int32_binary_to_decimal arr |> Int32.float_of_bits)
+
+let float64_binary_to_decimal arr =
+  int64_binary_to_decimal arr |> Int64.float_of_bits
 
 let float64_binary_to_decimal_wrapped arr =
   Float64 (int64_binary_to_decimal arr |> Int64.float_of_bits)
