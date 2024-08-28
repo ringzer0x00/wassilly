@@ -34,15 +34,18 @@ let eval_loadop ({ ty; align; offset; pack } : Wasm.Ast.loadop) _ms =
     match pack with None -> assert true | Some (_psize, _xt) -> assert false
   in
 
-  Printf.printf "align?:%i , offset?:%i\n" align (Int32.to_int offset);
+  Printf.printf "align?:%i\n" align;
   (* align = 0,1,2,3 for load_8, load_16,load_32, load_64*)
   (* offset is the memory index *)
   match ty with
-  | Wasm.Types.I32Type ->
-      failwith "load ii32"
-      (*Wasm.Types
-        type pack_size = Pack8 | Pack16 | Pack32 | Pack64
-        type extension = SX | ZX*)
+  | Wasm.Types.I32Type -> (
+      match pack with
+      | None -> Instructions.load_i32 _ms
+      | Some _ ->
+          failwith "pack not supported"
+          (*Wasm.Types
+            type pack_size = Pack8 | Pack16 | Pack32 | Pack64
+            type extension = SX | ZX*))
   | Wasm.Types.I64Type -> failwith "load i64"
   | Wasm.Types.F32Type -> failwith "load f32"
   | Wasm.Types.F64Type -> failwith "load f64"
@@ -61,5 +64,3 @@ let eval_storeop ({ ty; align; offset; pack } : Wasm.Ast.storeop) _ms =
   | Wasm.Types.I64Type -> failwith "store i64"
   | Wasm.Types.F32Type -> failwith "store f32"
   | Wasm.Types.F64Type -> failwith "store f64"
-
-let eval_storeop (_op : Wasm.Ast.storeop) _ms = failwith "store"

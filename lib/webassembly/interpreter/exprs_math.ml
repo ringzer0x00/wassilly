@@ -262,3 +262,5 @@ let lshift_expr vm l r =
       in
       Expression (const_expr vm ival, type_of_operand l)
   | false -> Expression (const_expr vm I.top, type_of_operand l)
+
+let load_i32 vm _mem _o _t = Expression (const_expr vm I.top, _t)

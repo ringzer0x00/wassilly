@@ -30,3 +30,15 @@ module Writer = struct
     let y, s2 = f x in
     (y, s1 ^ s2)
 end
+
+(** [Maybe] **)
+module Maybe = struct
+  type 'a t = Some of 'a | None
+
+  let return x = Some x
+  let bind x op = match x with None -> None | Some a -> op a
+  let ( >>= ) = bind
+  let compose f g x = f x >>= fun y -> g y
+  let ( >=> ) = compose
+  let map x f = x >>= fun d -> f d
+end
