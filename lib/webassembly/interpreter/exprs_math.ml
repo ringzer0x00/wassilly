@@ -237,7 +237,9 @@ let lshift_expr vm l r =
   (*range == 0*)
   | true ->
       let _r = Bitwisealu.shift_left lb (Float.to_int (S.to_float _by.inf)) in
-      let min, max = Datastructures.Abstractbyte.as_int_arrays _r in
+      let min, max =
+        Datastructures.Abstractbyte.as_int_arrays _r ~signed:true
+      in
       let ival =
         match Array.length min with
         | 32 ->
@@ -317,7 +319,7 @@ let load_standard vm _mem _o _t =
   let lim1, lim2 =
     (*BUG(29 aug-2024): when all top, the values produced are -1;0 (all 1s and all 0s.)
       as_min_max has to work differently to work correctly*)
-    Datastructures.Abstractbyte.as_int_arrays read
+    Datastructures.Abstractbyte.as_int_arrays ~signed:true read
     |> tappl Array.to_list |> tappl conv_f |> tappl Mpqf.of_string
     |> tappl S.of_mpqf
   in
@@ -327,28 +329,3 @@ let load_standard vm _mem _o _t =
   in
   I.print Format.std_formatter i;
   Expression (const_expr vm i, _t)
-(*
-  match S.equal_int (I.range c) 0 with
-  | false ->
-      let start_from, start_to =
-        I.to_float c |> t_appl Float.to_int
-      in
-      let addrs = List.init (start_to - start_from) (fun x -> start_from + x) in
-      failwith "Expression (const_expr vm I.top, _t)"
-  (**)| true ->
-      let from = fst (I.to_float c) |> Float.to_int in
-      let addrs = List.init w (fun x -> from + x) in
-      let reads =
-        List.map (fun a -> Memories.Linearmem.read_byte a _mem) addrs
-      in
-      let v = List.fold_left (fun acc v -> Array.append acc v) [||] reads in
-      let min, max = Datastructures.Abstractbyte.as_int_arrays v in
-      let min, max =
-        ( Utilities.Conversions.int32_binary_to_decimal (Array.to_list min)
-          |> Int32.to_int,
-          Utilities.Conversions.int32_binary_to_decimal (Array.to_list max)
-          |> Int32.to_int )
-      in
-      let _i = if max > min then I.of_int min max else I.of_int max min in
-      Expression (const_expr vm _i, _t)
-*)

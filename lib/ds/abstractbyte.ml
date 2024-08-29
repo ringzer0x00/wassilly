@@ -71,17 +71,39 @@ let of_min_max _mi _ma =
   in
   meaow a []
 
-let as_min_max a =
-  (*BUG(29 aug-2024): this is not correct, as the interpretation of these numbers, when all is top, is -1;0*)
-  let mm =
-    Array.map
-      (fun x ->
-        match x with
-        | Abstractbit.Top -> (Abstractbit.Zero, Abstractbit.One)
-        | _ as d -> (d, d))
-      a
+let as_min_max a signed =
+  let minmax_pos x =
+    match x with
+    | Abstractbit.Top -> (Abstractbit.Zero, Abstractbit.One)
+    | _ as d -> (d, d)
   in
-  (Array.map (fun x -> fst x) mm, Array.map (fun x -> snd x) mm)
+  let minmax_neg x =
+    match x with
+    | Abstractbit.Top -> (Abstractbit.One, Abstractbit.Zero)
+    | _ as d -> (d, d)
+  in
+  let minmax_negpos a =
+    (Abstractbit.One, Abstractbit.Zero)
+    :: List.map
+         (fun x ->
+           match x with
+           | Abstractbit.Top -> (Abstractbit.Zero, Abstractbit.One)
+           | _ as d -> (d, d))
+         a
+  in
+  (*BUG(29 aug-2024): this is not correct, as the interpretation of these numbers, when all is top, is -1;0*)
+  let minmax =
+    match signed with
+    | false -> Array.map minmax_pos a
+    | true -> (
+        let aslist = Array.to_list a in
+        let s, v = (List.hd aslist, List.tl aslist) in
+        match s with
+        | Abstractbit.Zero -> Array.map minmax_pos a
+        | One -> Array.map minmax_neg a
+        | Top -> minmax_negpos v |> Array.of_list)
+  in
+  Array.split minmax
 
 (*needed to facilitate writing in memory.*)
 let split_in_bytesized_arrays a =
@@ -95,8 +117,8 @@ let split_in_bytesized_arrays a =
     a;
   _res
 
-let as_int_arrays a =
-  let min, max = as_min_max a in
+let as_int_arrays ?(signed = false) a =
+  let min, max = as_min_max a signed in
   (to_int_array min, to_int_array max)
 
 let print_byte b = Array.iter (fun x -> Abstractbit.print x) b
