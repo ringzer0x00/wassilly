@@ -72,6 +72,7 @@ let of_min_max _mi _ma =
   meaow a []
 
 let as_min_max a =
+  (*BUG(29 aug-2024): this is not correct, as the interpretation of these numbers, when all is top, is -1;0*)
   let mm =
     Array.map
       (fun x ->
@@ -98,5 +99,4 @@ let as_int_arrays a =
   let min, max = as_min_max a in
   (to_int_array min, to_int_array max)
 
-let print_byte b = 
-  Array.iter (fun x -> Abstractbit.print x) b
+let print_byte b = Array.iter (fun x -> Abstractbit.print x) b

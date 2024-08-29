@@ -315,6 +315,8 @@ let load_standard vm _mem _o _t =
       (List.nth reads' 0) reads'
   in
   let lim1, lim2 =
+    (*BUG(29 aug-2024): when all top, the values produced are -1;0 (all 1s and all 0s.)
+      as_min_max has to work differently to work correctly*)
     Datastructures.Abstractbyte.as_int_arrays read
     |> tappl Array.to_list |> tappl conv_f |> tappl Mpqf.of_string
     |> tappl S.of_mpqf
@@ -323,6 +325,7 @@ let load_standard vm _mem _o _t =
     if S.cmp lim1 lim2 <= 0 then I.of_scalar lim1 lim2
     else I.of_scalar lim2 lim1
   in
+  I.print Format.std_formatter i;
   Expression (const_expr vm i, _t)
 (*
   match S.equal_int (I.range c) 0 with
