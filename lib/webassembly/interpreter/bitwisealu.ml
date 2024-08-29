@@ -1,4 +1,7 @@
 module Bit = Datastructures.Abstractbit
+module Byte = Datastructures.Abstractbyte
+
+(* these should produce an expression containing an interval *)
 
 let bitwise_and_or_eval arr =
   let inf =
@@ -11,7 +14,7 @@ let bitwise_and_or_eval arr =
       (fun c x -> match x with Bit.One | Bit.Top -> c + 1 | Bit.Zero -> c)
       0 arr
   in
-  (sup, inf)
+  (inf, sup)
 
 let l_xor l r = Array.map2 (fun x y -> Bit.l_xor x y) l r |> bitwise_and_or_eval
 let l_and l r = Array.map2 (fun x y -> Bit.l_and x y) l r |> bitwise_and_or_eval
@@ -39,4 +42,19 @@ let popcount ba =
       (fun c x -> match x with Bit.One | Bit.Top -> c + 1 | Bit.Zero -> c)
       0 ba
   in
-  (max, min)
+  (min, max)
+
+let shift_left _ba _by =
+  (*shift by zero: id*)
+  let size = Array.length _ba in
+  (*32*)
+  let _m = _by mod size in
+  (*1*)
+  let _remaining =
+    Array.sub _ba _m (size - _m)
+    (*1 32-1*)
+    (*pos(_m) len(size-_m)*)
+  in
+  let _fill = Array.make _m Bit.Zero in
+  let _res = Array.append _remaining _fill in
+  _res

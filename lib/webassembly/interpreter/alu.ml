@@ -4,13 +4,19 @@ module VM = Memories.Variablemem.VariableMem
 
 type ad = VM.aprondomain
 
-let int_unop (_u : Wasm.Ast.IntOp.unop) (_ : MS.t) =
+let int_unop (_u : Wasm.Ast.IntOp.unop) (ms : MS.t) =
   match _u with
-  | Clz (* X *) | Ctz (* X *) | ExtendS _ (* not sure *) | Popcnt (* X *) ->
+  | Popcnt -> Instructions.popcnt ms
+  | Clz -> Instructions.clz ms
+  | Ctz -> Instructions.ctz ms
+  | ExtendS _ps (* not sure *) ->
+      let _ =
+        match _ps with Pack16 | Pack32 | Pack64 | Pack8 -> failwith ""
+      in
       failwith "unop int @ alu"
 
-let int_testop (_u : Wasm.Ast.IntOp.testop) (ms : MS.t) =
-  match _u with Eqz -> Instructions.eqz ms
+let int_testop (u : Wasm.Ast.IntOp.testop) (ms : MS.t) =
+  match u with Eqz -> Instructions.eqz ms
 
 let int_relop (u : Wasm.Ast.IntOp.relop) (ms : MS.t) =
   match u with
@@ -20,10 +26,10 @@ let int_relop (u : Wasm.Ast.IntOp.relop) (ms : MS.t) =
   | Eq -> Instructions.eq ms
   | Ne -> Instructions.ne ms
   | LtS -> Instructions.lt_s ms
-  | GtU -> failwith "not implemented, gtu ( Signed+(2^size) )"
-  | GeU -> Instructions.ge_u ms
-  | LeU -> failwith "not implemented, LeU ( Signed+(2^size))"
-  | LtU -> failwith "not implemented LtU ( Signed+(2^size))"
+  | GeU -> Instructions.cmpstub ms
+  | GtU -> Instructions.cmpstub ms
+  | LeU -> Instructions.cmpstub ms
+  | LtU -> Instructions.cmpstub ms
 
 let int_binop (o : Wasm.Ast.IntOp.binop) (ms : MS.t) =
   match o with
@@ -33,13 +39,15 @@ let int_binop (o : Wasm.Ast.IntOp.binop) (ms : MS.t) =
   | DivS -> Instructions.divs ms
   | RemS -> Instructions.rems ms
   | DivU -> failwith "divu @ binop @ alu"
-  | And (*X*)
-  | Or (*X*)
-  | RemU | Rotl | Rotr | Shl (* ~ *)
-  | ShrS (* ~ *)
-  | ShrU (* ~ *)
-  | Xor (*X*) ->
-      failwith "int_binop @ alu other instr"
+  | And -> Instructions.l_and ms
+  | Or -> Instructions.l_or ms
+  | Xor -> Instructions.l_xor ms
+  | Shl -> Instructions.l_shift ms
+  | RemU -> failwith "remu"
+  | Rotl -> Instructions.shift_stub ms (*stub*)
+  | Rotr -> Instructions.shift_stub ms (*stub*)
+  | ShrS -> Instructions.shift_stub ms (*stub*)
+  | ShrU -> Instructions.shift_stub ms (*stub*)
 
 let float_binop (_o : Wasm.Ast.FloatOp.binop) (_ms : MS.t) =
   match _o with
@@ -47,7 +55,20 @@ let float_binop (_o : Wasm.Ast.FloatOp.binop) (_ms : MS.t) =
   | Sub -> Instructions.sub _ms
   | Div -> Instructions.divs _ms
   | Mul -> Instructions.mul _ms
-  | CopySign | Max | Min -> failwith "float binop"
+  | CopySign
+    (* copy just the sign bit from second to the first number :>
+       - `id`,
+       - *-1 (and swap sup and inf),
+       - LUB between `id` and *-1 (?) *)
+  | Max (*max of the two vals*)
+  | Min
+    (*inf =  cases (l.inf,l.sup) (r.inf,r.sup):
+      - l.inf < r.inf -> l.inf
+      - l.inf >= r.inf -> r.inf
+      sup = cases (l.inf,l.sup) (r.inf,r.sup):
+      - l.sup < r.sup -> l.sup
+      - l.sup >= r.sup -> r.sup *) ->
+      failwith "float binop"
 
 let float_testop (_t : Wasm.Ast.FloatOp.testop) (_ms : MS.t) =
   match _t with _ -> failwith "no float testop?"
@@ -56,11 +77,11 @@ let float_unop (o : Wasm.Ast.FloatOp.unop) (ms : MS.t) =
   match o with
   | Neg -> Instructions.neg ms
   | Sqrt -> Instructions.sqrt ms
-  | Abs -> failwith "absolute value"
-  | Ceil -> failwith "round up"
-  | Floor -> failwith "round down"
-  | Nearest -> failwith "round to nearest int"
-  | Trunc -> failwith "discard fractional, float -> float"
+  | Abs -> Instructions.abs ms
+  | Ceil -> Instructions.ceil ms
+  | Floor -> Instructions.floor ms
+  | Nearest -> Instructions.nearest ms
+  | Trunc -> Instructions.trunc ms
 
 let float_relop (o : Wasm.Ast.FloatOp.relop) (ms : MS.t) =
   match o with
@@ -71,22 +92,33 @@ let float_relop (o : Wasm.Ast.FloatOp.relop) (ms : MS.t) =
   | Lt -> Instructions.lt_s ms
   | Ne -> Instructions.ne ms
 
-let int_cvtop (_o : Wasm.Ast.IntOp.cvtop) (_ms : MS.t) =
+let int_cvtop (_o : Wasm.Ast.IntOp.cvtop) (ms : MS.t) =
   match _o with
-  | ExtendSI32 -> Instructions.extend_s_i32 _ms
-  | ExtendUI32 -> failwith "convert to unsigned and then change type"
-  | WrapI64 -> failwith "i64 to i32 (reducing the value mod 2^32)"
-  | ReinterpretFloat -> failwith "float -> int (bits)"
-  | TruncSF32 | TruncSF64 | TruncSatSF32 | TruncSatSF64 | TruncSatUF32
-  | TruncUF32 | TruncUF64 | TruncSatUF64 ->
-      failwith "cvt int"
+  | ExtendSI32 (*extend to 64bit version, keep sign*) ->
+      Instructions.extend_s_i32 ms
+  | ExtendUI32 (*re-interpret and extend to 64bit version*) ->
+      failwith "convert to unsigned and then change type"
+  | WrapI64 (*~~*) -> failwith "i64 to i32 (reducing the value mod 2^32)"
+  | ReinterpretFloat (*~~*) ->
+      failwith "-0 as a floating point -> -2147483648"
+      (*cannot use apron cast, must use bits*)
+  | TruncSF32 | TruncSF64 -> failwith ""
+  | TruncUF32 | TruncUF64 -> failwith "unsigned"
+  | TruncSatSF32 | TruncSatSF64 | TruncSatUF32 | TruncSatUF64 ->
+      failwith "sat????"
+(*
+   The semantics are the same as the corresponding non-_sat instructions, except:
+    Instead of trapping on positive or negative overflow, they return the maximum or minimum integer value, respectively, and do not trap. 
+    (This behavior is also referred to as "saturating".)
+    Instead of trapping on NaN, they return 0 and do not trap.
+*)
 
-let float_cvtop (_o : Wasm.Ast.FloatOp.cvtop) (_ms : MS.t) =
+let float_cvtop (_o : Wasm.Ast.FloatOp.cvtop) (ms : MS.t) =
   match _o with
+  | DemoteF64 -> Instructions.demote_f64 ms
   | ConvertSI32 -> failwith "int32 to float32"
   | ConvertUI32 -> failwith "int32 -> unsigned int32 -> float"
   | ConvertSI64 -> failwith "see above"
   | ConvertUI64 -> failwith "see above"
   | PromoteF32 -> failwith "f32 to f64"
-  | DemoteF64 -> failwith "f64 to f32"
   | ReinterpretInt -> failwith "int -> float (bits)"

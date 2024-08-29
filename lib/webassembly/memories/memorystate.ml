@@ -88,6 +88,16 @@ let is_lsk_empty k =
   | Bot -> failwith "lsk emptu @ frame"
   | Def kx -> ( match lsk kx.ops with [] -> true | _ -> false)
 
+let write_mem_raw k _off _data =
+  k >>= fun a ->
+  return
+    {
+      ops = a.ops;
+      var = a.var;
+      tab = a.tab;
+      mem = Linearmem.internal_write_byte_raw _data _off a.mem;
+    }
+
 let assign_var k gl b e =
   k >>= fun a ->
   return

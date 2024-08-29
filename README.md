@@ -1,7 +1,10 @@
 # 
 
-
 todo: 
-- call (importante)
-- filter (dopo call)
-- brif (meh per ora, dovrebbe essere banale)
+- memory, import management, externally mutable tables
+
+
+- memory notes:
+    = an "init" string has a length N. and a value V. 
+
+

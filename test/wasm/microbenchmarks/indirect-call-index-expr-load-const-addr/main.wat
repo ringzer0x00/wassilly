@@ -30,6 +30,7 @@
     )
     
     (memory $memory 1) ;; 1 page == 64KiB in size.
+
     (data $memory (i32.const 1337) "\01\00\00\00") ;; little endian 1 -> index will be 1.
     
     (table $table 2 funcref)

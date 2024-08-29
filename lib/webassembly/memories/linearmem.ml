@@ -14,14 +14,21 @@ let alloc_page_top : page = Array.make wasm_page_size AByte.alloc_byte_top
 let pageconcat (pold : t) (pnew : t) : t = Array.concat [ pold; pnew ]
 let size m = Array.length m / wasm_page_size
 
-let write_byte_raw b o (m : t) =
+
+let read_byte o (m : t) =
+  m.(o)
+
+let internal_write_byte_raw b o (m : t) =
   let c = Array.copy m in
   c.(o) <- b;
-  m
+  c
 
-let write_byte_weak b o m =
+let internal_write_byte_weak b o m =
   let b' = AByte.join m.(o) b in
-  write_byte_raw b' o m
+  internal_write_byte_raw b' o m
+
+let write_to_mem _ =
+  failwith "write to interval: concretize offset then write_byte_weak"
 
 (*(*(memory.grow (size expression))*)
 *)
@@ -40,3 +47,10 @@ let eq (lm1 : t) (lm2 : t) =
 
 let le (lm1 : t) (lm2 : t) = leq lm1 lm2 && not (eq lm1 lm2)
 let read _ _ _ = failwith "read m-pos for n bytes"
+
+let printmem (mem : t) =
+  Array.iter
+    (fun x ->
+      AByte.print_byte x;
+      Printf.printf "\n")
+    mem

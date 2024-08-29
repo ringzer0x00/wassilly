@@ -4,7 +4,26 @@ type numeric =
   | Integer32 of Int32.t
   | Integer64 of Int64.t
 
-let s_int32_to_binary_array_twos_complement_msb (num : Int32.t) : int array =
+let s_int8_to_binary_array_twos_complement_msb num =
+  let size = 8 in
+  let result = Array.make size 0 in
+
+  let rec convert idx n =
+    if idx < 0 then result
+    else (
+      result.(idx) <- Int32.to_int n land 1;
+      convert (idx - 1) (Int32.shift_right_logical n 1))
+  in
+
+  let num' =
+    if num < Int32.min_int then
+      Int32.sub Int32.max_int (Int32.add (Int32.neg num) 1l)
+    else num
+  in
+
+  convert (size - 1) num' |> Datastructures.Abstractbyte.of_int_array
+
+let s_int32_to_binary_array_twos_complement_msb (num : Int32.t) =
   let size = 32 in
   let result = Array.make size 0 in
 
@@ -21,9 +40,9 @@ let s_int32_to_binary_array_twos_complement_msb (num : Int32.t) : int array =
     else num
   in
 
-  convert (size - 1) num'
+  convert (size - 1) num' |> Datastructures.Abstractbyte.of_int_array
 
-let s_int64_to_binary_array_twos_complement_msb (num : Int64.t) : int array =
+let s_int64_to_binary_array_twos_complement_msb (num : Int64.t) =
   let size = 64 in
   let result = Array.make size 0 in
 
@@ -40,7 +59,7 @@ let s_int64_to_binary_array_twos_complement_msb (num : Int64.t) : int array =
     else num
   in
 
-  convert (size - 1) num'
+  convert (size - 1) num' |> Datastructures.Abstractbyte.of_int_array
 
 let int32_binary_to_decimal msb_to_lsb_binary_array =
   let rec aux acc power = function
@@ -90,14 +109,20 @@ let int32_binary_to_decimal_wrapped arr =
 let int64_binary_to_decimal_wrapped arr =
   Integer64 (int64_binary_to_decimal arr)
 
+let float32_binary_to_decimal arr =
+  int32_binary_to_decimal arr |> Int32.float_of_bits
+
 let float32_binary_to_decimal_wrapped arr =
   Float32 (int32_binary_to_decimal arr |> Int32.float_of_bits)
+
+let float64_binary_to_decimal arr =
+  int64_binary_to_decimal arr |> Int64.float_of_bits
 
 let float64_binary_to_decimal_wrapped arr =
   Float64 (int64_binary_to_decimal arr |> Int64.float_of_bits)
 
-let float32_to_binary_array (num : float) : int array =
+let float32_to_binary_array (num : float) =
   Int32.bits_of_float num |> s_int32_to_binary_array_twos_complement_msb
 
-let float64_to_binary_array (num : float) : int array =
+let float64_to_binary_array (num : float) =
   Int64.bits_of_float num |> s_int64_to_binary_array_twos_complement_msb

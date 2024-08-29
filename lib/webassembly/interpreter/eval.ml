@@ -123,7 +123,7 @@ let rec step modul_ call sk cache (fin : Int32.t) ft p_ans :
                       sk cache fin ft p_ans step)
                     l ms
                 in
-                Semantics.br depth ms p_ans cache modul_ ft _ff
+                Cflow.br depth ms p_ans cache modul_ ft _ff
             | Block (_bt, bbody) ->
                 (*manca la parametrizzazione in input!!!!!*)
                 let l =
@@ -216,7 +216,7 @@ let rec step modul_ call sk cache (fin : Int32.t) ft p_ans :
                     l ms
                 in
                 let _a_t, c', scg =
-                  Semantics.br depth ms_t p_ans cache modul_ ft fixf
+                  Cflow.br depth ms_t p_ans cache modul_ ft fixf
                 in
                 let ans =
                   match _a_t with
@@ -356,8 +356,12 @@ let rec step modul_ call sk cache (fin : Int32.t) ft p_ans :
                 let resex = Memories.Operand.FuncRef (t, None, None) in
                 (cmd_result (Instructions.read ms resex) p_ans, cache, SCG.empty)
             | RefIsNull -> failwith ""
-            | Convert _c ->
-                (cmd_result (Ops.eval_cvtop _c ms) p_ans, cache, SCG.empty)
+            | Convert c ->
+                (cmd_result (Ops.eval_cvtop c ms) p_ans, cache, SCG.empty)
+            | Load l ->
+                (cmd_result (Ops.eval_loadop l ms) p_ans, cache, SCG.empty)
+            | Store s ->
+                (cmd_result (Ops.eval_storeop s ms) p_ans, cache, SCG.empty)
             | _ ->
                 Wasm.Print.instr Stdlib.stdout 100 c1;
                 failwith "other commands"
