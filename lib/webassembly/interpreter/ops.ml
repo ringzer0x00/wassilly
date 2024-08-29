@@ -30,8 +30,9 @@ let eval_cvtop (op : Wasm.Ast.cvtop) ms =
 
 let eval_loadop ({ ty; align; offset; pack } : Wasm.Ast.loadop) _ms =
   let _ =
+    (*suuport 1 memory, no pack!*)
     assert (Int32.equal Int32.zero offset);
-    match pack with None -> assert true | Some (_psize, _xt) -> assert false
+    match pack with None -> assert true | Some _ -> assert false
     (*Wasm.Types
       type pack_size = Pack8 | Pack16 | Pack32 | Pack64
       type extension = SX | ZX*)
@@ -45,8 +46,6 @@ let eval_loadop ({ ty; align; offset; pack } : Wasm.Ast.loadop) _ms =
   | Wasm.Types.I64Type -> Instructions.load_i64 _ms
   | Wasm.Types.F32Type -> Instructions.load_f32 _ms
   | Wasm.Types.F64Type -> Instructions.load_f64 _ms
-(*
-type loadop = (num_type, (pack_size * extension) option) memop*)
 
 let eval_storeop ({ ty; align; offset; pack } : Wasm.Ast.storeop) _ms =
   let _ =

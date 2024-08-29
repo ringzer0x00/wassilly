@@ -86,7 +86,7 @@ let init_mem (mod_ : Wasm.Ast.module_) (s : Memories.Memorystate.t) =
               (*each "piece" is 1byte (1 char) (1 word) -> can become sequence -> can become list *)
               let b = String.to_bytes _init in
               let _bseq =
-                Bytes.to_seq b |> List.of_seq |> List.rev |> List.to_seq
+                Bytes.to_seq b
               in
               let _ =
                 Seq.iter
