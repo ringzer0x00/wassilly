@@ -9,6 +9,18 @@ Both pre and post conditions might operate on multiple levels:
         Pre-conditions act as CONSTRAINTS, if they are absent, anything goes.
         Post-conditions act as a response to pre-conditions, if a bound is absent it acts as identity.
 
+# Syntax:
+`
+Ref = Exported GlobalVar | Exported Memory (Loc)
+Expr = Ref | AVal 
+Constr = Expr ∈ AVal | Expr ∉ AVal | Constr And Constr | Constr Or Constr
+
+Res = (Wasm) typed vector
+Eff = Effects (calls, modifications to shared - exported AND imported - object such as memory, globals, tables)
+
+PrePost = (Res, Eff) | with (Constr) (Res,Eff) otherwise PrePost
+`
+
 
 Example:
 
