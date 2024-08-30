@@ -329,3 +329,12 @@ let load_standard vm _mem _o _t =
   in
   I.print Format.std_formatter i;
   Expression (const_expr vm i, _t)
+
+let store_standard _vm _mem _addr _val _t =
+  let addr, val_ = (concretize _vm _addr, concretize _vm _val) in
+  Format.print_newline ();
+  Format.print_flush (Printf.printf "add:");
+  Format.print_flush (I.print Format.std_formatter addr);
+  Format.print_flush (Printf.printf "val:");
+  Format.print_flush (I.print Format.std_formatter val_);
+  failwith "\nstorium"
