@@ -332,9 +332,25 @@ let load_standard vm _mem _o _t =
 
 let store_standard _vm _mem _addr _val _t =
   let addr, val_ = (concretize _vm _addr, concretize _vm _val) in
+  let _w, _s =
+    match _t with
+    | Wasm.Types.I32Type | F32Type -> (4, 32)
+    | Wasm.Types.I64Type | F64Type -> (8, 64)
+  in
+  let _conversionfunction _ =
+    failwith
+      "convert concretized value (_val) in the form of interval to abstract \
+       bit array"
+  in
+  (*range of offset addresses*)
+  let start_from, start_to = I.to_float addr |> tappl Float.to_int in
+  (*concretized range of offset addresses*)
+  let _addrs =
+    List.init (start_to - start_from + 1) (fun x -> start_from + x)
+  in
   Format.print_newline ();
   Format.print_flush (Printf.printf "add:");
   Format.print_flush (I.print Format.std_formatter addr);
   Format.print_flush (Printf.printf "val:");
   Format.print_flush (I.print Format.std_formatter val_);
-  failwith "\nstorium"
+  _mem
