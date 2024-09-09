@@ -337,11 +337,13 @@ let store_standard _vm _mem _addr _val _t =
     | Wasm.Types.I32Type | F32Type -> (4, 32)
     | Wasm.Types.I64Type | F64Type -> (8, 64)
   in
-  let _conversionfunction _ =
-    failwith
-      "convert concretized value (_val) in the form of interval to abstract \
-       bit array"
+  let _bytes_to_split =
+    Language.Bitwisenumber.of_interval val_ _t
+    |> Language.Bitwisenumber.binary_interval_to_abstract_bitwise
   in
+  (*these bits are to splint in byte-sized (there is instr for that)
+    and then reversed in order for endiannes consistency. then they can be written
+    type of func to use to write: bit array array -> int -> t -> t*)
   (*range of offset addresses*)
   let start_from, start_to = I.to_float addr |> tappl Float.to_int in
   (*concretized range of offset addresses*)

@@ -85,9 +85,7 @@ let init_mem (mod_ : Wasm.Ast.module_) (s : Memories.Memorystate.t) =
               in
               (*each "piece" is 1byte (1 char) (1 word) -> can become sequence -> can become list *)
               let b = String.to_bytes _init in
-              let _bseq =
-                Bytes.to_seq b
-              in
+              let _bseq = Bytes.to_seq b in
               let _ =
                 Seq.iter
                   (fun x -> Printf.printf "CHAR: %i\n" (Char.code x))
@@ -252,7 +250,10 @@ let init (_mod : Wasm.Ast.module_) : Memories.Memorystate.t =
   let _ =
     match _mod.it.imports with
     | [] -> ()
-    | _ -> failwith "imports are present, program rejected"
+    | h :: _ -> (
+        match h.it.idesc.it with
+        | Wasm.Ast.GlobalImport _ -> failwith "glo"
+        | _ -> failwith "")
   in
   let _tab_initialized = [ init_tab _mod ms_start ] in
   let globs_initialized =
