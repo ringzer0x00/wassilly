@@ -1,4 +1,4 @@
 (library
- (name chaotic_implicitgraph)
+ (name wassilly)
  (libraries apron apron.polkaMPQ)
 )
