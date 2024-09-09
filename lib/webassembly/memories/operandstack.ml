@@ -95,3 +95,9 @@ let cmpop s f =
   let l, r = (List.nth operand 1, List.nth operand 0) in
   let res = f l r in
   (res, s)
+
+let storeop s f =
+  let operand, s = (peek_n 2 s, pop_n 2 s) in
+  let l, r = (List.nth operand 1, List.nth operand 0) in
+  let res = f l r in
+  (res, s)

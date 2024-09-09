@@ -55,7 +55,7 @@ let eval_storeop ({ ty; align; offset; pack } : Wasm.Ast.storeop) _ms =
 
   Printf.printf "align?:%i , offset?:%i\n" align (Int32.to_int offset);
   match ty with
-  | Wasm.Types.I32Type -> failwith "store ii32"
+  | Wasm.Types.I32Type -> Instructions.store_i32 _ms
   | Wasm.Types.I64Type -> failwith "store i64"
   | Wasm.Types.F32Type -> failwith "store f32"
   | Wasm.Types.F64Type -> failwith "store f64"

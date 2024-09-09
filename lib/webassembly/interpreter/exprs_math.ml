@@ -329,3 +329,30 @@ let load_standard vm _mem _o _t =
   in
   I.print Format.std_formatter i;
   Expression (const_expr vm i, _t)
+
+let store_standard _vm _mem _addr _val _t =
+  let addr, val_ = (concretize _vm _addr, concretize _vm _val) in
+  let _w, _s =
+    match _t with
+    | Wasm.Types.I32Type | F32Type -> (4, 32)
+    | Wasm.Types.I64Type | F64Type -> (8, 64)
+  in
+  let _bytes_to_split =
+    Language.Bitwisenumber.of_interval val_ _t
+    |> Language.Bitwisenumber.binary_interval_to_abstract_bitwise
+  in
+  (*these bits are to splint in byte-sized (there is instr for that)
+    and then reversed in order for endiannes consistency. then they can be written
+    type of func to use to write: bit array array -> int -> t -> t*)
+  (*range of offset addresses*)
+  let start_from, start_to = I.to_float addr |> tappl Float.to_int in
+  (*concretized range of offset addresses*)
+  let _addrs =
+    List.init (start_to - start_from + 1) (fun x -> start_from + x)
+  in
+  Format.print_newline ();
+  Format.print_flush (Printf.printf "add:");
+  Format.print_flush (I.print Format.std_formatter addr);
+  Format.print_flush (Printf.printf "val:");
+  Format.print_flush (I.print Format.std_formatter val_);
+  _mem

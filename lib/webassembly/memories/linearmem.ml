@@ -13,10 +13,7 @@ let alloc_page : page = Array.make wasm_page_size AByte.alloc_byte
 let alloc_page_top : page = Array.make wasm_page_size AByte.alloc_byte_top
 let pageconcat (pold : t) (pnew : t) : t = Array.concat [ pold; pnew ]
 let size m = Array.length m / wasm_page_size
-
-
-let read_byte o (m : t) =
-  m.(o)
+let read_byte o (m : t) = m.(o)
 
 let internal_write_byte_raw b o (m : t) =
   let c = Array.copy m in
@@ -27,11 +24,12 @@ let internal_write_byte_weak b o m =
   let b' = AByte.join m.(o) b in
   internal_write_byte_raw b' o m
 
-let write_to_mem _ =
-  failwith "write to interval: concretize offset then write_byte_weak"
+let write_to_mem b o m =
+  let mapped = Array.mapi (fun i x -> (x, i + o)) b in
+  Array.fold_left
+    (fun mem (byte, offs) -> internal_write_byte_weak byte offs mem)
+    m mapped
 
-(*(*(memory.grow (size expression))*)
-*)
 let join (lm1 : t) (lm2 : t) : t =
   Array.map2 (fun fst snd -> AByte.join fst snd) lm1 lm2
 
