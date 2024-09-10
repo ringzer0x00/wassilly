@@ -4,10 +4,10 @@ let p path = Interpreter.Analysis.analyze path
 
 let t =
   [
+    ("entry-point-start/main.wasm", [ (0, 1) ]);
     ("direct-call-simple/main.wasm", [ (0, 1) ]);
     ("indirect-call-index-expr-memory-mutable/main.wasm", [ (0, 1) ]);
     ("direct-call-transitive/main.wasm", [ (0, 1); (1, 2) ]);
-    (*("entry-point-start/main.wasm", [ (0, 1) ]); START IS BROKEN FOR SOME REASON*)
     ("indirect-call-func-in-table/main.wasm", [ (0, 1) ]);
     ("indirect-call-index-expr-const/main.wasm", [ (0, 1) ]);
     ("indirect-call-index-expr-double-load/main.wasm", [ (0, 1) ]);

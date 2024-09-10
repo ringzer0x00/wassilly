@@ -37,7 +37,8 @@ let analyze fn =
     match mod_.it.start with
     | None -> ([], [], Int32.minus_one)
     | Some _st -> (
-        match Eval.getfbody mod_ 1 with a, b, _ -> (a, b, Int32.minus_one))
+        match Eval.getfbody mod_ (Int32.to_int _st.it.sfunc.it) with
+        | a, _, _ -> (a, [], _st.it.sfunc.it))
   in
   let _entrypoints =
     List.filter_map
@@ -52,21 +53,30 @@ let analyze fn =
       ((i, startf), true)
       Eval.Stack.empty Eval.Cache.empty fstart ([], []) Eval.MA.bot_pa Eval.step
   in
-  let _b, _locs, _t =
-    Eval.getfbody mod_ (Int32.to_int (List.hd _entrypoints).it)
-  in
-  let t_in, _t_out =
-    match Eval.gettype mod_ (Int32.to_int _t.it) with FuncType (i, o) -> (i, o)
-  in
-  let call_ms =
-    r_start >>=? fun d ->
-    Cflow.prep_call d.return (unbound_input t_in d.return) mod_ _locs _t.it _t
-  in
-  let ar, _, _ =
-    Eval.fixpoint mod_
-      ((call_ms, _b), true)
-      Eval.Stack.empty Eval.Cache.empty (List.hd _entrypoints).it (t_in, _t_out)
-      Eval.MA.bot_pa Eval.step
-  in
-  let ar = Eval.MS.func_res (Eval.func_ans ar) call_ms (List.length _t_out) in
-  (ar, !Eval.cg)
+
+  match _entrypoints with
+  | [] -> (Eval.MS.func_res (Eval.func_ans r_start) i 0, !Eval.cg)
+  | _ ->
+      let _b, _locs, _t =
+        Eval.getfbody mod_ (Int32.to_int (List.hd _entrypoints).it)
+      in
+      let t_in, _t_out =
+        match Eval.gettype mod_ (Int32.to_int _t.it) with
+        | FuncType (i, o) -> (i, o)
+      in
+      let call_ms =
+        r_start >>=? fun d ->
+        Cflow.prep_call d.return
+          (unbound_input t_in d.return)
+          mod_ _locs _t.it _t
+      in
+      let ar, _, _ =
+        Eval.fixpoint mod_
+          ((call_ms, _b), true)
+          Eval.Stack.empty Eval.Cache.empty (List.hd _entrypoints).it
+          (t_in, _t_out) Eval.MA.bot_pa Eval.step
+      in
+      let ar =
+        Eval.MS.func_res (Eval.func_ans ar) call_ms (List.length _t_out)
+      in
+      (ar, !Eval.cg)
