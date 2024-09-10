@@ -6,6 +6,8 @@ module BFLattice = struct
   let mgr = ()
   let top _ = Top
   let bottom _ = Bot
+  let isTop () = function Top -> true | _ -> false
+  let isBottom () = function Bot -> true | _ -> false
 
   let lub b1 b2 =
     match (b1, b2) with

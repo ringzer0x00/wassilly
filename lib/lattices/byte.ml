@@ -1,4 +1,4 @@
-module Byte : Lattice.L = struct
+module Byte : Baselattice.L = struct
   module B = Bitfield.BFLattice
 
   type t = B.t array
@@ -8,6 +8,8 @@ module Byte : Lattice.L = struct
   let mgr = B.mgr
   let top () = Array.init 8 B.top
   let bottom () = Array.init 8 B.bottom
+  let isTop () b = Array.for_all (fun x -> B.isTop () x) b
+  let isBottom () b = Array.exists (fun x -> B.isBottom () x) b
   let lub b1 b2 = Array.map2 (fun fst snd -> B.lub fst snd) b1 b2
   let widen = lub
   let meet _ _ = failwith "you cant meet me apparently @ Byte"

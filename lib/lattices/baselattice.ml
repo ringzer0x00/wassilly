@@ -6,6 +6,8 @@ module type L = sig
   val mgr : man
   val top : env -> t
   val bottom : env -> t
+  val isTop : man -> t -> bool
+  val isBottom : man -> t -> bool
   val lub : t -> t -> t
   val widen : t -> t -> t
   val meet : t -> t -> t
