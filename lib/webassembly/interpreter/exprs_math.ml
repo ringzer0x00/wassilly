@@ -341,6 +341,14 @@ let store_standard _vm _mem _addr _val _t =
     Language.Bitwisenumber.of_interval val_ _t
     |> Language.Bitwisenumber.binary_interval_to_abstract_bitwise
   in
+  Datastructures.Abstractbyte.print_byte _bytes_to_split.val_;
+  let _b =
+    Array.to_list
+      (Datastructures.Abstractbyte.split_in_bytesized_arrays
+         _bytes_to_split.val_)
+    |> List.rev |> Array.of_list
+  in
+  Array.iter Datastructures.Abstractbyte.print_byte _b;
   (*these bits are to splint in byte-sized (there is instr for that)
     and then reversed in order for endiannes consistency. then they can be written
     type of func to use to write: bit array array -> int -> t -> t*)
@@ -350,9 +358,14 @@ let store_standard _vm _mem _addr _val _t =
   let _addrs =
     List.init (start_to - start_from + 1) (fun x -> start_from + x)
   in
+  let wf =
+    if List.length _addrs == 1 then Memories.Linearmem.strong_write_to_mem
+    else Memories.Linearmem.write_to_mem
+  in
+  let mem' = List.fold_left (fun x _a -> wf _b _a x) _mem _addrs in
   Format.print_newline ();
   Format.print_flush (Printf.printf "add:");
   Format.print_flush (I.print Format.std_formatter addr);
   Format.print_flush (Printf.printf "val:");
   Format.print_flush (I.print Format.std_formatter val_);
-  _mem
+  mem'
