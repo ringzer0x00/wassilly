@@ -285,13 +285,3 @@ let init (_mod : Wasm.Ast.module_) : Memories.Memorystate.t =
 
    Note:
    In the current version of WebAssembly, at most one memory is allowed in a module. Consequently, the only valid memidx is 0.*)
-
-(*do things with memories, tables, globals, produce material to build a Frame*)
-
-(*(
-  match _init with
-  | "" | _ ->
-      (* index is ignored as there is at most one memory*)
-      failwith
-        "write _init (content) into _idx of _m at _offset.\n\
-        \          _init is string, figure out how to convert it")*)
