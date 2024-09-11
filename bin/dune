@@ -1,5 +1,5 @@
 (executable
- (public_name chaotic_implicitgraph)
+ (public_name wassilly)
  (name main)
  (modes byte exe)
- (libraries interpreter chaotic_implicitgraph))
+ (libraries interpreter wassilly))

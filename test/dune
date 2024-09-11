@@ -1,8 +1,8 @@
 (test
- (name test_chaotic_implicitgraph)
+ (name test_wassilly)
  (modes exe byte)
  (libraries
   test_wasm
   interpreter
-  chaotic_implicitgraph
+  wassilly
   ounit2))
