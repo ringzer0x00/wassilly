@@ -2,7 +2,7 @@ open Datastructures.Monad.DefBot
 
 exception Empty
 
-let p path = Interpreter.Analysis.analyze path
+let p path = Interpreter.Analysis.value_and_callgraph path
 (*"./tc/fib.wasm"*)
 
 let (fib, g), expected =
