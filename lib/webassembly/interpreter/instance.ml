@@ -9,8 +9,8 @@ type spec = string * string
 (* -- *)
 type definedFunc = Wasm.Ast.func
 type definedGlob = Wasm.Ast.global
-type memInst = Linearmem.t
-type tableInst = Table.t
+type memInst = Memories.Linearmem.t
+type tableInst = Memories.Table.t
 
 (* -- *)
 type func = Func of definedFunc | ImportedFunc of spec
@@ -73,10 +73,10 @@ let mk_funcs internal imports =
 
 (* NEEDS TO MAKE TABLE
 
-let mk_tables internal imports =
-  let imported = imported_tables imports in
-  let internal' = List.map (fun (x : Wasm.Ast.table) -> Table x) internal in
-  imported @ internal'
+   let mk_tables internal imports =
+     let imported = imported_tables imports in
+     let internal' = List.map (fun (x : Wasm.Ast.table) -> Table x) internal in
+     imported @ internal'
 *)
 let instantiate_module (m : mod_) : instance =
   let m = m.it in
