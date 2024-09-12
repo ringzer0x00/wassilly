@@ -40,13 +40,44 @@ let imported_globs (i : Wasm.Ast.import list) =
   List.filter filter i
   |> List.map (fun (_x : Wasm.Ast.import) -> ImportedGlob ("name", "TOP"))
 
-let mkglobs gs_internal imports =
-  let gs_imported = imported_globs imports in
-  let gs_internal' =
-    List.map (fun (x : Wasm.Ast.global) -> Glob x) gs_internal
+let imported_mems (i : Wasm.Ast.import list) =
+  let filter (x : Wasm.Ast.import) =
+    match x.it.idesc.it with MemoryImport _ -> true | _ -> false
   in
-  gs_imported @ gs_internal'
+  List.filter filter i
+  |> List.map (fun (_x : Wasm.Ast.import) -> ImportedMem ("name", "TOP"))
 
+let imported_tables (i : Wasm.Ast.import list) =
+  let filter (x : Wasm.Ast.import) =
+    match x.it.idesc.it with TableImport _ -> true | _ -> false
+  in
+  List.filter filter i
+  |> List.map (fun (_x : Wasm.Ast.import) -> ImportedTable ("name", "TOP"))
+
+let imported_funcs (i : Wasm.Ast.import list) =
+  let filter (x : Wasm.Ast.import) =
+    match x.it.idesc.it with FuncImport _ -> true | _ -> false
+  in
+  List.filter filter i
+  |> List.map (fun (_x : Wasm.Ast.import) -> ImportedFunc ("name", "TOP"))
+
+let mk_globs internal imports =
+  let imported = imported_globs imports in
+  let internal' = List.map (fun (x : Wasm.Ast.global) -> Glob x) internal in
+  imported @ internal'
+
+let mk_funcs internal imports =
+  let imported = imported_funcs imports in
+  let internal' = List.map (fun (x : Wasm.Ast.func) -> Func x) internal in
+  imported @ internal'
+
+(* NEEDS TO MAKE TABLE
+
+let mk_tables internal imports =
+  let imported = imported_tables imports in
+  let internal' = List.map (fun (x : Wasm.Ast.table) -> Table x) internal in
+  imported @ internal'
+*)
 let instantiate_module (m : mod_) : instance =
   let m = m.it in
   let types = m.types in
@@ -54,10 +85,10 @@ let instantiate_module (m : mod_) : instance =
   let datas = m.datas in
   {
     types;
-    globals = mkglobs m.globals m.imports;
+    globals = mk_globs m.globals m.imports;
     tables = [];
     memories = [];
-    funcs = [];
+    funcs = mk_funcs m.funcs m.imports;
     elems;
     datas;
   }
