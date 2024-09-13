@@ -71,13 +71,16 @@ let mk_funcs internal imports =
   let internal' = List.map (fun (x : Wasm.Ast.func) -> Func x) internal in
   imported @ internal'
 
-(* NEEDS TO MAKE TABLE
+let mk_tables internal imports =
+  let imported = imported_tables imports in
+  let internal' = List.map (fun (x : tableInst) -> Table x) internal in
+  imported @ internal'
 
-   let mk_tables internal imports =
-     let imported = imported_tables imports in
-     let internal' = List.map (fun (x : Wasm.Ast.table) -> Table x) internal in
-     imported @ internal'
-*)
+let mk_mems internal imports =
+  let imported = imported_mems imports in
+  let internal' = List.map (fun (x : memInst) -> Mem x) internal in
+  imported @ internal'
+
 let instantiate_module (m : mod_) : instance =
   let m = m.it in
   let types = m.types in
