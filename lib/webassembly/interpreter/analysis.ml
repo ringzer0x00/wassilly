@@ -31,7 +31,7 @@ let unbound_input t_in (k : Memories.Memorystate.t) =
        (Memories.Operand.const_expr x.var Apronext.Intervalext.top))
   |> Array.to_list*)
 
-let analyze fn =
+let value_and_callgraph fn =
   let mod_ = load_mod fn in
   let startf, _, fstart =
     match mod_.it.start with
@@ -40,12 +40,13 @@ let analyze fn =
         match Eval.getfbody mod_ (Int32.to_int _st.it.sfunc.it) with
         | a, _, _ -> (a, [], _st.it.sfunc.it))
   in
-  let _entrypoints =
+  let entrypoints =
     List.filter_map
       (fun (x : Wasm.Ast.export) ->
         match x.it.edesc.it with FuncExport v -> Some v | _ -> None)
       mod_.it.exports
   in
+  let _fs_all = List.mapi (fun i _ -> Int32.of_int i) mod_.it.funcs in
   let i = Init.init mod_ in
   let r_start, _, _ =
     i >>=? fun _ ->
@@ -54,11 +55,11 @@ let analyze fn =
       Eval.Stack.empty Eval.Cache.empty fstart ([], []) Eval.MA.bot_pa Eval.step
   in
 
-  match _entrypoints with
+  match entrypoints with
   | [] -> (Eval.MS.func_res (Eval.func_ans r_start) i 0, !Eval.cg)
   | _ ->
       let _b, _locs, _t =
-        Eval.getfbody mod_ (Int32.to_int (List.hd _entrypoints).it)
+        Eval.getfbody mod_ (Int32.to_int (List.hd entrypoints).it)
       in
       let t_in, _t_out =
         match Eval.gettype mod_ (Int32.to_int _t.it) with
@@ -73,10 +74,128 @@ let analyze fn =
       let ar, _, _ =
         Eval.fixpoint mod_
           ((call_ms, _b), true)
-          Eval.Stack.empty Eval.Cache.empty (List.hd _entrypoints).it
+          Eval.Stack.empty Eval.Cache.empty (List.hd entrypoints).it
           (t_in, _t_out) Eval.MA.bot_pa Eval.step
       in
       let ar =
         Eval.MS.func_res (Eval.func_ans ar) call_ms (List.length _t_out)
       in
       (ar, !Eval.cg)
+
+let callgraph_analysis fn =
+  let mod_ = load_mod fn in
+  let startf, _, fstart =
+    match mod_.it.start with
+    | None -> ([], [], Int32.minus_one)
+    | Some _st -> (
+        match Eval.getfbody mod_ (Int32.to_int _st.it.sfunc.it) with
+        | a, _, _ -> (a, [], _st.it.sfunc.it))
+  in
+  let entrypoints =
+    List.filter_map
+      (fun (x : Wasm.Ast.export) ->
+        match x.it.edesc.it with FuncExport v -> Some v | _ -> None)
+      mod_.it.exports
+  in
+  let _fs_all = List.mapi (fun i _ -> Int32.of_int i) mod_.it.funcs in
+  let i = Init.init mod_ in
+  let r_start, _, _ =
+    i >>=? fun _ ->
+    Eval.fixpoint mod_
+      ((i, startf), true)
+      Eval.Stack.empty Eval.Cache.empty fstart ([], []) Eval.MA.bot_pa Eval.step
+  in
+
+  match entrypoints with
+  | [] -> !Eval.cg
+  | _ ->
+      let _b, _locs, _t =
+        Eval.getfbody mod_ (Int32.to_int (List.hd entrypoints).it)
+      in
+      let t_in, _t_out =
+        match Eval.gettype mod_ (Int32.to_int _t.it) with
+        | FuncType (i, o) -> (i, o)
+      in
+      let call_ms =
+        r_start >>=? fun d ->
+        Cflow.prep_call d.return
+          (unbound_input t_in d.return)
+          mod_ _locs _t.it _t
+      in
+      let _ =
+        Eval.fixpoint mod_
+          ((call_ms, _b), true)
+          Eval.Stack.empty Eval.Cache.empty (List.hd entrypoints).it
+          (t_in, _t_out) Eval.MA.bot_pa Eval.step
+      in
+      !Eval.cg
+
+let callgraph_analysis' fn =
+  let mod_ = load_mod fn in
+  let startf, _, fstart =
+    match mod_.it.start with
+    | None -> ([], [], Int32.minus_one)
+    | Some _st -> (
+        match Eval.getfbody mod_ (Int32.to_int _st.it.sfunc.it) with
+        | a, _, _ -> (a, [], _st.it.sfunc.it))
+  in
+  let entrypoints =
+    List.filter_map
+      (fun (x : Wasm.Ast.export) ->
+        match x.it.edesc.it with FuncExport v -> Some v | _ -> None)
+      mod_.it.exports
+  in
+  let _fs_all = List.mapi (fun i _ -> Int32.of_int i) mod_.it.funcs in
+  let i = Init.init mod_ in
+  let r_start, _, _ =
+    i >>=? fun _ ->
+    Eval.fixpoint mod_
+      ((i, startf), true)
+      Eval.Stack.empty Eval.Cache.empty fstart ([], []) Eval.MA.bot_pa Eval.step
+  in
+  List.fold_left
+    (fun cg (y : Wasm.Ast.var) ->
+      Eval.cg := Fixpoint.Callgraph.CallGraph.phi;
+      let fb, locs, ft = Eval.getfbody mod_ (Int32.to_int y.it) in
+      let t_in, _t_out =
+        match Eval.gettype mod_ (Int32.to_int ft.it) with
+        | FuncType (i, o) -> (i, o)
+      in
+      let call_ms =
+        r_start >>=? fun d ->
+        Cflow.prep_call d.return
+          (unbound_input t_in d.return)
+          mod_ locs ft.it ft
+      in
+      let _ =
+        Eval.fixpoint mod_
+          ((call_ms, fb), true)
+          Eval.Stack.empty Eval.Cache.empty (List.hd entrypoints).it
+          (t_in, _t_out) Eval.MA.bot_pa Eval.step
+      in
+      Fixpoint.Callgraph.CallGraph.union cg !Eval.cg)
+    !Eval.cg entrypoints
+(*match entrypoints with
+  | [] -> !Eval.cg
+  | _ ->
+      let _b, _locs, _t =
+        Eval.getfbody mod_ (Int32.to_int (List.hd entrypoints).it)
+      in
+      let t_in, _t_out =
+        match Eval.gettype mod_ (Int32.to_int _t.it) with
+        | FuncType (i, o) -> (i, o)
+      in
+      let call_ms =
+        r_start >>=? fun d ->
+        Cflow.prep_call d.return
+          (unbound_input t_in d.return)
+          mod_ _locs _t.it _t
+      in
+      let _ =
+        Eval.fixpoint mod_
+          ((call_ms, _b), true)
+          Eval.Stack.empty Eval.Cache.empty (List.hd entrypoints).it
+          (t_in, _t_out) Eval.MA.bot_pa Eval.step
+      in
+      !Eval.cg
+*)

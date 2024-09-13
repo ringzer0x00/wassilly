@@ -253,7 +253,9 @@ let init (_mod : Wasm.Ast.module_) : Memories.Memorystate.t =
     | h :: _ -> (
         match h.it.idesc.it with
         | Wasm.Ast.GlobalImport _ -> failwith "glo"
-        | _ -> failwith "")
+        | Wasm.Ast.FuncImport _  -> failwith "func"
+        | Wasm.Ast.MemoryImport _ -> failwith "nope"
+        | Wasm.Ast.TableImport _ -> failwith "nope")
   in
   let _tab_initialized = [ init_tab _mod ms_start ] in
   let globs_initialized =
