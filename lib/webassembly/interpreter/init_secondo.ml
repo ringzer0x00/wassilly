@@ -252,20 +252,22 @@ let init (_mod : Wasm.Ast.module_) : Memories.Memorystate.t =
       itab_indexed _mod.it.imports,
       imem_indexed _mod.it.imports )
   in
-
-  (*allocate and initialize imports!*)
-  let _tab_initialized = [ init_tab _mod ms_start ] in
-  let globs_initialized =
-    init_globals _mod
-      (Def
-         {
-           ops = [];
-           mem = Memories.Linearmem.alloc_page;
-           var =
-             VM.empty
-               (Apronext.Apol.top
-                  (Datastructures.Aprondomain.make_env [||] [||]));
-           tab = _tab_initialized;
-         })
+  let _mod_inst = Instance.instantiate_module _mod in
+  let globs_initialized : Eval.MS.ms t =
+    init_globals _mod ms_start
+    (*allocate and initialize imports!*)
   in
-  init_mem _mod globs_initialized
+  let _tab_initialized = [ init_tab _mod globs_initialized ] in
+  let ms_post : Eval.MS.ms t =
+    match globs_initialized with
+    | Bot -> failwith "daje iniit"
+    | Def globs_initialized ->
+        Def
+          {
+            ops = globs_initialized.ops;
+            mem = globs_initialized.mem;
+            var = globs_initialized.var;
+            tab = _tab_initialized;
+          }
+  in
+  init_mem _mod ms_post
