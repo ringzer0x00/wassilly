@@ -3,6 +3,7 @@ module Tab = Memories.Table
 module VM = Memories.Variablemem.VariableMem
 module VMKey = Memories.Variablemem.MapKey
 open Datastructures.Monad.DefBot
+open Memories.Instance
 
 type modinst = Memories.Instance.instance
 
@@ -12,13 +13,6 @@ let cc (c : Wasm.Ast.const) = c.it
 let eval p ms mod_ =
   Eval.step mod_ (ms, p) Eval.Stack.empty Eval.Cache.empty Int32.minus_one
     ([], []) Eval.MA.bot_pa
-
-let ifun_indexed x =
-  List.filter
-    (fun (x : Wasm.Ast.import) ->
-      match x.it.idesc.it with Wasm.Ast.FuncImport _ -> true | _ -> false)
-    x
-  |> List.mapi (fun i x -> (i, x))
 
 let init_mem (mod_ : modinst) (s : Memories.Memorystate.t) datas _memories =
   let rec aux (gs_idx : Wasm.Ast.data_segment list) s =
@@ -175,51 +169,6 @@ let init_globals (mod_ : modinst) (s : Memories.Memorystate.t) prepped =
         | _ -> failwith "imported global @ init")
   in
   aux prepped s
-
-let iglob_indexed x =
-  List.filter_map
-    (fun (x : Wasm.Ast.import) ->
-      match x.it.idesc.it with
-      | Wasm.Ast.GlobalImport t -> Some (Memories.Instance.ImportedGlob t)
-      | _ -> None)
-    x
-  |> List.mapi (fun i x -> (Int32.of_int i, x))
-
-let itab_indexed x =
-  List.filter_map
-    (fun (x : Wasm.Ast.import) ->
-      match x.it.idesc.it with
-      | Wasm.Ast.TableImport t -> Some (Memories.Instance.ImportedTable t)
-      | _ -> None)
-    x
-  |> List.mapi (fun i x -> (Int32.of_int i, x))
-
-let imem_indexed x =
-  List.filter_map
-    (fun (x : Wasm.Ast.import) ->
-      match x.it.idesc.it with
-      | Wasm.Ast.MemoryImport t -> Some (Memories.Instance.ImportedMemory t)
-      | _ -> None)
-    x
-  |> List.mapi (fun i x -> (Int32.of_int i, x))
-
-let index_globs globs imps =
-  List.mapi
-    (fun i (x : Wasm.Ast.global) ->
-      (Int32.of_int (i + imps), Memories.Instance.Glob x))
-    globs
-
-let index_tabs tabs imps =
-  List.mapi
-    (fun i (x : Wasm.Ast.table) ->
-      (Int32.of_int (i + imps), Memories.Instance.Table x))
-    tabs
-
-let index_mems mems imps =
-  List.mapi
-    (fun i (x : Wasm.Ast.memory) ->
-      (Int32.of_int (i + imps), Memories.Instance.Memory x))
-    mems
 
 let init (_mod : Wasm.Ast.module_) =
   let ms_start : Eval.MS.ms t =
