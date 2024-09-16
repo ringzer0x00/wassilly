@@ -25,7 +25,7 @@ let getfbody (mod_ : module_) idx =
   let funx = List.nth mod_.funcs idx in
   match funx with
   | Func f -> (f.it.body, f.it.locals, f.it.ftype)
-  | ImportedFunc _ -> failwith "imported"
+  | ImportedFunc _ -> failwith "imported functtion @ eval.ml"
 
 let gettype (mod_ : module_) idx =
   let t = List.nth mod_.types idx in

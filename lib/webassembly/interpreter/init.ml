@@ -172,7 +172,7 @@ let init_globals (mod_ : modinst) (s : Memories.Memorystate.t) prepped =
             let exp = Memories.Memorystate.peek_operand r_nat |> List.hd in
             let nat = Memories.Memorystate.assign_var s' Glob binding exp in
             aux t nat
-        | _ -> failwith "imported global")
+        | _ -> failwith "imported global @ init")
   in
   aux prepped s
 
@@ -250,14 +250,8 @@ let init (_mod : Wasm.Ast.module_) =
   let globs = _imported_globs @ internal_globs in
   let tabs = _imported_tabs @ internal_tabs in
   let mems = _imported_mems @ internal_mems in
-  let _mod_inst = Memories.Instance.instantiate_module _mod in
-  let globs_initialized : Eval.MS.ms t =
-    init_globals _mod_inst ms_start globs
-  in
-  let tab_initialized =
-    init_tab _mod_inst globs_initialized _mod_inst.elems tabs
-  in
-  let mem_initialized =
-    init_mem _mod_inst tab_initialized _mod_inst.datas mems
-  in
-  (mem_initialized, _mod_inst)
+  let minst = Memories.Instance.instantiate_module _mod in
+  let globs_initialized : Eval.MS.ms t = init_globals minst ms_start globs in
+  let tab_initialized = init_tab minst globs_initialized minst.elems tabs in
+  let mem_initialized = init_mem minst tab_initialized minst.datas mems in
+  (mem_initialized, minst)
