@@ -234,26 +234,26 @@ let itab_indexed x =
   |> List.mapi (fun i x -> (i, x))
 
 let init (_mod : Wasm.Ast.module_) : Memories.Memorystate.t =
-  (*always alloc a memory page*)
   let ms_start : Eval.MS.ms t =
     Def
       {
         ops = [];
         mem = Memories.Linearmem.alloc_page;
-        (*https://webassembly.github.io/spec/core/text/values.html#strings
-          hex speratated by \. use int_of_string with appropriate shit*)
         var =
           VM.empty
             (Apronext.Apol.top (Datastructures.Aprondomain.make_env [||] [||]));
         tab = [];
       }
   in
+  (*always alloc a memory page*)
   let _imported_globs, _imported_funs, _imported_tabs, _imported_mems =
     ( iglob_indexed _mod.it.imports,
       ifun_indexed _mod.it.imports,
       itab_indexed _mod.it.imports,
       imem_indexed _mod.it.imports )
   in
+
+  (*allocate and initialize imports!*)
   let _tab_initialized = [ init_tab _mod ms_start ] in
   let globs_initialized =
     init_globals _mod
