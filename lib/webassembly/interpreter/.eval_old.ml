@@ -4,7 +4,7 @@ module LM = Fixpoint.Labelmap.LabelMap
 module MA = Fixpoint.Answer
 
 type ans = MA.res Datastructures.Monad.DefBot.t
-type module_ = Memories.Instance.instance (*or ' (?)*)
+type module_ = Wasm.Ast.module_ (*or ' (?)*)
 type p = Language.Command.Command.t
 
 open Fixpoint
@@ -22,13 +22,11 @@ let pans_of_answer = MA.pans_of_answer
 let end_of_func = Cflow.end_of_func
 
 let getfbody (mod_ : module_) idx =
-  let funx = List.nth mod_.funcs idx in
-  match funx with
-  | Func f -> (f.it.body, f.it.locals, f.it.ftype)
-  | ImportedFunc _ -> failwith "imported"
+  let funx = List.nth mod_.it.funcs idx in
+  (funx.it.body, funx.it.locals, funx.it.ftype)
 
 let gettype (mod_ : module_) idx =
-  let t = List.nth mod_.types idx in
+  let t = List.nth mod_.it.types idx in
   t.it
 
 let fixpoint _module (call, ifb) stack cache fin ft pres stepf =
@@ -49,7 +47,7 @@ let fixpoint _module (call, ifb) stack cache fin ft pres stepf =
       )
 
 (*eval should not be called recursively*)
-let rec step (modul_ : module_) call sk cache (fin : Int32.t) ft p_ans :
+let rec step modul_ call sk cache (fin : Int32.t) ft p_ans :
     ans * Cache.t * SCG.t =
   let (ms : MS.t), (p : p) = call in
   match ms with

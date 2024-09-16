@@ -5,6 +5,22 @@ module VMKey = Memories.Variablemem.MapKey
 open Datastructures.Monad.DefBot
 
 let listnth_i32 l i = List.nth l (Int32.to_int i)
+
+(*type module_ = module_' Source.phrase
+  and module_' =
+  {
+    types : type_ list;
+    globals : global list;
+    tables : table list;
+    memories : memory list;
+    funcs : func list;
+    start : start option;
+    elems : elem_segment list;
+    datas : data_segment list;
+    imports : import list;
+    exports : export list;
+  }*)
+
 let cc (c : Wasm.Ast.const) = c.it
 
 let init_globals (mod_ : Wasm.Ast.module_) (s : Memories.Memorystate.t) =
@@ -139,6 +155,17 @@ let interpret_elem_segment (es : Wasm.Ast.elem_segment) (t : 'a list) =
       in
       t'
 
+(*ELEMENT SEGMENTS - elemss
+
+  The initial contents of a table is uninitialized. Element segments can be used to initialize a subrange of a table from a static vector of elements.
+
+  The elems component of a module defines a vector of element segments. Each element segment defines a reference type and a corresponding list of constant element
+  expressions.
+
+  Element segments have a mode that identifies them as either passive, active, or declarative. A passive element segment’s elements can be copied to a table
+  using the table.init instruction. An active element segment copies its elements into a table during instantiation, as specified by a table index and a
+  constant expression defining an offset into that table. A declarative element segment is not available at runtime but merely serves to forward-declare
+  references that are formed in code with instructions like ref.func.*)
 let init_tab (mod_ : Wasm.Ast.module_) _ms =
   let eval p ms =
     Eval.step mod_ (ms, p) Eval.Stack.empty Eval.Cache.empty Int32.minus_one
@@ -205,69 +232,58 @@ let init_tab (mod_ : Wasm.Ast.module_) _ms =
     (Memories.Table.T.bindings r |> List.length);
   r
 
-let iglob_indexed x =
-  List.filter
-    (fun (x : Wasm.Ast.import) ->
-      match x.it.idesc.it with Wasm.Ast.GlobalImport _ -> true | _ -> false)
-    x
-  |> List.mapi (fun i x -> (i, x))
-
-let ifun_indexed x =
-  List.filter
-    (fun (x : Wasm.Ast.import) ->
-      match x.it.idesc.it with Wasm.Ast.FuncImport _ -> true | _ -> false)
-    x
-  |> List.mapi (fun i x -> (i, x))
-
-let imem_indexed x =
-  List.filter
-    (fun (x : Wasm.Ast.import) ->
-      match x.it.idesc.it with Wasm.Ast.MemoryImport _ -> true | _ -> false)
-    x
-  |> List.mapi (fun i x -> (i, x))
-
-let itab_indexed x =
-  List.filter
-    (fun (x : Wasm.Ast.import) ->
-      match x.it.idesc.it with Wasm.Ast.TableImport _ -> true | _ -> false)
-    x
-  |> List.mapi (fun i x -> (i, x))
-
 let init (_mod : Wasm.Ast.module_) : Memories.Memorystate.t =
+  (*always alloc a memory page*)
   let ms_start : Eval.MS.ms t =
     Def
       {
         ops = [];
         mem = Memories.Linearmem.alloc_page;
+        (*https://webassembly.github.io/spec/core/text/values.html#strings
+          hex speratated by \. use int_of_string with appropriate shit*)
         var =
           VM.empty
             (Apronext.Apol.top (Datastructures.Aprondomain.make_env [||] [||]));
         tab = [];
       }
   in
-  (*always alloc a memory page*)
-  let _imported_globs, _imported_funs, _imported_tabs, _imported_mems =
-    ( iglob_indexed _mod.it.imports,
-      ifun_indexed _mod.it.imports,
-      itab_indexed _mod.it.imports,
-      imem_indexed _mod.it.imports )
+  let _ =
+    match _mod.it.imports with
+    | [] -> ()
+    | h :: _ -> (
+        match h.it.idesc.it with
+        | Wasm.Ast.GlobalImport _modv -> failwith ""
+        | Wasm.Ast.FuncImport _  -> failwith "func"
+        | Wasm.Ast.MemoryImport _ -> failwith "nope"
+        | Wasm.Ast.TableImport _ -> failwith "nope")
   in
-  let _mod_inst = Instance.instantiate_module _mod in
-  let globs_initialized : Eval.MS.ms t =
-    init_globals _mod ms_start
-    (*allocate and initialize imports!*)
+  let _tab_initialized = [ init_tab _mod ms_start ] in
+  let globs_initialized =
+    init_globals _mod
+      (Def
+         {
+           ops = [];
+           mem = Memories.Linearmem.alloc_page;
+           var =
+             VM.empty
+               (Apronext.Apol.top
+                  (Datastructures.Aprondomain.make_env [||] [||]));
+           tab = _tab_initialized;
+         })
   in
-  let _tab_initialized = [ init_tab _mod globs_initialized ] in
-  let ms_post : Eval.MS.ms t =
-    match globs_initialized with
-    | Bot -> failwith "daje iniit"
-    | Def globs_initialized ->
-        Def
-          {
-            ops = globs_initialized.ops;
-            mem = globs_initialized.mem;
-            var = globs_initialized.var;
-            tab = _tab_initialized;
-          }
-  in
-  init_mem _mod ms_post
+  init_mem _mod globs_initialized
+(* Data Segments
+
+   The initial contents of a memory are zero bytes. Data segments can be used to initialize a range of memory from a static vector of bytes.
+   The datas component of a module defines a vector of data segments.
+
+   Like element segments, data segments have a mode that identifies them as either passive or active.
+
+   A passive data segment’s contents can be copied into a memory using the memory.init instruction.
+   An active data segment copies its contents into a memory during instantiation, as specified by a memory index and a constant expression defining
+   an offset into that memory.
+
+   Data segments are referenced through data indices.
+
+   Note:
+   In the current version of WebAssembly, at most one memory is allowed in a module. Consequently, the only valid memidx is 0.*)

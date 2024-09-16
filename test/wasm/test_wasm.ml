@@ -10,18 +10,18 @@ let t =
     ("direct-call-transitive/main.wasm", [ (0, 1); (1, 2) ]);
     ("indirect-call-func-in-table/main.wasm", [ (0, 1) ]);
     ("indirect-call-index-expr-const/main.wasm", [ (0, 1) ]);
-    ("indirect-call-index-expr-double-load/main.wasm", [ (0, 1) ]);
     ( "indirect-call-index-expr-interprocedural-param/main.wasm",
       [ (0, 1); (1, 2) ] );
-    ("indirect-call-index-expr-load-const-addr/main.wasm", [ (0, 1) ]);
-    ( "indirect-call-index-expr-load-interprocedural-param/main.wasm",
-      [ (0, 1); (1, 2) ] );
-    ( "indirect-call-index-expr-load-interprocedural-result/main.wasm",
-      [ (0, 1); (0, 2) ] );
     ("indirect-call-index-expr-local/main.wasm", [ (0, 2) ]);
     ("indirect-call-index-expr-mask/main.wasm", [ (0, 1); (0, 2) ]);
     ("indirect-call-index-expr-memory-mutable/main.wasm", [ (0, 1) ]);
     ("indirect-call-type-based/main.wasm", [ (0, 1) ]);
+    ( "indirect-call-index-expr-load-interprocedural-result/main.wasm",
+      [ (0, 1); (0, 2) ] );
+    ( "indirect-call-index-expr-load-interprocedural-param/main.wasm",
+      [ (0, 1); (1, 2) ] );
+    ("indirect-call-index-expr-load-const-addr/main.wasm", [ (0, 1) ]);
+    ("indirect-call-index-expr-double-load/main.wasm", [ (0, 1) ]);
     (*todos*)
     (*("cpp-vtable-layout-source-type-info/main.wasm", []);*)
     (*("direct-call-imported-func/main.wasm", []);*)

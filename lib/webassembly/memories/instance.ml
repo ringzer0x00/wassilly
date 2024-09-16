@@ -9,11 +9,15 @@ type spec = string * string
 (* -- *)
 type definedFunc = Wasm.Ast.func
 type definedGlob = Wasm.Ast.global
-type memInst = Memories.Linearmem.t
-type tableInst = Memories.Table.t
+type memInst = Linearmem.t
+type tableInst = Table.t
 
 (* -- *)
 type func = Func of definedFunc | ImportedFunc of spec
+type glob = Glob of Wasm.Ast.global | ImportedGlob of Wasm.Types.global_type
+type table = Table of Wasm.Ast.table | ImportedTable of Wasm.Types.table_type
+type mem = Memory of Wasm.Ast.memory | ImportedMemory of Wasm.Types.memory_type
+
 type impordesc = Wasm.Ast.import_desc'
 
 (*--*)

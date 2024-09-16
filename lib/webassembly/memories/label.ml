@@ -10,8 +10,8 @@ type labelcontent = {
 
 and label = BlockLabel of labelcontent | LoopLabel of labelcontent
 
-let gettype (mod_ : Wasm.Ast.module_) idx =
-  let t = List.nth mod_.it.types idx in
+let gettype (mod_ : Instance.instance) idx =
+  let t = List.nth mod_.types idx in
   t.it
 
 let type_of_peeked_label = function BlockLabel c | LoopLabel c -> c.typ
