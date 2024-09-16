@@ -107,13 +107,13 @@ let mk_funcs internal imports =
   let internal' = List.map (fun (x : Wasm.Ast.func) -> Func x) internal in
   imported @ internal'
 
-let instantiate_module (m : mod_) : instance =
+let instantiate_module (m : mod_) spec : instance =
   let m = m.it in
   let types = m.types in
   let elems = m.elems in
   let datas = m.datas in
   let exports = m.exports in
-  let importspecs = "" in
+  let importspecs = spec in
   {
     types;
     funcs = mk_funcs m.funcs m.imports;

@@ -170,7 +170,7 @@ let init_globals (mod_ : modinst) (s : Memories.Memorystate.t) prepped =
   in
   aux prepped s
 
-let init (_mod : Wasm.Ast.module_) =
+let init (_mod : Wasm.Ast.module_) spec =
   let ms_start : Eval.MS.ms t =
     Def
       {
@@ -199,7 +199,7 @@ let init (_mod : Wasm.Ast.module_) =
   let globs = _imported_globs @ internal_globs in
   let tabs = _imported_tabs @ internal_tabs in
   let mems = _imported_mems @ internal_mems in
-  let minst = Memories.Instance.instantiate_module _mod in
+  let minst = Memories.Instance.instantiate_module _mod spec in
   let globs_initialized : Eval.MS.ms t = init_globals minst ms_start globs in
   let tab_initialized = init_tab minst globs_initialized minst.elems tabs in
   let mem_initialized = init_mem minst tab_initialized minst.datas mems in

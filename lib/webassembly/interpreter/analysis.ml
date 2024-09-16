@@ -31,9 +31,10 @@ let unbound_input t_in (k : Memories.Memorystate.t) =
        (Memories.Operand.const_expr x.var Apronext.Intervalext.top))
   |> Array.to_list*)
 
-let value_and_callgraph fn =
+let value_and_callgraph fn _spec_path =
   let mod_ = load_mod fn in
-  let i, minst = Init.init mod_ in
+  let spec = "" in
+  let i, minst = Init.init mod_ spec in
   let startf, _, fstart =
     match mod_.it.start with
     | None -> ([], [], Int32.minus_one)
@@ -82,9 +83,10 @@ let value_and_callgraph fn =
       in
       (ar, !Eval.cg)
 
-let callgraph_analysis fn =
+let callgraph_analysis fn _spec_path =
   let mod_ = load_mod fn in
-  let i, minst = Init.init mod_ in
+  let spec = "" in
+  let i, minst = Init.init mod_ spec in
   let startf, _, fstart =
     match mod_.it.start with
     | None -> ([], [], Int32.minus_one)
@@ -130,9 +132,11 @@ let callgraph_analysis fn =
       in
       !Eval.cg
 
-let callgraph_analysis' fn =
+let callgraph_analysis' fn _spec_path =
   let mod_ = load_mod fn in
-  let i, minst = Init.init mod_ in  let startf, _, fstart =
+  let spec = "" in
+  let i, minst = Init.init mod_ spec in
+  let startf, _, fstart =
     match mod_.it.start with
     | None -> ([], [], Int32.minus_one)
     | Some _st -> (

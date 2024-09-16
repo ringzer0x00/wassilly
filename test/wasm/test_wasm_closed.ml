@@ -1,5 +1,5 @@
 let d = "/home/ringzero/gitrepos/wassilly/test/wasm/microbenchmarks/"
-let p path = Interpreter.Analysis.callgraph_analysis' path
+let p path = Interpreter.Analysis.callgraph_analysis' path ""
 (*"./tc/fib.wasm"*)
 
 let t =
