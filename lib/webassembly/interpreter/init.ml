@@ -4,6 +4,7 @@ module VM = Memories.Variablemem.VariableMem
 module VMKey = Memories.Variablemem.MapKey
 open Datastructures.Monad.DefBot
 open Memories.Instance
+open Importspec.Wasmtypes
 
 type modinst = Memories.Instance.instance
 
@@ -166,7 +167,39 @@ let init_globals (mod_ : modinst) (s : Memories.Memorystate.t) prepped =
             let exp = Memories.Memorystate.peek_operand r_nat |> List.hd in
             let nat = Memories.Memorystate.assign_var s' Glob binding exp in
             aux t nat
-        | ImportedGlob (_t, _n) -> failwith "imported global @ init")
+        | ImportedGlob (GlobalType (_t, _), _n) ->
+            let (Program spec) = mod_.importspecs in
+            let nty =
+              match _t with
+              | NumType n -> n
+              | _ -> failwith "cannot handle these now @init"
+            in
+            let imported_opt =
+              List.find_opt
+                (fun i ->
+                  match i with
+                  | Term.Glob (name, wt, _) -> name = _n && gt_matches nty wt
+                  | _ -> false)
+                spec
+            in
+            let binding : VMKey.t = { i; t = nty } in
+            let s' = Memories.Memorystate.bind_vars binding Glob s in
+            let v_exp =
+              (match imported_opt with
+              | Some (Term.Glob (_, _, Term.Num v)) -> v
+              | None -> Term.I.top
+              | _ -> failwith "global or a rel @ init.ml")
+              |>
+              match s' with
+              | Bot -> failwith ""
+              | Def d -> Memories.Operand.const_expr d.var
+            in
+            let v_operand = Memories.Operand.Expression (v_exp, nty) in
+            (*do other stuff*)
+            let nat =
+              Memories.Memorystate.assign_var s' Glob binding v_operand
+            in
+            aux t nat)
   in
   aux prepped s
 
