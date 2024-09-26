@@ -5,3 +5,7 @@ When (cond) -> (res, set)
 
 
 es fib: when (_) implies: pop(1); push( [0;pinf) )
+
+type of spec : fun ... | glob ...
+
+table and mem = unbounded

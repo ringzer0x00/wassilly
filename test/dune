@@ -3,6 +3,7 @@
  (modes exe byte)
  (libraries
   test_wasm
+  test_parser
   interpreter
   wassilly
   ounit2))
