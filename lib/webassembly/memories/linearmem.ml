@@ -26,12 +26,6 @@ let internal_write_byte_weak b o m =
 
 let strong_write_to_mem b o m =
   let mapped = Array.mapi (fun i x -> (x, i + o)) b in
-  Array.iter
-    (fun (_b, _a) ->
-      Printf.printf "WRITING:";
-      AByte.print_byte _b;
-      Printf.printf "@ %i" _a)
-    mapped;
   Array.fold_left
     (fun mem (byte, offs) -> internal_write_byte_raw byte offs mem)
     m mapped

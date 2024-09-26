@@ -25,7 +25,9 @@ let getfbody (mod_ : module_) idx =
   let funx = List.nth mod_.funcs idx in
   match funx with
   | Func f -> (f.it.body, f.it.locals, f.it.ftype)
-  | ImportedFunc _ -> failwith "imported functtion @ eval.ml"
+  | ImportedFunc (Importspec.Term.Func (_, _, _)) ->
+      failwith "imported functtion @ eval.ml"
+  | _ -> failwith "outside patternmatching @ getfbody"
 
 let gettype (mod_ : module_) idx =
   let t = List.nth mod_.types idx in
@@ -60,12 +62,9 @@ let rec step (modul_ : module_) call sk cache (fin : Int32.t) ft p_ans :
   | Def _ -> (
       match p with
       | [] ->
-          if MS.is_lsk_empty ms then (
-            Printf.printf "End of Func";
-            (end_of_func ms p_ans, cache, SCG.empty))
+          if MS.is_lsk_empty ms then (end_of_func ms p_ans, cache, SCG.empty)
           else
             let eob = Instructions.end_of_block ms modul_ in
-            Printf.printf "Not end of Func";
             (cmd_result eob p_ans, cache, SCG.empty)
       | c1 :: c2 ->
           let (res1 : ans), cache', scg_h =
@@ -106,7 +105,6 @@ let rec step (modul_ : module_) call sk cache (fin : Int32.t) ft p_ans :
                 let _ref = Memories.Operand.ref_of_binding _b Glob in
                 (cmd_result (Instructions.read ms _ref) p_ans, cache, SCG.empty)
             | Const num ->
-                Printf.printf "Const\n\n";
                 ( cmd_result (Instructions.const_val num ms) p_ans,
                   cache,
                   SCG.empty )

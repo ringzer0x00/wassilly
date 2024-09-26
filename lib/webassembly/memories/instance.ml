@@ -1,7 +1,7 @@
 module Term = Importspec.Term
 
 type name = string
-type spec = int32 * name * string
+type spec = Term.term
 
 (* -- *)
 type definedFunc = Wasm.Ast.func
@@ -36,11 +36,19 @@ type instance = {
   importspecs : Term.program;
 }
 
-let imported_funcs (i : Wasm.Ast.import list) =
+let imported_funcs (i : Wasm.Ast.import list) (importspecs : spec list) =
   let filter_map (x : Wasm.Ast.import) =
     match x.it.idesc.it with
-    | FuncImport v ->
-        Some (ImportedFunc (v.it, Wasm.Utf8.encode x.it.item_name, ""))
+    | FuncImport _v ->
+        let n = Wasm.Utf8.encode x.it.item_name in
+        Some
+          (ImportedFunc
+             (List.find
+                (fun t ->
+                  match t with
+                  | Term.Func (name, _funcsig, _impl) -> n = name
+                  | _ -> failwith "function not found")
+                importspecs))
     | _ -> None
   in
   List.filter_map filter_map i
@@ -97,8 +105,13 @@ let index_mems mems imps =
     (fun i (x : Wasm.Ast.memory) -> (Int32.of_int (i + imps), Memory x))
     mems
 
-let mk_funcs internal imports =
-  let imported = imported_funcs imports in
+let mk_funcs internal imports (Term.Program _spec) =
+  let spec_funcs =
+    List.filter_map
+      (fun s -> match s with Term.Func _ -> Some s | _ -> None)
+      _spec
+  in
+  let imported = imported_funcs imports spec_funcs in
   let internal' = List.map (fun (x : Wasm.Ast.func) -> Func x) internal in
   imported @ internal'
 
@@ -111,7 +124,7 @@ let instantiate_module (m : mod_) spec : instance =
   let importspecs = spec in
   {
     types;
-    funcs = mk_funcs m.funcs m.imports;
+    funcs = mk_funcs m.funcs m.imports spec;
     elems;
     datas;
     exports;

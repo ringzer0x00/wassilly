@@ -44,11 +44,6 @@ let init_mem (mod_ : modinst) (s : Memories.Memorystate.t) datas _memories =
               (*each "piece" is 1byte (1 char) (1 word) -> can become sequence -> can become list *)
               let b = String.to_bytes _init in
               let _bseq = Bytes.to_seq b in
-              let _ =
-                Seq.iter
-                  (fun x -> Printf.printf "CHAR: %i\n" (Char.code x))
-                  _bseq (*goes to int from char*)
-              in
               let mapped_bits =
                 Seq.map (fun x -> Char.code x) _bseq
                 |> Array.of_seq
@@ -57,29 +52,14 @@ let init_mem (mod_ : modinst) (s : Memories.Memorystate.t) datas _memories =
                          Language.Bitwisenumber.byte_of_interval
                            (Apronext.Intervalext.of_int x x) ))
               in
-              Printf.printf "MIAO: %i\n" (Array.length mapped_bits);
-              Printf.printf "init: %a ; " output_bytes b;
-              Printf.printf "size: %i\n" (Bytes.length b);
-              Printf.printf "val: %i\n"
-                (Int32.to_int (Bytes.get_int32_le (String.to_bytes _init) 0));
               let m' =
                 Array.fold_left
                   (fun m (_to, (_val : Language.Bitwisenumber.byte)) ->
                     let b =
                       Datastructures.Abstractbyte.join _val.min _val.max
                     in
-                    let _ =
-                      Printf.printf "to write: ";
-                      Datastructures.Abstractbyte.print_byte b;
-                      Printf.printf "\n"
-                    in
                     Memories.Memorystate.write_mem_raw m _to b)
                   _m mapped_bits
-              in
-              let _ =
-                match m' with
-                | Def d -> Memories.Linearmem.printmem d.mem
-                | Bot -> failwith "memoryyyy"
               in
               m'
         in
@@ -139,8 +119,6 @@ let init_tab (mod_ : modinst) pre elems _tabs : Eval.MS.t =
         interpret_segment (extract_segment x) acc)
       Memories.Table.empty elems
   in
-  Printf.printf "MAP LENGTH @ TABLES: %i\n"
-    (Memories.Table.T.bindings r |> List.length);
   pre >>=? fun m : Memories.Memorystate.t ->
   Def { ops = m.ops; mem = m.mem; var = m.var; tab = [ r ] }
 

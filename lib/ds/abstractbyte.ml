@@ -54,8 +54,7 @@ let of_min_max _mi _ma =
     Array.map2 (fun a b -> Abstractbit.join a b) _mi _ma |> Array.to_list
   in
   (*once you find Both, from that Both *all* is Both*)
-  let rec meaow arr acc =
-    Printf.printf "MEAOW CALLED\n\n\n\n";
+  let rec collapse arr acc =
     match arr with
     | [] -> Array.of_list acc
     | h :: t ->
@@ -67,9 +66,9 @@ let of_min_max _mi _ma =
                 Array.to_list (Array.make (List.length t) Abstractbit.Top) )
           | _ as rest -> (rest, t, [])
         in
-        meaow t' (acc @ [ x' ] @ r)
+        collapse t' (acc @ [ x' ] @ r)
   in
-  meaow a []
+  collapse a []
 
 let as_min_max a signed =
   let minmax_pos x =

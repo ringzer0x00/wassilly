@@ -14,8 +14,11 @@ let load_mod fn =
   load fn bytes
 
 let parse_spec fn =
-  let bytes = read_whole_file fn in
-  Importspec.Main.parse_program bytes
+  match fn with
+  | "" -> Importspec.Term.Program []
+  | _ ->
+      let bytes = read_whole_file fn in
+      Importspec.Main.parse_program bytes
 
 let unbound_input t_in (k : Memories.Memorystate.t) =
   k >>=? fun x ->
@@ -82,55 +85,6 @@ let value_and_callgraph fn _spec_path =
         Eval.MS.func_res (Eval.func_ans ar) call_ms (List.length _t_out)
       in
       (ar, !Eval.cg)
-
-let callgraph_analysis fn _spec_path =
-  let mod_ = load_mod fn in
-  let spec = parse_spec _spec_path in
-  let i, minst = Init.init mod_ spec in
-  let startf, _, fstart =
-    match mod_.it.start with
-    | None -> ([], [], Int32.minus_one)
-    | Some _st -> (
-        match Eval.getfbody minst (Int32.to_int _st.it.sfunc.it) with
-        | a, _, _ -> (a, [], _st.it.sfunc.it))
-  in
-  let entrypoints =
-    List.filter_map
-      (fun (x : Wasm.Ast.export) ->
-        match x.it.edesc.it with FuncExport v -> Some v | _ -> None)
-      mod_.it.exports
-  in
-  let _fs_all = List.mapi (fun i _ -> Int32.of_int i) minst.funcs in
-  let r_start, _, _ =
-    i >>=? fun _ ->
-    Eval.fixpoint minst
-      ((i, startf), true)
-      Eval.Stack.empty Eval.Cache.empty fstart ([], []) Eval.MA.bot_pa Eval.step
-  in
-
-  match entrypoints with
-  | [] -> !Eval.cg
-  | _ ->
-      let _b, _locs, _t =
-        Eval.getfbody minst (Int32.to_int (List.hd entrypoints).it)
-      in
-      let t_in, _t_out =
-        match Eval.gettype minst (Int32.to_int _t.it) with
-        | FuncType (i, o) -> (i, o)
-      in
-      let call_ms =
-        r_start >>=? fun d ->
-        Cflow.prep_call d.return
-          (unbound_input t_in d.return)
-          minst _locs _t.it _t
-      in
-      let _ =
-        Eval.fixpoint minst
-          ((call_ms, _b), true)
-          Eval.Stack.empty Eval.Cache.empty (List.hd entrypoints).it
-          (t_in, _t_out) Eval.MA.bot_pa Eval.step
-      in
-      !Eval.cg
 
 let callgraph_analysis' fn _spec_path =
   let mod_ = load_mod fn in
