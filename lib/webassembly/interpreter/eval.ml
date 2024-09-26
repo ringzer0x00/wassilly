@@ -20,6 +20,7 @@ let seq_result = Cflow.seq_answer
 let func_ans = Cflow.func_answer
 let pans_of_answer = MA.pans_of_answer
 let end_of_func = Cflow.end_of_func
+let getfbody_wrapped (mod_ : module_) idx = List.nth mod_.funcs idx
 
 let getfbody (mod_ : module_) idx =
   let funx = List.nth mod_.funcs idx in
@@ -125,7 +126,6 @@ let rec step (modul_ : module_) call sk cache (fin : Int32.t) ft p_ans :
                 in
                 Cflow.br depth ms p_ans cache modul_ ft _ff
             | Block (_bt, bbody) ->
-                (*manca la parametrizzazione in input!!!!!*)
                 let l =
                   Memories.Operand.Label
                     (Memories.Label.BlockLabel
@@ -139,7 +139,6 @@ let rec step (modul_ : module_) call sk cache (fin : Int32.t) ft p_ans :
                 in
                 (Cflow.block_result a [ c1 ], c, g)
             | Loop (_bt, lbody) ->
-                (*manca la parametrizzazione in input!!!!!*)
                 let _lab =
                   Memories.Operand.Label
                     (Memories.Label.LoopLabel
@@ -158,7 +157,6 @@ let rec step (modul_ : module_) call sk cache (fin : Int32.t) ft p_ans :
                 in
                 (Cflow.block_result a [ c1 ], c, g)
             | If (_blocktype, _then, _else) ->
-                (*manca la parametrizzazione in input!!!!!*)
                 let l =
                   Memories.Operand.Label
                     (Memories.Label.BlockLabel
@@ -248,40 +246,49 @@ let rec step (modul_ : module_) call sk cache (fin : Int32.t) ft p_ans :
                 Printf.printf "CALL %i\n\n" (Int32.to_int _i.it);
                 cg := CallSet.union (CallSet.singleton (fin, _i.it)) !cg;
                 let fin' = _i.it in
-                let funbody, locs, typ_idx =
-                  getfbody modul_ (Int32.to_int _i.it)
+                let f = getfbody_wrapped modul_ (Int32.to_int _i.it) in
+                let fres, cache', g =
+                  match f with
+                  | Memories.Instance.ImportedFunc term ->
+                      let _n, _fs, _impl =
+                        Importspec.Helpers.getfuncspec term
+                      in
+                      (*call spec_eval.eval*)
+                      (Bot, cache, SCG.empty)
+                  | Memories.Instance.Func f ->
+                      let funbody, locs, typ_idx =
+                        (f.it.body, f.it.locals, f.it.ftype)
+                      in
+                      let _flab =
+                        Memories.Label.BlockLabel
+                          {
+                            typ = Wasm.Ast.VarBlockType _i;
+                            cmd = funbody;
+                            natcont = [];
+                            brcont = [];
+                          }
+                      in
+                      let typ_ = gettype modul_ (Int32.to_int typ_idx.it) in
+                      let _ti, _to =
+                        (*list * list*)
+                        match typ_ with FuncType (_ti, _to) -> (_ti, _to)
+                      in
+                      let _vals, ms' =
+                        ( MS.peek_n_operand (List.length _ti) ms,
+                          MS.pop_n_operand (List.length _ti) ms )
+                      in
+                      let ms'' =
+                        Cflow.prep_call ms' _vals modul_ locs typ_idx.it
+                          typ_idx (*flab*)
+                      in
+                      let ms''', c', g =
+                        fixpoint modul_
+                          ((ms'', funbody), true)
+                          sk cache fin' (_ti, _to) p_ans step
+                      in
+                      (MS.func_res (func_ans ms''') ms' (List.length _to), c', g)
                 in
-                let _flab =
-                  Memories.Label.BlockLabel
-                    {
-                      typ = Wasm.Ast.VarBlockType _i;
-                      cmd = funbody;
-                      natcont = [];
-                      brcont = [];
-                    }
-                in
-                let typ_ = gettype modul_ (Int32.to_int typ_idx.it) in
-                let _ti, _to =
-                  (*list * list*)
-                  match typ_ with FuncType (_ti, _to) -> (_ti, _to)
-                in
-                let _vals, ms' =
-                  ( MS.peek_n_operand (List.length _ti) ms,
-                    MS.pop_n_operand (List.length _ti) ms )
-                in
-                let ms'' =
-                  Cflow.prep_call ms' _vals modul_ locs typ_idx.it
-                    typ_idx (*flab*)
-                in
-                let ms''', c', g =
-                  fixpoint modul_
-                    ((ms'', funbody), true)
-                    sk cache fin' (_ti, _to) p_ans step
-                in
-                let _f_res =
-                  MS.func_res (func_ans ms''') ms' (List.length _to)
-                in
-                (Cflow.call_answer p_ans _f_res, c', g)
+                (Cflow.call_answer p_ans fres, cache', g)
             | CallIndirect (_fsign, _table_idx) ->
                 let _ti, _to =
                   match gettype modul_ (Int32.to_int _fsign.it) with

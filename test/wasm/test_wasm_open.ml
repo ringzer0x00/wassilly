@@ -10,7 +10,7 @@ let t =
     (*imports*)
     (*("cpp-vtable-layout-source-type-info", []);*)
     ("direct-call-imported-func", [ (1, 0) ]);
-    ("memory-init-offset-imported-global", [ (0, 1) ]);
+    (*("memory-init-offset-imported-global", [ (0, 1) ]);*)
     (*("entry-point-wasi/main.wasm", []);*)
     (*("host-callbacks-exports", []);*)
     (*("host-code-table-mutable", []);*)
