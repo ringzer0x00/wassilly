@@ -166,7 +166,7 @@ let init_globals (mod_ : modinst) (s : Memories.Memorystate.t) prepped =
             let exp = Memories.Memorystate.peek_operand r_nat |> List.hd in
             let nat = Memories.Memorystate.assign_var s' Glob binding exp in
             aux t nat
-        | _ -> failwith "imported global @ init")
+        | ImportedGlob (_t, _n) -> failwith "imported global @ init")
   in
   aux prepped s
 

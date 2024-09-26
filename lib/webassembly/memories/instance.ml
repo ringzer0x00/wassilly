@@ -1,9 +1,4 @@
-(* an instance of a wasm module contains the "running" module strucutre:
-   funcs -> | ImportedFuncSpec of .. | FuncBody
-   globs -> | ImportedGlobSpec of .. | Glob
-   mems -> | ImportedMemSpec of .. | Mem
-   tables -> | ImportedTableSpec of .. | Table
-*)
+module Term = Importspec.Term
 
 type name = string
 type spec = int32 * name * string
@@ -38,7 +33,7 @@ type instance = {
   elems : Wasm.Ast.elem_segment list;
   datas : Wasm.Ast.data_segment list;
   exports : Wasm.Ast.export list;
-  importspecs : string;
+  importspecs : Term.program;
 }
 
 let imported_funcs (i : Wasm.Ast.import list) =

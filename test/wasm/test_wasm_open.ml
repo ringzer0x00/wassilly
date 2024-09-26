@@ -24,8 +24,8 @@ let t =
     ("indirect-call-index-expr-double-load/main.wasm", [ (0, 1) ]);*)
     (*imports*)
     (*("cpp-vtable-layout-source-type-info/main.wasm", []);*)
-    ("direct-call-imported-func/main.wasm", []);
-    (*("memory-init-offset-imported-global/main.wasm", []);*)
+    (*("direct-call-imported-func/main.wasm", []);*)
+    ("memory-init-offset-imported-global/main.wasm", []);
     (*("entry-point-wasi/main.wasm", []);*)
     (*("host-callbacks-exports/main.wasm", []);*)
     (*("host-code-table-mutable/main.wasm", []);*)

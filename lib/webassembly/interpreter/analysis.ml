@@ -13,6 +13,10 @@ let load_mod fn =
   let bytes = read_whole_file fn in
   load fn bytes
 
+let parse_spec fn =
+  let bytes = read_whole_file fn in
+  Importspec.Main.parse_program bytes
+
 let unbound_input t_in (k : Memories.Memorystate.t) =
   k >>=? fun x ->
   let _size = List.length t_in in
@@ -26,14 +30,10 @@ let unbound_input t_in (k : Memories.Memorystate.t) =
       Memories.Operand.Expression
         (Memories.Operand.const_expr x.var Apronext.Intervalext.top, t'))
     t_in
-(*Array.make _size
-    (Memories.Operand.Expression
-       (Memories.Operand.const_expr x.var Apronext.Intervalext.top))
-  |> Array.to_list*)
 
 let value_and_callgraph fn _spec_path =
   let mod_ = load_mod fn in
-  let spec = "" in
+  let spec = parse_spec _spec_path in
   let i, minst = Init.init mod_ spec in
   let startf, _, fstart =
     match mod_.it.start with
@@ -85,7 +85,7 @@ let value_and_callgraph fn _spec_path =
 
 let callgraph_analysis fn _spec_path =
   let mod_ = load_mod fn in
-  let spec = "" in
+  let spec = parse_spec _spec_path in
   let i, minst = Init.init mod_ spec in
   let startf, _, fstart =
     match mod_.it.start with
@@ -134,7 +134,7 @@ let callgraph_analysis fn _spec_path =
 
 let callgraph_analysis' fn _spec_path =
   let mod_ = load_mod fn in
-  let spec = "" in
+  let spec = parse_spec _spec_path in
   let i, minst = Init.init mod_ spec in
   let startf, _, fstart =
     match mod_.it.start with
@@ -178,27 +178,3 @@ let callgraph_analysis' fn _spec_path =
       in
       Fixpoint.Callgraph.CallGraph.union cg !Eval.cg)
     !Eval.cg entrypoints
-(*match entrypoints with
-  | [] -> !Eval.cg
-  | _ ->
-      let _b, _locs, _t =
-        Eval.getfbody mod_ (Int32.to_int (List.hd entrypoints).it)
-      in
-      let t_in, _t_out =
-        match Eval.gettype mod_ (Int32.to_int _t.it) with
-        | FuncType (i, o) -> (i, o)
-      in
-      let call_ms =
-        r_start >>=? fun d ->
-        Cflow.prep_call d.return
-          (unbound_input t_in d.return)
-          mod_ _locs _t.it _t
-      in
-      let _ =
-        Eval.fixpoint mod_
-          ((call_ms, _b), true)
-          Eval.Stack.empty Eval.Cache.empty (List.hd entrypoints).it
-          (t_in, _t_out) Eval.MA.bot_pa Eval.step
-      in
-      !Eval.cg
-*)
