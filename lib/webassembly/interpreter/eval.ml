@@ -254,13 +254,8 @@ let rec step (modul_ : module_) call sk cache (fin : Int32.t) ft p_ans :
                         Importspec.Helpers.getfuncspec term
                       in
                       (*call spec_eval.eval*)
-                      let _ = Spec_eval.eval term ms in
-                      let res =
-                        failwith
-                          "MS.func_res (func_ans ms''') ms' (List.length _to)"
-                      in
-
-                      (res, cache, SCG.empty)
+                      let _res, _cs = Spec_eval.eval term ms in
+                      (func_ans _res, cache, SCG.empty)
                   | Memories.Instance.Func f ->
                       let funbody, locs, typ_idx =
                         (f.it.body, f.it.locals, f.it.ftype)
