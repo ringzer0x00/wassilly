@@ -49,6 +49,9 @@ let eval (p : Importspec.Term.term) _ms =
   let r, calls =
     match p with
     | Func (_name, _funsig, _impl) ->
+        let _tin, _tout, _times_to_pop =
+          match _funsig with FuncSig (p, r) -> (p, r, List.length p)
+        in
         let _ms' = failwith "miao, i have to prepare!!!!" in
         implication _impl _ms
     | Glob (_name, _typ_, _val_) -> (glob _name _typ_ _val_ _ms, [])
