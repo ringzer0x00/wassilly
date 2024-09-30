@@ -71,9 +71,7 @@ let value_and_callgraph fn _spec_path =
       in
       let call_ms =
         r_start >>=? fun d ->
-        Cflow.prep_call d.return
-          (unbound_input t_in d.return)
-          minst _locs _t.it _t
+        Cflow.prep_call d.return (unbound_input t_in d.return) minst _locs _t.it
       in
       let ar, _, _ =
         Eval.fixpoint minst
@@ -120,9 +118,7 @@ let callgraph_analysis' fn _spec_path =
       in
       let call_ms =
         r_start >>=? fun d ->
-        Cflow.prep_call d.return
-          (unbound_input t_in d.return)
-          minst locs ft.it ft
+        Cflow.prep_call d.return (unbound_input t_in d.return) minst locs ft.it
       in
       let _ =
         Eval.fixpoint minst

@@ -11,10 +11,13 @@ let%test "memory-init-offset-imported-global" =
   Interpreter.Eval.cg := Fixpoint.Callgraph.CallGraph.phi;
   got (p "memory-init-offset-imported-global") = [ (0, 1) ]
 
+  let%test "direct-call-imported-func" =
+  Interpreter.Eval.cg := Fixpoint.Callgraph.CallGraph.phi;
+  got (p "direct-call-imported-func") = [ (1, 0) ]
 let t =
   [
     (*imports*)
-    (*("direct-call-imported-func", [ (1, 0) ]);*)
+    (*("", [ (1, 0) ]);*)
     (*("host-callbacks-exports", []);*)
     (*("host-code-table-mutable", []);*)
     (*("host-reachable-table-export", []);*)

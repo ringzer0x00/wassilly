@@ -54,28 +54,33 @@ let when_ (_clause : precond list) _ms =
   let ms_t, ms_f = (_ms, _ms) in
   (ms_t, ms_f)
 
-let rec implication (i : Importspec.Term.impl) (_ms : MS.t) =
+let rec implication (i : Importspec.Term.impl) (_ms : MS.t) args =
   match i with
   | Implies impl -> implies impl _ms
   | Implication (clause, impl, else_) ->
       let t, f = when_ clause _ms in
       let (t', _c_t), (f', _c_f) =
-        (implication (Implies impl) t, implication else_ f)
+        (implication (Implies impl) t args, implication else_ f args)
       in
       (join_ms t' f', List.append _c_t _c_f)
 
-let eval (p : Importspec.Term.term) _ms modi =
+let eval (p : Importspec.Term.term) ms modi =
   let r, calls =
     match p with
-    | Func (_name, _funsig, _impl) ->
-        let _tin, _tout, _times_to_pop =
-          match _funsig with FuncSig (p, r) -> (p, r, List.length p)
+    | Func (_name, funsig, impl) ->
+        let t_in, _tout, n =
+          match funsig with FuncSig (p, r) -> (p, r, List.length p)
         in
-        let _ms' = assert false in
-        implication _impl _ms
-    | Glob (_name, _typ_, _val_) -> (glob _name _typ_ _val_ _ms modi, [])
+        let args, ms' =
+          ( Memories.Memorystate.peek_n_operand n ms,
+            Memories.Memorystate.pop_n_operand n ms )
+        in
+        let args' = List.map2 (fun x (Param (_, n)) -> (n, x)) args t_in in
+        (* bind args to ms? *)
+        implication impl ms' args'
+    | Glob (_name, _typ_, _val_) -> (glob _name _typ_ _val_ ms modi, [])
     | Table (_name, _ttyp, _tbinds, _unspec) ->
-        (table _name _ttyp _tbinds _unspec _ms, [])
+        (table _name _ttyp _tbinds _unspec ms, [])
   in
   match r with
   | Def _ -> (Def { nat = Bot; br = bot_pa.p_br; return = r }, calls)

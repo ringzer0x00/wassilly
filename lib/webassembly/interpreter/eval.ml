@@ -266,7 +266,7 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
                       in
                       let ms'' =
                         Cflow.prep_call ms' _vals modi locs typ_idx.it
-                          typ_idx (*flab*)
+                        (*flab*)
                       in
                       let ms''', c', g =
                         fixpoint modi
@@ -315,7 +315,7 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
                 let _mses_prepped =
                   List.map
                     (fun ((_f, _locs, (typ_idx : Wasm.Ast.var)), _) ->
-                      Cflow.prep_call _ms'' _vals modi _locs typ_idx.it typ_idx)
+                      Cflow.prep_call _ms'' _vals modi _locs typ_idx.it)
                     funcs
                 in
                 let computed, cache', scg =

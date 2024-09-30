@@ -94,7 +94,7 @@ let func_answer (k_to : res t) = k_to >>= fun to_ -> to_.return
 let call_answer par ms_body =
   return { nat = ms_body; br = par.p_br; return = par.p_return }
 
-let prep_call ms vals mod_ locs typ_idx var_typ =
+let prep_call ms vals mod_ locs typ_idx =
   let gettype (mod_ : Memories.Instance.instance) idx =
     let t = List.nth mod_.types idx in
     t.it
@@ -117,7 +117,7 @@ let prep_call ms vals mod_ locs typ_idx var_typ =
       _ti
   in
 
-  let ms' = MS.new_fun_ctx ms (_ti @ locs) var_typ in
+  let ms' = MS.new_fun_ctx ms (_ti @ locs) in
   let ms'' =
     List.fold_right2
       (fun b v m -> MS.assign_var m Loc b v)

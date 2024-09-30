@@ -164,7 +164,7 @@ let eq (k1 : t) (k2 : t) =
 
 let le (k1 : t) (k2 : t) = leq k1 k2 && not (eq k1 k2)
 
-let new_fun_ctx k locs (_typ_ : Wasm.Ast.var) =
+let new_fun_ctx k locs =
   k >>= fun a ->
   let var' = VariableMem.new_ a.var locs in
   update_varmem var' k |> update_operandstack []

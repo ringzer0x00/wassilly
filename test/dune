@@ -1,6 +1,6 @@
 (library
  (name test_wassilly)
- (libraries test_parser interpreter wassilly ounit2)
+ (libraries interpreter wassilly ounit2)
  (inline_tests
   (flags (-verbose)))
  (preprocess
