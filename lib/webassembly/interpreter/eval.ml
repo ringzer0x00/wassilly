@@ -52,7 +52,7 @@ let fixpoint _module (call, ifb) stack cache fin ft pres stepf =
       )
 
 (*eval should not be called recursively*)
-let rec step (modul_ : module_) call sk cache (fin : Int32.t) ft p_ans :
+let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
     ans * Cache.t * SCG.t =
   let (ms : MS.t), (p : p) = call in
   match ms with
@@ -65,7 +65,7 @@ let rec step (modul_ : module_) call sk cache (fin : Int32.t) ft p_ans :
       | [] ->
           if MS.is_lsk_empty ms then (end_of_func ms p_ans, cache, SCG.empty)
           else
-            let eob = Instructions.end_of_block ms modul_ in
+            let eob = Instructions.end_of_block ms modi in
             (cmd_result eob p_ans, cache, SCG.empty)
       | c1 :: c2 ->
           let (res1 : ans), cache', scg_h =
@@ -119,23 +119,21 @@ let rec step (modul_ : module_) call sk cache (fin : Int32.t) ft p_ans :
                 let depth = Int32.to_int i.it in
                 let _ff l ms =
                   (fun (x : Memories.Label.labelcontent) ms ->
-                    fixpoint modul_
+                    fixpoint modi
                       ((ms, x.brcont), true)
                       sk cache fin ft p_ans step)
                     l ms
                 in
-                Cflow.br depth ms p_ans cache modul_ ft _ff
+                Cflow.br depth ms p_ans cache modi ft _ff
             | Block (_bt, bbody) ->
                 let l =
                   Memories.Operand.Label
                     (Memories.Label.BlockLabel
                        { natcont = c2; brcont = c2; typ = _bt; cmd = [ c1 ] })
                 in
-                let ms' = Cflow.enter_label l ms modul_ in
+                let ms' = Cflow.enter_label l ms modi in
                 let a, c, g =
-                  fixpoint modul_
-                    ((ms', bbody), false)
-                    sk cache fin ft p_ans step
+                  fixpoint modi ((ms', bbody), false) sk cache fin ft p_ans step
                 in
                 (Cflow.block_result a [ c1 ], c, g)
             | Loop (_bt, lbody) ->
@@ -149,11 +147,9 @@ let rec step (modul_ : module_) call sk cache (fin : Int32.t) ft p_ans :
                          cmd = [ c1 ];
                        })
                 in
-                let ms' = Cflow.enter_label _lab ms modul_ in
+                let ms' = Cflow.enter_label _lab ms modi in
                 let a, c, g =
-                  fixpoint modul_
-                    ((ms', lbody), true)
-                    sk cache fin ft p_ans step
+                  fixpoint modi ((ms', lbody), true) sk cache fin ft p_ans step
                 in
                 (Cflow.block_result a [ c1 ], c, g)
             | If (_blocktype, _then, _else) ->
@@ -169,8 +165,7 @@ let rec step (modul_ : module_) call sk cache (fin : Int32.t) ft p_ans :
                 in
                 let ms_t, ms_f = Cflow.ite_condition ms in
                 let ms_t, ms_f =
-                  ( Cflow.enter_label l ms_t modul_,
-                    Cflow.enter_label l ms_f modul_ )
+                  (Cflow.enter_label l ms_t modi, Cflow.enter_label l ms_f modi)
                 in
                 let print_dom_ms (ms : MS.t) s =
                   match ms with
@@ -189,14 +184,14 @@ let rec step (modul_ : module_) call sk cache (fin : Int32.t) ft p_ans :
                 print_dom_ms ms_t "true";
                 print_dom_ms ms_f "false";
                 let a_true, c', _scgt =
-                  fixpoint modul_
+                  fixpoint modi
                     ((ms_t, _then), false)
                     sk cache fin ft p_ans step
                 in
                 let a_true = Cflow.block_result a_true [ c1 ] in
                 print_dom_ans a_true "\ntrue~~~~~";
                 let a_false, c'', _scgf =
-                  fixpoint modul_ ((ms_f, _else), false) sk c' fin ft p_ans step
+                  fixpoint modi ((ms_f, _else), false) sk c' fin ft p_ans step
                 in
                 let a_false = Cflow.block_result a_false [ c1 ] in
                 print_dom_ans a_false "false\n\n";
@@ -208,13 +203,13 @@ let rec step (modul_ : module_) call sk cache (fin : Int32.t) ft p_ans :
                 let depth = Int32.to_int _i.it in
                 let fixf l ms =
                   (fun (x : Memories.Label.labelcontent) ms ->
-                    fixpoint modul_
+                    fixpoint modi
                       ((ms, x.brcont), true)
                       sk cache fin ft p_ans step)
                     l ms
                 in
                 let _a_t, c', scg =
-                  Cflow.br depth ms_t p_ans cache modul_ ft fixf
+                  Cflow.br depth ms_t p_ans cache modi ft fixf
                 in
                 let ans =
                   match _a_t with
@@ -246,7 +241,7 @@ let rec step (modul_ : module_) call sk cache (fin : Int32.t) ft p_ans :
                 Printf.printf "CALL %i\n\n" (Int32.to_int _i.it);
                 cg := CallSet.union (CallSet.singleton (fin, _i.it)) !cg;
                 let fin' = _i.it in
-                let f = getfbody_wrapped modul_ (Int32.to_int _i.it) in
+                let f = getfbody_wrapped modi (Int32.to_int _i.it) in
                 let fres, cache', g =
                   match f with
                   | Memories.Instance.ImportedFunc term ->
@@ -254,7 +249,7 @@ let rec step (modul_ : module_) call sk cache (fin : Int32.t) ft p_ans :
                         Importspec.Helpers.getfuncspec term
                       in
                       (*call spec_eval.eval*)
-                      let _res, _cs = Spec_eval.eval term ms in
+                      let _res, _cs = Spec_eval.eval term ms modi in
                       (func_ans _res, cache, SCG.empty)
                   | Memories.Instance.Func f ->
                       let funbody, locs, typ_idx =
@@ -269,7 +264,7 @@ let rec step (modul_ : module_) call sk cache (fin : Int32.t) ft p_ans :
                             brcont = [];
                           }
                       in
-                      let typ_ = gettype modul_ (Int32.to_int typ_idx.it) in
+                      let typ_ = gettype modi (Int32.to_int typ_idx.it) in
                       let _ti, _to =
                         (*list * list*)
                         match typ_ with FuncType (_ti, _to) -> (_ti, _to)
@@ -279,11 +274,11 @@ let rec step (modul_ : module_) call sk cache (fin : Int32.t) ft p_ans :
                           MS.pop_n_operand (List.length _ti) ms )
                       in
                       let ms'' =
-                        Cflow.prep_call ms' _vals modul_ locs typ_idx.it
+                        Cflow.prep_call ms' _vals modi locs typ_idx.it
                           typ_idx (*flab*)
                       in
                       let ms''', c', g =
-                        fixpoint modul_
+                        fixpoint modi
                           ((ms'', funbody), true)
                           sk cache fin' (_ti, _to) p_ans step
                       in
@@ -292,7 +287,7 @@ let rec step (modul_ : module_) call sk cache (fin : Int32.t) ft p_ans :
                 (Cflow.call_answer p_ans fres, cache', g)
             | CallIndirect (_fsign, _table_idx) ->
                 let _ti, _to =
-                  match gettype modul_ (Int32.to_int _fsign.it) with
+                  match gettype modi (Int32.to_int _fsign.it) with
                   | FuncType (_ti, _to) -> (_ti, _to)
                 in
                 let expr_idx, ms' =
@@ -312,7 +307,7 @@ let rec step (modul_ : module_) call sk cache (fin : Int32.t) ft p_ans :
                   (fun x ->
                     cg := CallSet.union (CallSet.singleton (fin, x)) !cg)
                   _targets;
-                let typ_ = gettype modul_ (Int32.to_int _fsign.it) in
+                let typ_ = gettype modi (Int32.to_int _fsign.it) in
                 let _ti, _to =
                   (*list * list*)
                   match typ_ with FuncType (_ti, _to) -> (_ti, _to)
@@ -323,21 +318,20 @@ let rec step (modul_ : module_) call sk cache (fin : Int32.t) ft p_ans :
                 in
                 let funcs =
                   List.map
-                    (fun x -> (getfbody modul_ (Int32.to_int x), x))
+                    (fun x -> (getfbody modi (Int32.to_int x), x))
                     _targets
                 in
                 let _mses_prepped =
                   List.map
                     (fun ((_f, _locs, (typ_idx : Wasm.Ast.var)), _) ->
-                      Cflow.prep_call _ms'' _vals modul_ _locs typ_idx.it
-                        typ_idx)
+                      Cflow.prep_call _ms'' _vals modi _locs typ_idx.it typ_idx)
                     funcs
                 in
                 let computed, cache', scg =
                   List.fold_left2
                     (fun (a, c, g) m ((f, _, _), fin') ->
                       let a', c', g' =
-                        fixpoint modul_
+                        fixpoint modi
                           ((m, f), true)
                           sk c fin' (_ti, _to) p_ans step
                       in
@@ -354,7 +348,7 @@ let rec step (modul_ : module_) call sk cache (fin : Int32.t) ft p_ans :
                 (cmd_result (Ops.eval_testop t ms) p_ans, cache, SCG.empty)
             | RefFunc v ->
                 let intval = v.it in
-                let _, _, ftype = getfbody modul_ (Int32.to_int intval) in
+                let _, _, ftype = getfbody modi (Int32.to_int intval) in
                 let resex =
                   Memories.Operand.FuncRef
                     (Wasm.Types.FuncRefType, Some intval, Some ftype.it)
@@ -376,7 +370,7 @@ let rec step (modul_ : module_) call sk cache (fin : Int32.t) ft p_ans :
           in
           let res2, cache'', scg_t =
             Cflow.monad_step res1 cache' (fun x ->
-                fixpoint modul_
+                fixpoint modi
                   ((x.nat, c2), false)
                   sk cache' fin ft (pans_of_answer x) step)
           in

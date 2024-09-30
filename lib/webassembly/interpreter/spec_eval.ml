@@ -23,6 +23,28 @@ let eval_result (Result (t, v)) _ms =
   let v' = eval_val v _ms in
   Memories.Operand.Expression (v', t')
 
+let glob (_n : string) (t_par : wasmType) (_v : value) (_ms : MS.t)
+    (_modi : Memories.Instance.instance) =
+  let binding_type = Importspec.Wasmtypes.as_wasm_numeric t_par in
+  let (Program ispec) = _modi.importspecs in
+  let globs_indexed =
+    List.filter_map
+      (fun x -> match x with Glob (n, t, v) -> Some (n, t, v) | _ -> None)
+      ispec
+    |> List.mapi (fun i x -> (Int32.of_int i, x))
+  in
+  let idx =
+    List.find
+      (fun (_, (n, t, _)) -> if n = _n && t_par = t then true else false)
+      globs_indexed
+    |> fst
+  in
+  let binding : MS.VariableMem.binding = { i = idx; t = binding_type } in
+  Memories.Memorystate.assign_var _ms Glob binding
+    (eval_result (Result (t_par, _v)) _ms)
+
+let table _n _tt _tb _unsp _ms = _ms >>=? fun d -> return d
+
 let implies (i : Importspec.Term.implies) _ms =
   let _res, _ass, _calls = i in
   let _ = List.map (fun x -> eval_result x _ms) _res in
@@ -42,10 +64,7 @@ let rec implication (i : Importspec.Term.impl) (_ms : MS.t) =
       in
       (join_ms t' f', List.append _c_t _c_f)
 
-let glob _n _t _v _ms = _ms >>=? fun d -> return d
-let table _n _tt _tb _unsp _ms = _ms >>=? fun d -> return d
-
-let eval (p : Importspec.Term.term) _ms =
+let eval (p : Importspec.Term.term) _ms modi =
   let r, calls =
     match p with
     | Func (_name, _funsig, _impl) ->
@@ -54,7 +73,7 @@ let eval (p : Importspec.Term.term) _ms =
         in
         let _ms' = failwith "miao, i have to prepare!!!!" in
         implication _impl _ms
-    | Glob (_name, _typ_, _val_) -> (glob _name _typ_ _val_ _ms, [])
+    | Glob (_name, _typ_, _val_) -> (glob _name _typ_ _val_ _ms modi, [])
     | Table (_name, _ttyp, _tbinds, _unspec) ->
         (table _name _ttyp _tbinds _unspec _ms, [])
   in
