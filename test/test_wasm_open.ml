@@ -14,6 +14,7 @@ let%test "memory-init-offset-imported-global" =
   let%test "direct-call-imported-func" =
   Interpreter.Eval.cg := Fixpoint.Callgraph.CallGraph.phi;
   got (p "direct-call-imported-func") = [ (1, 0) ]
+  
 let t =
   [
     (*imports*)

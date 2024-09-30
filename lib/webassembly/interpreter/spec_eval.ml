@@ -45,22 +45,90 @@ let glob (_n : string) (t_par : wasmType) (_v : value) (_ms : MS.t)
 
 let table _n _tt _tb _unsp _ms = _ms >>=? fun d -> return d
 
-let implies (i : Importspec.Term.implies) _ms =
-  let _res, _ass, _calls = i in
-  let _ = List.map (fun x -> eval_result x _ms) _res in
-  (_ms, _calls)
+let implies (i : Importspec.Term.implies) ms =
+  let res, _ass, _calls = i in
+  let res_eval = List.map (fun x -> eval_result x ms) res in
+  let ms' = Memories.Memorystate.push_operand res_eval ms in
+  (ms', _calls)
 
-let when_ (_clause : precond list) _ms =
-  let ms_t, ms_f = (_ms, _ms) in
+let when_ (_clause : precond list) (ms_start : MS.ms t) =
+  ms_start >>=? fun d ->
+  let _clause_as_constr =
+    List.map (fun x -> Apron.Parser.tcons1_of_string d.var.ad.env x) _clause
+  in
+  let filter ad c = Memories.Variablemem.VariableMem.filter ad c in
+  let neg_filter ad c = filter ad (Apronext.Tconsext.neg c) in
+  let ms_t_vm =
+    List.fold_left (fun ad c -> filter ad c) d.var _clause_as_constr
+  in
+  let ms_f_vm =
+    List.fold_left (fun ad c -> neg_filter ad c) d.var _clause_as_constr
+  in
+  let ms_t = Memories.Memorystate.update_varmem ms_t_vm ms_start in
+  let ms_f = Memories.Memorystate.update_varmem ms_f_vm ms_start in
+
   (ms_t, ms_f)
 
-let rec implication (i : Importspec.Term.impl) (_ms : MS.t) args =
+let prep_call ms vals (locs : param list) (typ_ : param list * resulttype list)
+    =
+  (*rewrite for this case*)
+  let boh_locs (pars : param list) =
+    List.mapi (fun i (Param (_wt, n)) -> (i, n)) pars
+  in
+  let _locs_conv = boh_locs locs in
+  let boh (tin, tout) =
+    Wasm.Types.FuncType
+      ( List.map
+          (fun (Param (wt, _)) ->
+            Wasm.Types.NumType (Importspec.Wasmtypes.as_wasm_numeric wt))
+          tin,
+        List.map
+          (fun (ResultType wt) ->
+            Wasm.Types.NumType (Importspec.Wasmtypes.as_wasm_numeric wt))
+          tout )
+  in
+  let typ_conv = boh typ_ in
+  let ti, _to =
+    match typ_conv with Wasm.Types.FuncType (_ti, _to) -> (_ti, _to)
+  in
+  let bindings_input =
+    List.mapi
+      (fun i x : Memories.Variablemem.MapKey.t ->
+        {
+          i = Int32.of_int i;
+          t =
+            (match x with
+            | Wasm.Types.NumType t -> t
+            | _ -> failwith "call @ eval @ bindings_input");
+        })
+      ti
+  in
+  let bindings_map = List.combine locs bindings_input in
+  let ms' = MS.new_fun_ctx ms ti in
+  let ms'' =
+    List.fold_right2
+      (fun b v m -> MS.assign_var m Loc b v)
+      bindings_input vals ms'
+  in
+  (ms'', bindings_map)
+
+let rec implication (i : Importspec.Term.impl) (ms : MS.t)
+    (bindings : (param * MS.VariableMem.binding) list) =
   match i with
-  | Implies impl -> implies impl _ms
+  | Implies impl -> implies impl ms
   | Implication (clause, impl, else_) ->
-      let t, f = when_ clause _ms in
+      let massage_clause bindings c =
+        List.fold_left
+          (fun c (Param (_, p), b) ->
+            Str.global_replace (Str.regexp_string p)
+              (Apron.Var.to_string (MS.VariableMem.apronvar_of_binding b Loc))
+              c)
+          c bindings
+      in
+      let clause' = List.map (fun c -> massage_clause bindings c) clause in
+      let t, f = when_ clause' ms in
       let (t', _c_t), (f', _c_f) =
-        (implication (Implies impl) t args, implication else_ f args)
+        (implication (Implies impl) t bindings, implication else_ f bindings)
       in
       (join_ms t' f', List.append _c_t _c_f)
 
@@ -75,9 +143,10 @@ let eval (p : Importspec.Term.term) ms modi =
           ( Memories.Memorystate.peek_n_operand n ms,
             Memories.Memorystate.pop_n_operand n ms )
         in
-        let args' = List.map2 (fun x (Param (_, n)) -> (n, x)) args t_in in
-        (* bind args to ms? *)
-        implication impl ms' args'
+        (*let args' = List.map2 (fun x (Param (_, n)) -> (n, x)) args t_in in*)
+        let ms'', bindings_map = prep_call ms' args t_in (t_in, _tout) in
+        implication impl ms'' bindings_map 
+        (** after this I have to forget the ctx and go back to old one!!!!!! *)
     | Glob (_name, _typ_, _val_) -> (glob _name _typ_ _val_ ms modi, [])
     | Table (_name, _ttyp, _tbinds, _unspec) ->
         (table _name _ttyp _tbinds _unspec ms, [])
