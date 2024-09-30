@@ -1,9 +1,7 @@
-(test
+(library
  (name test_wassilly)
- (modes exe byte)
- (libraries
-  test_wasm
-  test_parser
-  interpreter
-  wassilly
-  ounit2))
+ (libraries test_wasm test_parser interpreter wassilly ounit2)
+ (inline_tests
+  (flags (-verbose)))
+ (preprocess
+  (pps ppx_inline_test)))

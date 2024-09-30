@@ -89,14 +89,6 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
                 (cmd_result ms' p_ans, cache, SCG.empty)
             | LocalGet _var ->
                 (*rewrite monadic*)
-                let () =
-                  match ms with
-                  | Bot -> failwith "lget bot"
-                  | Def d ->
-                      Printf.printf "LocalGel_bindings: %i"
-                        (Memories.Variablemem.VariableMem.M.bindings d.var.loc
-                        |> List.length)
-                in
                 let _b = MS.get_var_binding ms Loc _var.it in
                 let _ref = Memories.Operand.ref_of_binding _b Loc in
                 (cmd_result (Instructions.read ms _ref) p_ans, cache, SCG.empty)
@@ -238,7 +230,6 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
                   cache,
                   SCG.empty )
             | Call _i ->
-                Printf.printf "CALL %i\n\n" (Int32.to_int _i.it);
                 cg := CallSet.union (CallSet.singleton (fin, _i.it)) !cg;
                 let fin' = _i.it in
                 let f = getfbody_wrapped modi (Int32.to_int _i.it) in

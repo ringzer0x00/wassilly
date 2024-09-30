@@ -71,7 +71,7 @@ let eval (p : Importspec.Term.term) _ms modi =
         let _tin, _tout, _times_to_pop =
           match _funsig with FuncSig (p, r) -> (p, r, List.length p)
         in
-        let _ms' = failwith "miao, i have to prepare!!!!" in
+        let _ms' = assert false in
         implication _impl _ms
     | Glob (_name, _typ_, _val_) -> (glob _name _typ_ _val_ _ms modi, [])
     | Table (_name, _ttyp, _tbinds, _unspec) ->

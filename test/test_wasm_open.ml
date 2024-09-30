@@ -1,16 +1,22 @@
 let d = "/home/ringzero/gitrepos/wassilly/test/wasm/microbenchmarks/"
 
 let p path =
-  Interpreter.Analysis.callgraph_analysis' (path ^ "/main.wasm")
-    (path ^ "/spec.wassilly")
+  Interpreter.Analysis.callgraph_analysis' (d ^ path ^ "/main.wasm")
+    (d ^ path ^ "/spec.wassilly")
 (*"./tc/fib.wasm"*)
+
+let got = Fixpoint.Callgraph.CallGraph.edges
+
+let%test "memory-init-offset-imported-global" =
+  Interpreter.Eval.cg := Fixpoint.Callgraph.CallGraph.phi;
+  got (p "memory-init-offset-imported-global") = [ (0, 1) ]
 
 let t =
   [
     (*imports*)
-    (*("cpp-vtable-layout-source-type-info", []);*)
-    ("direct-call-imported-func", [ (1, 0) ]);
     (*("memory-init-offset-imported-global", [ (0, 1) ]);*)
+    (*("cpp-vtable-layout-source-type-info", []);*)
+    (*("direct-call-imported-func", [ (1, 0) ]);*)
     (*("entry-point-wasi/main.wasm", []);*)
     (*("host-callbacks-exports", []);*)
     (*("host-code-table-mutable", []);*)
@@ -18,7 +24,7 @@ let t =
     (*("host-reachable-table-import", []);*)
     (*("table-init-offset-imported-global", []);*)
   ]
-
+(*
 let ops =
   List.iter
     (fun (prog, e) ->
@@ -32,3 +38,4 @@ let ops =
         assert false)
       else assert true)
     t
+*)

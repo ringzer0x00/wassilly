@@ -10,7 +10,7 @@ let (fib, g), expected =
       "/home/ringzero/gitrepos/wassilly/test/wasm/microbenchmarks/indirect-call-index-expr-memory-mutable/main.wasm",
     [ (0, 1) ] )
 
-let _ = Fixpoint.Callgraph.CallGraph.print g
+(*let _ = Fixpoint.Callgraph.CallGraph.print g*)
 let e = Fixpoint.Callgraph.CallGraph.edges g
 let () = assert (e = expected)
 let fr = fib >>=? fun x -> x

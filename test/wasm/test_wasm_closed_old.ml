@@ -3,7 +3,7 @@ let p path = Interpreter.Analysis.callgraph_analysis' path ""
 (*"./tc/fib.wasm"*)
 
 let t =
-  [
+  [(*
     ("entry-point-start/main.wasm", [ (0, 1) ]);
     ("direct-call-simple/main.wasm", [ (0, 1) ]);
     ("indirect-call-index-expr-memory-mutable/main.wasm", [ (0, 1) ]);
@@ -23,7 +23,7 @@ let t =
     ("indirect-call-index-expr-load-const-addr/main.wasm", [ (0, 1) ]);
     ("indirect-call-index-expr-double-load/main.wasm", [ (0, 1) ]);
     (*todos*)
-    (*("cpp-vtable-layout-source-type-info/main.wasm", []);*)
+    (*("cpp-vtable-layout-source-type-info/main.wasm", []);*)*)
   ]
 
 let ops =

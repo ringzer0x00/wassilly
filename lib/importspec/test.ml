@@ -1,9 +1,9 @@
 open Main
 open Term
 
-let%test "empty_program" = parse_program "" = Program []
+let%test "IMPORTSPEC-empty_program" = parse_program "" = Program []
 
-let%test "globs" =
+let%test "IMPORTSPEC-globs" =
   parse_program "glob x i32 [0;0]\nglob y i32 [0;0]"
   = Program
       [
@@ -11,19 +11,17 @@ let%test "globs" =
         Glob ("y", I32Type, Num (I.of_int 0 0));
       ]
 
-let%test "table_unspec_spec" =
+let%test "IMPORTSPEC-table_unspec_spec" =
   parse_program "table x funcref [(1 -> 1);] unspec BOT"
   = Program
       [ Table ("x", Funcref, [ TableBinding (Int32.one, Int32.one) ], Bot) ]
 
-(*  | Table of string * tabType * tableBinding list * unspec
-*)
-let%test "table_unspec_unspec" =
+let%test "IMPORTSPEC-table_unspec_unspec" =
   parse_program "table x funcref [(1 -> 1);]"
   = Program
       [ Table ("x", Funcref, [ TableBinding (Int32.one, Int32.one) ], Top) ]
 
-let%test "table_binding_seq" =
+let%test "IMPORTSPEC-table_binding_seq" =
   parse_program "table x funcref [(1 -> 1); (12 -> 2);]"
   = Program
       [
@@ -37,7 +35,7 @@ let%test "table_binding_seq" =
             Top );
       ]
 
-let%test "fib_loose" =
+let%test "IMPORTSPEC-fib_loose" =
   parse_program "func fib ([param i32 x] -> [i32]) i32 [0;PINF] calls fib"
   = Program
       [
@@ -54,7 +52,7 @@ let%test "fib_loose" =
                 [ Calls "fib" ] ) );
       ]
 
-let%test "fib_precise" =
+let%test "IMPORTSPEC-fib_precise" =
   parse_program
     "func fib ([param i32 x] -> [i32]) when x=0 => { i32 [0;0] } else { when \
      x=1 => { i32 [1;1] } else { i32 [1;PINF] calls fib } }"
@@ -81,7 +79,7 @@ let%test "fib_precise" =
                         [ Calls "fib" ] ) ) ) );
       ]
 
-let%test "side" =
+let%test "IMPORTSPEC-side" =
   parse_program "func mut ([] -> []) effect glob x i32 [1;1]"
   = Program
       [

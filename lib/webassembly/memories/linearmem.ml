@@ -39,9 +39,7 @@ let write_to_mem b o m =
 let join (lm1 : t) (lm2 : t) : t =
   Array.map2 (fun fst snd -> AByte.join fst snd) lm1 lm2
 
-let widen =
-  Printf.printf "WARNING: LINEAR MEMORY IS NOT WIDENING\n";
-  join
+let widen = join
 
 let leq (lm1 : t) (lm2 : t) =
   Array.for_all2 (fun fst snd -> AByte.byte_leq fst snd) lm1 lm2
