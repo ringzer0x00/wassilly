@@ -36,7 +36,7 @@ let%test "IMPORTSPEC-table_binding_seq" =
       ]
 
 let%test "IMPORTSPEC-fib_loose" =
-  parse_program "func fib ([param i32 x] -> [i32]) i32 [0;PINF] calls fib"
+  parse_program "func fib ([param i32 x] -> [i32]) i32 [0;PINF] calls 0"
   = Program
       [
         Func
@@ -49,13 +49,13 @@ let%test "IMPORTSPEC-fib_loose" =
                       Num (I.of_scalar (I.int_scalar 0) (I.inf_scalar 1)) );
                 ],
                 [],
-                [ Calls "fib" ] ) );
+                [ Calls (Int32.of_int 0) ] ) );
       ]
 
 let%test "IMPORTSPEC-fib_precise" =
   parse_program
     "func fib ([param i32 x] -> [i32]) when x=0 => { i32 [0;0] } else { when \
-     x=1 => { i32 [1;1] } else { i32 [1;PINF] calls fib } }"
+     x=1 => { i32 [1;1] } else { i32 [1;PINF] calls 0 } }"
   = Program
       [
         Func
@@ -76,7 +76,7 @@ let%test "IMPORTSPEC-fib_precise" =
                             );
                         ],
                         [],
-                        [ Calls "fib" ] ) ) ) );
+                        [ Calls (Int32.of_int 0) ] ) ) ) );
       ]
 
 let%test "IMPORTSPEC-side" =

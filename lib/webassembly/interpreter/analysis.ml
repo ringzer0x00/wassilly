@@ -124,7 +124,7 @@ let callgraph_analysis' fn _spec_path =
       let _ =
         Eval.fixpoint minst
           ((call_ms, fb), true)
-          Eval.Stack.empty Eval.Cache.empty (List.hd entrypoints).it
+          Eval.Stack.empty Eval.Cache.empty y.it
           (t_in, _t_out) Eval.MA.bot_pa Eval.step
       in
       Fixpoint.Callgraph.CallGraph.union cg !Eval.cg)

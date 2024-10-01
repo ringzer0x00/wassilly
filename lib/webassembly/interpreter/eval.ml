@@ -241,6 +241,11 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
                       in
                       (*call spec_eval.eval*)
                       let _res, _cs = Spec_eval.eval term ms modi in
+                      let called_idxex =
+                        List.map (fun (Importspec.Term.Calls x) -> (_i.it, x)) _cs
+                        |> CallSet.of_list
+                      in
+                      cg := CallSet.union called_idxex !cg;
                       (func_ans _res, cache, SCG.empty)
                   | Memories.Instance.Func f ->
                       let funbody, locs, typ_idx =

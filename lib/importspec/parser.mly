@@ -113,7 +113,7 @@ let assignment := | EFFECT; GLOB; x=INT_LIT; t=wasmvaluetype; v=value; {GlobAss 
                   | EFFECT; MEM; m=ID; fr=INT32_LIT; to_=INT32_LIT; s=INT_LIT; v=value; t=wasmvaluetype; {MemAss (m,fr,to_,s,v,t)}
                   | EFFECT; TABLE; x=ID; b=tablebinding; {TableAss(x,b)}
 
-let call := | CALL; x=ID; {Calls x}
+let call := | CALL; x=INT_LIT; {Calls (Int32.of_int x)}
 
 let postcondition :=
   | r=typedresult*; a=assignment*; c=call*; { r, a, c }

@@ -92,7 +92,10 @@ let init_tab (mod_ : modinst) pre elems _tabs : Eval.MS.t =
                 (pre >>=? fun m -> m.var.ad)
                 ex
               |> Apronext.Intervalext.to_float |> fst |> Float.to_int
-          | _ -> failwith "errore in init"
+          | GVarRef _ as o ->
+              Memories.Memorystate.operand_as_interval o d.return
+              |> Apronext.Intervalext.to_float |> fst |> Float.to_int
+          | _ -> failwith "errore in init offset @ tables"
         in
         let init_mapped =
           List.mapi (fun i e -> (Int32.of_int (i + _extr_offset_int), e)) _einit

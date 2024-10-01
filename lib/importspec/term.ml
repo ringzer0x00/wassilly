@@ -18,7 +18,7 @@ and param = Param of wasmType * string
 and resulttype = ResultType of wasmType
 and result = Result of wasmType * value
 and funcsig = FuncSig of param list * resulttype list
-and callee = Calls of string
+and callee = Calls of int32
 and precond = string
 
 and assignment =

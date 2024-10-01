@@ -15,18 +15,21 @@ let%test "memory-init-offset-imported-global" =
 let%test "direct-call-imported-func" =
   Interpreter.Eval.cg := Fixpoint.Callgraph.CallGraph.phi;
   got (p "direct-call-imported-func") = [ (1, 0) ]
-(*
-let%test "MATTIA-indirect-call-imported-mutated-global" =
+
+let%test "table-init-offset-imported-global" =
   Interpreter.Eval.cg := Fixpoint.Callgraph.CallGraph.phi;
-  let g = p "MATTIA-indirect-call-imported-mutated-global" in
-  Fixpoint.Callgraph.CallGraph.print g;
-  got g = [ (1, 0); (1, 2) ]*)
+  got (p "table-init-offset-imported-global") = [ (0, 1) ]
+
+let%test "host-callbacks-exports" =
+  Interpreter.Eval.cg := Fixpoint.Callgraph.CallGraph.phi;
+  got (p "host-callbacks-exports") = [ (0, 2); (1, 0); (2, 4); (3, 5) ]
+
+let%test "host-reachable-table-export" =
+  Interpreter.Eval.cg := Fixpoint.Callgraph.CallGraph.phi;
+  got (p "host-reachable-table-export") = [ (0, 2); (1, 0); ]
 
 let t =
   [ (*imports*)
-    (*("", [ (1, 0) ]);*)
-    (*("host-callbacks-exports", []);*)
     (*("host-code-table-mutable", []);*)
-    (*("host-reachable-table-export", []);*)
     (*("host-reachable-table-import", []);*)
     (*("table-init-offset-imported-global", []);*) ]
