@@ -7,7 +7,15 @@ let apron_expr_parse (m : MS.ms) e =
 
 let join_ms = Memories.Memorystate.join
 
-let eval_val (v : value) (ms : MS.t) =
+let eval_val (v : value) (ms : MS.t) loc_bindings =
+  let massage_value bindings c =
+    List.fold_left
+      (fun c (Param (_, p), b) ->
+        Str.global_replace (Str.regexp_string p)
+          (Apron.Var.to_string (MS.VariableMem.apronvar_of_binding b Loc))
+          c)
+      c bindings
+  in
   Printf.printf "eval_val";
   ms >>=? fun def ->
   let interval =
@@ -19,16 +27,16 @@ let eval_val (v : value) (ms : MS.t) =
         i
     | Rel exp ->
         Printf.printf "(VAL)EXP:";
-        (*ERROR: I DEFINITELY NEED TO MASSAGE THIS TOO!*)
+        let exp = massage_value loc_bindings exp in
         print_string ("------\n" ^ exp ^ ":%s\n\n----");
         let e = apron_expr_parse def exp in
         MS.concretize_expr e ms
   in
   Memories.Operand.const_expr def.var interval
 
-let eval_result (Result (t, v)) _ms =
+let eval_result (Result (t, v)) _ms loc_bindings =
   let t' = Importspec.Wasmtypes.as_wasm_numeric t in
-  let v' = eval_val v _ms in
+  let v' = eval_val v _ms loc_bindings in
   Memories.Operand.Expression (v', t')
 
 let glob (_n : string) (t_par : wasmType) (_v : value) (_ms : MS.t)
@@ -49,13 +57,13 @@ let glob (_n : string) (t_par : wasmType) (_v : value) (_ms : MS.t)
   in
   let binding : MS.VariableMem.binding = { i = idx; t = binding_type } in
   Memories.Memorystate.assign_var _ms Glob binding
-    (eval_result (Result (t_par, _v)) _ms)
+    (eval_result (Result (t_par, _v)) _ms [])
 
 let table _n _tt _tb _unsp _ms = _ms >>=? fun d -> return d
 
 let global_assignment (idx_ass, _wasmtype, (_value : value)) ms
     (_local_bindings : (param * MS.VariableMem.binding) list) =
-  let op = eval_result (Result (_wasmtype, _value)) ms in
+  let op = eval_result (Result (_wasmtype, _value)) ms _local_bindings in
   let binding : Memories.Variablemem.MapKey.t =
     { i = idx_ass; t = Importspec.Wasmtypes.as_wasm_numeric _wasmtype }
   in
@@ -79,7 +87,7 @@ let implies (i : Importspec.Term.implies) ms bindings =
             m)
       ms _ass
   in
-  let res_eval = List.map (fun x -> eval_result x ms') res in
+  let res_eval = List.map (fun x -> eval_result x ms' bindings) res in
   let ms'' = Memories.Memorystate.push_operand res_eval ms' in
   (ms'', calls)
 
