@@ -20,16 +20,9 @@ let eval_val (v : value) (ms : MS.t) loc_bindings =
   ms >>=? fun def ->
   let interval =
     match v with
-    | Num i ->
-        Printf.printf "(VAL)NUM:";
-        Apron.Interval.print Format.std_formatter i;
-        Format.print_string "intervalend \n";
-        i
+    | Num i -> i
     | Rel exp ->
-        Printf.printf "(VAL)EXP:";
-        let exp = massage_value loc_bindings exp in
-        print_string ("------\n" ^ exp ^ ":%s\n\n----");
-        let e = apron_expr_parse def exp in
+        let e = apron_expr_parse def (massage_value loc_bindings exp) in
         MS.concretize_expr e ms
   in
   Memories.Operand.const_expr def.var interval
@@ -76,9 +69,7 @@ let implies (i : Importspec.Term.implies) ms bindings =
     List.fold_left
       (fun m a ->
         match a with
-        | GlobAss (n, t, v) ->
-            Printf.printf "GLOB NOT WORKING @ implies";
-            global_assignment (n, t, v) ms bindings
+        | GlobAss (n, t, v) -> global_assignment (n, t, v) ms bindings
         | MemAss (_, _, _, _, _, _) ->
             Printf.printf "MEM NOT WORKING @ implies";
             m
@@ -154,7 +145,6 @@ let prep_call ms vals (locs : param list) (typ_ : param list * resulttype list)
 
 let rec implication (i : Importspec.Term.impl) (ms : MS.t)
     (bindings : (param * MS.VariableMem.binding) list) =
-  Printf.printf "\nIMPLICATION\n\n";
   match i with
   | Implies impl -> implies impl ms bindings
   | Implication (clause, impl, else_) ->

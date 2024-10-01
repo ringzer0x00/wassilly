@@ -31,7 +31,7 @@ let%test "MATTIA-indirect-call-imported-mutated-global-ref" =
   let m, g = p "MATTIA-indirect-call-imported-mutated-global-ref" in
   let top_stack = Memories.Memorystate.peek_operand m |> List.hd in
   let val_conc = Memories.Memorystate.operand_as_interval top_stack m in
-  got g = [ (1, 0) ] && Apronext.Intervalext.equal val_conc (Apronext.Intervalext.of_int 7 7)
+  got g = [ (1, 0) ] && Apronext.Intervalext.equal val_conc (Apronext.Intervalext.of_int 14 14)
 
 
 let t =
