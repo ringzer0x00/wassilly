@@ -1,17 +1,18 @@
 
 (module
     (import "host" "mutate" (func $mutate (param i32)))
-    (import "host" "pippo" (global $pippo i32))
-    (func $main (export "main")
-        i32.const 1337
-        i32.load
-        call_indirect (param) (result)
+    (global $pippo i32 (i32.const 0))    
+    (export "pippo" (global $pippo))
+    (func $main (export "main") (result i32)
+        i32.const 7
+        call $mutate
+        global.get $pippo
     )
-    (func $a
+    (func $a (param i32)
         ;; i32.const 23
         ;; call $print
     )
-    (func $not-reachable
+    (func $not-reachable (param i32)
         ;; i32.const 42
         ;; call $print
     )

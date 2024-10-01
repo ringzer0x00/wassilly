@@ -1,7 +1,8 @@
 let d = "/home/ringzero/gitrepos/wassilly/test/wasm/microbenchmarks/"
 
 let p path =
-  Interpreter.Analysis.callgraph_analysis' (d ^ path ^ "/main.wasm")
+  Interpreter.Analysis.callgraph_analysis'
+    (d ^ path ^ "/main.wasm")
     (d ^ path ^ "/spec.wassilly")
 (*"./tc/fib.wasm"*)
 
@@ -11,17 +12,21 @@ let%test "memory-init-offset-imported-global" =
   Interpreter.Eval.cg := Fixpoint.Callgraph.CallGraph.phi;
   got (p "memory-init-offset-imported-global") = [ (0, 1) ]
 
-  let%test "direct-call-imported-func" =
+let%test "direct-call-imported-func" =
   Interpreter.Eval.cg := Fixpoint.Callgraph.CallGraph.phi;
   got (p "direct-call-imported-func") = [ (1, 0) ]
-  
+(*
+let%test "MATTIA-indirect-call-imported-mutated-global" =
+  Interpreter.Eval.cg := Fixpoint.Callgraph.CallGraph.phi;
+  let g = p "MATTIA-indirect-call-imported-mutated-global" in
+  Fixpoint.Callgraph.CallGraph.print g;
+  got g = [ (1, 0); (1, 2) ]*)
+
 let t =
-  [
-    (*imports*)
+  [ (*imports*)
     (*("", [ (1, 0) ]);*)
     (*("host-callbacks-exports", []);*)
     (*("host-code-table-mutable", []);*)
     (*("host-reachable-table-export", []);*)
     (*("host-reachable-table-import", []);*)
-    (*("table-init-offset-imported-global", []);*)
-  ]
+    (*("table-init-offset-imported-global", []);*) ]

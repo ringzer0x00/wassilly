@@ -13,6 +13,8 @@ let eval_val (v : value) (ms : MS.t) =
     match v with
     | Num i -> i
     | Rel exp ->
+        (*ERROR: I THINK I NEED TO MASSAGE THIS TOO!*)
+        print_string ("------\n" ^ exp ^ ":%s\n\n----");
         let e = apron_expr_parse def exp in
         MS.concretize_expr e ms
   in
@@ -45,11 +47,36 @@ let glob (_n : string) (t_par : wasmType) (_v : value) (_ms : MS.t)
 
 let table _n _tt _tb _unsp _ms = _ms >>=? fun d -> return d
 
-let implies (i : Importspec.Term.implies) ms =
+let global_assignment (_name_to_ass, _wasmtype, (_value : value)) ms
+    (local_bindings : (param * MS.VariableMem.binding) list) =
+  let _, binding =
+    List.find (fun (Param (_wt, n), _) -> n = _name_to_ass) local_bindings
+  in
+  let op = eval_result (Result (_wasmtype, _value)) ms in
+  let ms' = Memories.Memorystate.assign_var ms Loc binding op in
+  ms'
+
+let implies (i : Importspec.Term.implies) ms bindings =
   let res, _ass, _calls = i in
   let res_eval = List.map (fun x -> eval_result x ms) res in
-  let ms' = Memories.Memorystate.push_operand res_eval ms in
-  (ms', _calls)
+  let ms' =
+    List.fold_left
+      (fun m a ->
+        match a with
+        | GlobAss (n, t, v) ->
+            Printf.printf "GLOB NOT WORKING @ implies";
+            global_assignment (n, t, v) ms bindings
+        | MemAss (_, _, _, _, _, _) ->
+            Printf.printf "MEM NOT WORKING @ implies";
+            m
+        | TableAss (_, _) ->
+            Printf.printf "TABLE NOT WORKING @ implies";
+            m)
+      ms _ass
+  in
+  (*ERRORE: eval assignments too cane di merda *)
+  let ms'' = Memories.Memorystate.push_operand res_eval ms' in
+  (ms'', _calls)
 
 let when_ (_clause : precond list) (ms_start : MS.ms t) =
   ms_start >>=? fun d ->
@@ -114,8 +141,9 @@ let prep_call ms vals (locs : param list) (typ_ : param list * resulttype list)
 
 let rec implication (i : Importspec.Term.impl) (ms : MS.t)
     (bindings : (param * MS.VariableMem.binding) list) =
+  Printf.printf "\nIMPLICATION\n\n";
   match i with
-  | Implies impl -> implies impl ms
+  | Implies impl -> implies impl ms bindings
   | Implication (clause, impl, else_) ->
       let massage_clause bindings c =
         List.fold_left
@@ -145,9 +173,9 @@ let eval (p : Importspec.Term.term) ms modi =
         in
         (*let args' = List.map2 (fun x (Param (_, n)) -> (n, x)) args t_in in*)
         let ms'', bindings_map = prep_call ms' args t_in (t_in, _tout) in
-        implication impl ms'' bindings_map 
-        (** after this I have to forget the ctx and go back to old one!!!!!! *)
-    | Glob (_name, _typ_, _val_) -> (glob _name _typ_ _val_ ms modi, [])
+        implication impl ms'' bindings_map
+        (* after this I have to forget the ctx and go back to old one!!!!!! *)
+    | Glob (name, typ_, val_) -> (glob name typ_ val_ ms modi, [])
     | Table (_name, _ttyp, _tbinds, _unspec) ->
         (table _name _ttyp _tbinds _unspec ms, [])
   in
