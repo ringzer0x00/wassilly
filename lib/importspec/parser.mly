@@ -109,7 +109,7 @@ let scalarparse :=
 let typedresult :=
   | t=wasmvaluetype; v=value; { Result (t, v) } 
 
-let assignment := | EFFECT; GLOB; x=ID; t=wasmvaluetype; v=value; {GlobAss (x,t,v)} 
+let assignment := | EFFECT; GLOB; x=INT_LIT; t=wasmvaluetype; v=value; {GlobAss ((Int32.of_int x),t,v)} 
                   | EFFECT; MEM; m=ID; fr=INT32_LIT; to_=INT32_LIT; s=INT_LIT; v=value; t=wasmvaluetype; {MemAss (m,fr,to_,s,v,t)}
                   | EFFECT; TABLE; x=ID; b=tablebinding; {TableAss(x,b)}
 

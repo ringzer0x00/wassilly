@@ -80,11 +80,11 @@ let%test "IMPORTSPEC-fib_precise" =
       ]
 
 let%test "IMPORTSPEC-side" =
-  parse_program "func mut ([] -> []) effect glob x i32 [1;1]"
+  parse_program "func mut ([] -> []) effect glob 0 i32 [1;1]"
   = Program
       [
         Func
           ( "mut",
             FuncSig ([], []),
-            Implies ([], [ GlobAss ("x", I32Type, Num (I.of_int 1 1)) ], []) );
+            Implies ([], [ GlobAss ((Int32.of_int 0), I32Type, Num (I.of_int 1 1)) ], []) );
       ]

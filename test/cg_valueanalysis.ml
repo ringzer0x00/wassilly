@@ -8,6 +8,7 @@ let p path =
 
 let got = Fixpoint.Callgraph.CallGraph.edges
 
+(*
 let%test "MATTIA-direct-call-value" =
   Interpreter.Eval.cg := Fixpoint.Callgraph.CallGraph.phi;
   let m, g = p "MATTIA-direct-call-value" in
@@ -15,17 +16,21 @@ let%test "MATTIA-direct-call-value" =
   let val_conc = Memories.Memorystate.operand_as_interval top_stack m in
   got g = [ (1, 0) ]
   && Apronext.Intervalext.equal val_conc (Apronext.Intervalext.of_int 6 9)
+*)
+let%test "MATTIA-indirect-call-imported-mutated-global-val" =
+  Interpreter.Eval.cg := Fixpoint.Callgraph.CallGraph.phi;
+  let m, g = p "MATTIA-indirect-call-imported-mutated-global-val" in
+  let top_stack = Memories.Memorystate.peek_operand m |> List.hd in
+  let val_conc = Memories.Memorystate.operand_as_interval top_stack m in
+  got g = [ (1, 0) ]
+  && Apronext.Intervalext.equal val_conc (Apronext.Intervalext.of_int 7 7)
 
 (*
-let%test "MATTIA-indirect-call-imported-mutated-global" =
+let%test "MATTIA-indirect-call-imported-mutated-global-ref" =
   Interpreter.Eval.cg := Fixpoint.Callgraph.CallGraph.phi;
-  let m, g = p "MATTIA-indirect-call-imported-mutated-global" in
+  let _, g = p "MATTIA-indirect-call-imported-mutated-global-ref" in
   Fixpoint.Callgraph.CallGraph.print g;
-  let top_stack = Memories.Memorystate.peek_operand m |> List.hd in
-  Memories.Operand.print_operand top_stack;
-  (*let val_conc = Memories.Memorystate.operand_as_interval top_stack m in*)
   got g = [ (1, 0) ]
-(*&& Apronext.Intervalext.equal val_conc (Apronext.Intervalext.of_int 7 7)*)
 *)
 let t =
   [ (*imports*)

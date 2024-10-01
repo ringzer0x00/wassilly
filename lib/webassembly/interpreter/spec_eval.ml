@@ -8,12 +8,18 @@ let apron_expr_parse (m : MS.ms) e =
 let join_ms = Memories.Memorystate.join
 
 let eval_val (v : value) (ms : MS.t) =
+  Printf.printf "eval_val";
   ms >>=? fun def ->
   let interval =
     match v with
-    | Num i -> i
+    | Num i ->
+        Printf.printf "(VAL)NUM:";
+        Apron.Interval.print Format.std_formatter i;
+        Format.print_string "intervalend \n";
+        i
     | Rel exp ->
-        (*ERROR: I THINK I NEED TO MASSAGE THIS TOO!*)
+        Printf.printf "(VAL)EXP:";
+        (*ERROR: I DEFINITELY NEED TO MASSAGE THIS TOO!*)
         print_string ("------\n" ^ exp ^ ":%s\n\n----");
         let e = apron_expr_parse def exp in
         MS.concretize_expr e ms
@@ -47,18 +53,17 @@ let glob (_n : string) (t_par : wasmType) (_v : value) (_ms : MS.t)
 
 let table _n _tt _tb _unsp _ms = _ms >>=? fun d -> return d
 
-let global_assignment (_name_to_ass, _wasmtype, (_value : value)) ms
-    (local_bindings : (param * MS.VariableMem.binding) list) =
-  let _, binding =
-    List.find (fun (Param (_wt, n), _) -> n = _name_to_ass) local_bindings
-  in
+let global_assignment (idx_ass, _wasmtype, (_value : value)) ms
+    (_local_bindings : (param * MS.VariableMem.binding) list) =
   let op = eval_result (Result (_wasmtype, _value)) ms in
-  let ms' = Memories.Memorystate.assign_var ms Loc binding op in
+  let binding : Memories.Variablemem.MapKey.t =
+    { i = idx_ass; t = Importspec.Wasmtypes.as_wasm_numeric _wasmtype }
+  in
+  let ms' = Memories.Memorystate.assign_var ms Glob binding op in
   ms'
 
 let implies (i : Importspec.Term.implies) ms bindings =
-  let res, _ass, _calls = i in
-  let res_eval = List.map (fun x -> eval_result x ms) res in
+  let res, _ass, calls = i in
   let ms' =
     List.fold_left
       (fun m a ->
@@ -74,9 +79,9 @@ let implies (i : Importspec.Term.implies) ms bindings =
             m)
       ms _ass
   in
-  (*ERRORE: eval assignments too cane di merda *)
+  let res_eval = List.map (fun x -> eval_result x ms') res in
   let ms'' = Memories.Memorystate.push_operand res_eval ms' in
-  (ms'', _calls)
+  (ms'', calls)
 
 let when_ (_clause : precond list) (ms_start : MS.ms t) =
   ms_start >>=? fun d ->
@@ -103,7 +108,7 @@ let prep_call ms vals (locs : param list) (typ_ : param list * resulttype list)
     List.mapi (fun i (Param (_wt, n)) -> (i, n)) pars
   in
   let _locs_conv = boh_locs locs in
-  let boh (tin, tout) =
+  let maketype (tin, tout) =
     Wasm.Types.FuncType
       ( List.map
           (fun (Param (wt, _)) ->
@@ -114,7 +119,7 @@ let prep_call ms vals (locs : param list) (typ_ : param list * resulttype list)
             Wasm.Types.NumType (Importspec.Wasmtypes.as_wasm_numeric wt))
           tout )
   in
-  let typ_conv = boh typ_ in
+  let typ_conv = maketype typ_ in
   let ti, _to =
     match typ_conv with Wasm.Types.FuncType (_ti, _to) -> (_ti, _to)
   in
@@ -180,6 +185,6 @@ let eval (p : Importspec.Term.term) ms modi =
         (table _name _ttyp _tbinds _unspec ms, [])
   in
   match r with
-  | Def _ -> (Def { nat = Bot; br = bot_pa.p_br; return = r }, calls)
+  | Def _ -> (Def { nat = r; br = bot_pa.p_br; return = r }, calls)
   | Bot -> failwith "undef imported func!!!!"
 (*return { p_br = ans_bot.p_br; p_return = ms }*)

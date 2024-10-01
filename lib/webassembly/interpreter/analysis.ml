@@ -79,10 +79,11 @@ let value_and_callgraph fn _spec_path =
           Eval.Stack.empty Eval.Cache.empty (List.hd entrypoints).it
           (t_in, _t_out) Eval.MA.bot_pa Eval.step
       in
+      (*
       let ar =
         Eval.MS.func_res (Eval.func_ans ar) call_ms (List.length _t_out)
-      in
-      (ar, !Eval.cg)
+      in*)
+      (Eval.func_ans ar, !Eval.cg)
 
 let callgraph_analysis' fn _spec_path =
   let mod_ = load_mod fn in

@@ -1,0 +1,1 @@
+func mutate ([param i32 x] -> []) effect glob 0 i32 [7;7]

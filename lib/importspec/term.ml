@@ -22,7 +22,7 @@ and callee = Calls of string
 and precond = string
 
 and assignment =
-  | GlobAss of string * wasmType * value
+  | GlobAss of int32 * wasmType * value
   | MemAss of
       string
       * int32
