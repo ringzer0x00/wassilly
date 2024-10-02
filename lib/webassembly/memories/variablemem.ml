@@ -33,8 +33,8 @@ module VariableMem = struct
 
   let find_in_map vm k gl =
     match gl with
-    | Glob -> Printf.printf "FIND @ GLOB\n";M.filter (fun x _ -> x.i = k) vm.glob
-    | Loc -> Printf.printf "FIND @ Loc\n";M.filter (fun x _ -> x.i = k) vm.loc
+    | Glob -> M.filter (fun x _ -> x.i = k) vm.glob
+    | Loc -> M.filter (fun x _ -> x.i = k) vm.loc
 
   let apronvar_of_binding (b : binding) gl : AD.var =
     let aux (b : binding) pre =
@@ -82,7 +82,7 @@ module VariableMem = struct
 
   let lookup { loc : apronvar M.t; glob : apronvar M.t; ad : aprondomain }
       (b : binding) gl : Apronext.Intervalext.t =
-      ignore(glob);
+    ignore glob;
     (*raw interval, would returning ref would be appropriate?*)
     let aux b ma =
       let v = M.find_opt b ma in
@@ -138,7 +138,6 @@ module VariableMem = struct
           | _ -> failwith "cannot do other shiiiit")
         locs_new
     in
-    let () = Printf.printf "@new_ binds: %i\n" (List.length loc_binds) in
     let loc'_int, loc'_real = extract_typed_env_vars loc_binds in
     let glob_int, glob_real = extract_typed_env_vars globs in
     let intvars, realvars =

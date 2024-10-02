@@ -26,12 +26,6 @@ let internal_write_byte_weak b o m =
 
 let strong_write_to_mem b o m =
   let mapped = Array.mapi (fun i x -> (x, i + o)) b in
-  Array.iter
-    (fun (_b, _a) ->
-      Printf.printf "WRITING:";
-      AByte.print_byte _b;
-      Printf.printf "@ %i" _a)
-    mapped;
   Array.fold_left
     (fun mem (byte, offs) -> internal_write_byte_raw byte offs mem)
     m mapped
@@ -45,9 +39,7 @@ let write_to_mem b o m =
 let join (lm1 : t) (lm2 : t) : t =
   Array.map2 (fun fst snd -> AByte.join fst snd) lm1 lm2
 
-let widen =
-  Printf.printf "WARNING: LINEAR MEMORY IS NOT WIDENING\n";
-  join
+let widen = join
 
 let leq (lm1 : t) (lm2 : t) =
   Array.for_all2 (fun fst snd -> AByte.byte_leq fst snd) lm1 lm2

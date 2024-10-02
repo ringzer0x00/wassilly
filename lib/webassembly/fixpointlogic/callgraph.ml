@@ -61,9 +61,13 @@ module CallGraph = struct
         Printf.printf "%s -> %s\n" (Int32.to_string f) (Int32.to_string t))
       g;
     Printf.printf "]\n"
-end
 
-let find_fidx_from_instr (mod_ : Wasm.Ast.module_) (i : Wasm.Ast.instr) =
+  let edges g =
+    S.to_seq g |> List.of_seq
+    |> List.map (fun (x, y) -> (Int32.to_int x, Int32.to_int y))
+end
+(*
+let find_fidx_from_instr (mod_ : Instance.module_) (i : Wasm.Ast.instr) =
   let fs =
     mod_.it.funcs
     |> List.mapi (fun i (x : Wasm.Ast.func) -> (Int32.of_int i, x.it.body))
@@ -79,3 +83,4 @@ let cs_to_cg (cs : CallSet.t) mod_ =
     (fun (x, y) -> (find_fidx_from_instr mod_ x, y))
     (CallSet.S.elements cs)
   |> CallGraph.of_list
+*)

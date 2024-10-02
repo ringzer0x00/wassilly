@@ -1,8 +1,7 @@
-(test
- (name test_chaotic_implicitgraph)
- (modes exe byte)
- (libraries
-  test_wasm
-  interpreter
-  chaotic_implicitgraph
-  ounit2))
+(library
+ (name test_wassilly)
+ (libraries interpreter wassilly ounit2)
+ (inline_tests
+  (flags (-verbose)))
+ (preprocess
+  (pps ppx_inline_test)))

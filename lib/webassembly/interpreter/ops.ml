@@ -29,6 +29,7 @@ let eval_cvtop (op : Wasm.Ast.cvtop) ms =
       Alu.float_cvtop floatop ms
 
 let eval_loadop ({ ty; align; offset; pack } : Wasm.Ast.loadop) _ms =
+  ignore align;
   let _ =
     (*suuport 1 memory, no pack!*)
     assert (Int32.equal Int32.zero offset);
@@ -38,7 +39,6 @@ let eval_loadop ({ ty; align; offset; pack } : Wasm.Ast.loadop) _ms =
       type extension = SX | ZX*)
   in
 
-  Printf.printf "align?:%i\n" align;
   (* align = 0,1,2,3 for load_8, load_16,load_32, load_64*)
   (* offset is the memory index *)
   match ty with
@@ -52,8 +52,7 @@ let eval_storeop ({ ty; align; offset; pack } : Wasm.Ast.storeop) _ms =
     assert (Int32.equal Int32.zero offset);
     match pack with None -> assert true | Some _psize -> assert false
   in
-
-  Printf.printf "align?:%i , offset?:%i\n" align (Int32.to_int offset);
+  ignore align;
   match ty with
   | Wasm.Types.I32Type -> Instructions.store_i32 _ms
   | Wasm.Types.I64Type -> failwith "store i64"

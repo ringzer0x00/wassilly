@@ -1,3 +1,3 @@
 (library
  (name memories)
- (libraries datastructures apronext wasm language))
+ (libraries datastructures apronext wasm language importspec))

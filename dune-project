@@ -1,22 +1,22 @@
 (lang dune 3.12)
-
-(name chaotic_implicitgraph)
+(using menhir 2.1)
+(name wassilly)
 
 (generate_opam_files true)
 
 (source
- (github username/reponame))
+ (github ringzer0x00/wassilly))
 
-(authors "Author Name")
+(authors "Mattia Paccamiccio")
 
-(maintainers "Maintainer Name")
+(maintainers "Mattia Paccamiccio")
 
 (license LICENSE)
 
-(documentation https://url/to/documentation)
+(documentation https://there/is/no/documentation)
 
 (package
- (name chaotic_implicitgraph)
+ (name wassilly)
  (synopsis "A short synopsis")
  (description "A longer description")
  (depends ocaml dune)

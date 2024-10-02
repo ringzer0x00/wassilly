@@ -13,8 +13,9 @@
 ;; Reachable (actually executed) functions:
 ;;   $main, $export2
 (module
-    ;; (import "host" "print" (func $print (param i32)))
+    (import "host" "mutate" (func $mutate))
     (func $main (export "main")
+        call $mutate
         i32.const 0
         call_indirect
     )
@@ -27,6 +28,6 @@
         ;; call $print
     )
     (func $not-reachable)
-    (table $table (export "table") 1 funcref)
+    (table $tab (export "tab") 1 funcref)
     (elem $table (i32.const 0) $export1)
 )

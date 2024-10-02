@@ -27,9 +27,9 @@ let size_of_type = function
 let print_operand = function
   | BooleanExpression _ -> Printf.printf "Boolex;"
   | Expression (e, _) ->
-      Printf.printf "Expr:";
+      Format.print_string "Expr:";
       Apronext.Texprext.print Format.std_formatter e;
-      Printf.printf ";"
+      Format.print_string ";\n"
   | LVarRef _ -> Printf.printf "LVarRef;"
   | GVarRef _ -> Printf.printf "GVarRef;"
   | FuncRef _ -> Printf.printf "FuncRef;"

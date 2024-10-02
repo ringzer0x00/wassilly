@@ -15,9 +15,7 @@ let const (n : Wasm.Ast.num) (vm : varmemories) =
         (I.of_float c c, Wasm.Types.F64Type)
     | I32 c ->
         let c = Wasm.I32.to_int_s c in
-        Printf.printf "\n\nConst: %i\n" c;
         let interval = I.of_int c c in
-        I.print Format.std_formatter interval;
         (interval, Wasm.Types.I32Type)
     | I64 c ->
         let c = Wasm.I64.to_int_s c in
@@ -268,7 +266,6 @@ let lshift_expr vm l r =
   | false -> Expression (const_expr vm I.top, type_of_operand l)
 
 let load_standard vm _mem _o _t =
-  Printf.printf "\nl_i32:\n";
   let _w, _s =
     match _t with
     | Wasm.Types.I32Type | F32Type -> (4, 32)
@@ -327,7 +324,6 @@ let load_standard vm _mem _o _t =
     if S.cmp lim1 lim2 <= 0 then I.of_scalar lim1 lim2
     else I.of_scalar lim2 lim1
   in
-  I.print Format.std_formatter i;
   Expression (const_expr vm i, _t)
 
 let store_standard _vm _mem _addr _val _t =
@@ -341,14 +337,13 @@ let store_standard _vm _mem _addr _val _t =
     Language.Bitwisenumber.of_interval val_ _t
     |> Language.Bitwisenumber.binary_interval_to_abstract_bitwise
   in
-  Datastructures.Abstractbyte.print_byte _bytes_to_split.val_;
+
   let _b =
     Array.to_list
       (Datastructures.Abstractbyte.split_in_bytesized_arrays
          _bytes_to_split.val_)
     |> List.rev |> Array.of_list
   in
-  Array.iter Datastructures.Abstractbyte.print_byte _b;
   (*these bits are to splint in byte-sized (there is instr for that)
     and then reversed in order for endiannes consistency. then they can be written
     type of func to use to write: bit array array -> int -> t -> t*)
@@ -363,9 +358,4 @@ let store_standard _vm _mem _addr _val _t =
     else Memories.Linearmem.write_to_mem
   in
   let mem' = List.fold_left (fun x _a -> wf _b _a x) _mem _addrs in
-  Format.print_newline ();
-  Format.print_flush (Printf.printf "add:");
-  Format.print_flush (I.print Format.std_formatter addr);
-  Format.print_flush (Printf.printf "val:");
-  Format.print_flush (I.print Format.std_formatter val_);
   mem'

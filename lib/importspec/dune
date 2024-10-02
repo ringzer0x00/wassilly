@@ -1,0 +1,11 @@
+(ocamllex lexer)
+
+(menhir
+ (modules parser))
+
+(library
+ (name importspec)
+ (libraries base stdio ppx_show.runtime wasm apronext)
+ (inline_tests (flags (-verbose)))
+ (preprocess
+  (pps ppx_deriving.show ppx_inline_test)))

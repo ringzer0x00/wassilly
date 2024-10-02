@@ -42,7 +42,6 @@ let of_interval interval (type_ : num) =
               Array.make 64 Datastructures.Abstractbit.One ))
     | false -> (
         let val_ = Apronext.Intervalext.to_float interval in
-        Printf.printf "val_: %f" (fst val_);
         match type_ with
         | I32Type ->
             tuple_appl Int32.of_float val_

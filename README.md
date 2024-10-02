@@ -1,4 +1,5 @@
-# 
+# todo (MACRO): 
+IMPORTANTE: CALL_INDIRECT NON FUNZIONA SE CI SONO DI MEZZO IMPORT ANCORA, RISOLVERE
 
-todo: 
-- memory, import management, externally mutable tables
+
+VEDI tag ERRORE:
