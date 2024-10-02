@@ -5,7 +5,7 @@
 (module
     ;; (import "host" "print" (func $print (param i32)))
     (import "host" "imported" (func $imported))
-    (import "host" "table" (table $table 1 funcref))
+    (import "host" "importedtable" (table $importedtable 1 funcref))
     (func $main (export "main")
         call $imported
     )
@@ -20,5 +20,5 @@
     (func $not-reachable-d)
 
     ;; Adds $a to the imported table.
-    (elem $table (i32.const 0) $reachable)
+    (elem $importedtable (i32.const 0) $reachable)
 )

@@ -34,6 +34,7 @@ type instance = {
   datas : Wasm.Ast.data_segment list;
   exports : Wasm.Ast.export list;
   importspecs : Term.program;
+  static_mod : mod_;
 }
 
 let imported_funcs (i : Wasm.Ast.import list) (importspecs : spec list) =
@@ -116,17 +117,18 @@ let mk_funcs internal imports (Term.Program _spec) =
   imported @ internal'
 
 let instantiate_module (m : mod_) spec : instance =
-  let m = m.it in
-  let types = m.types in
-  let elems = m.elems in
-  let datas = m.datas in
-  let exports = m.exports in
+  let mit = m.it in
+  let types = mit.types in
+  let elems = mit.elems in
+  let datas = mit.datas in
+  let exports = mit.exports in
   let importspecs = spec in
   {
     types;
-    funcs = mk_funcs m.funcs m.imports spec;
+    funcs = mk_funcs mit.funcs mit.imports spec;
     elems;
     datas;
     exports;
     importspecs;
+    static_mod = m;
   }

@@ -26,10 +26,17 @@ let%test "host-callbacks-exports" =
 
 let%test "host-reachable-table-export" =
   Interpreter.Eval.cg := Fixpoint.Callgraph.CallGraph.phi;
-  got (p "host-reachable-table-export") = [ (0, 2); (1, 0); ]
+  got (p "host-reachable-table-export") = [ (0, 2); (1, 0) ]
+
+let%test "host-reachable-table-import" =
+  Interpreter.Eval.cg := Fixpoint.Callgraph.CallGraph.phi;
+  got (p "host-reachable-table-import") = [ (0, 3); (1, 0) ]
+
+let%test "host-code-table-mutable" =
+  Interpreter.Eval.cg := Fixpoint.Callgraph.CallGraph.phi;
+  Fixpoint.Callgraph.CallGraph.print (p "host-code-table-mutable");
+  got (p "host-code-table-mutable") = [ (1, 0); (1, 3); ]
 
 let t =
   [ (*imports*)
-    (*("host-code-table-mutable", []);*)
-    (*("host-reachable-table-import", []);*)
-    (*("table-init-offset-imported-global", []);*) ]
+    (*("host-code-table-mutable", []);*) ]

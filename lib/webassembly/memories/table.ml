@@ -12,7 +12,7 @@ type t = T.t
 
 let empty = T.empty
 let add idx v t : t = T.add idx v t
-let set _ _ = failwith "table set not available yet"
+let set (i, v) t = add i v t
 let get _ _ = failwith "table set not available yet"
 let find_by_types typ_ t = T.filter (fun _ (_, mapped_t) -> mapped_t = typ_) t
 

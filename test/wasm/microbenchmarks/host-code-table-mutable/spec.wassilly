@@ -1,0 +1,1 @@
+func mutate ([] -> []) effect table tab ( 0 -> 3 );

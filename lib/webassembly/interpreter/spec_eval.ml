@@ -63,7 +63,8 @@ let global_assignment (idx_ass, _wasmtype, (_value : value)) ms
   let ms' = Memories.Memorystate.assign_var ms Glob binding op in
   ms'
 
-let implies (i : Importspec.Term.implies) ms bindings =
+let implies (i : Importspec.Term.implies) ms bindings
+    (modi : Memories.Instance.instance) =
   let res, _ass, calls = i in
   let ms' =
     List.fold_left
@@ -73,9 +74,47 @@ let implies (i : Importspec.Term.implies) ms bindings =
         | MemAss (_, _, _, _, _, _) ->
             Printf.printf "MEM NOT WORKING @ implies";
             m
-        | TableAss (_, _) ->
-            Printf.printf "TABLE NOT WORKING @ implies";
-            m)
+        | TableAss (_, TableBinding (_tabidx, fidx)) ->
+            let _f_sig =
+              match List.nth modi.funcs (Int32.to_int fidx) with
+              | ImportedFunc (Func (_, FuncSig (p, r), _)) ->
+                  let i =
+                    List.map
+                      (fun (Param (wt, _)) ->
+                        Wasm.Types.NumType
+                          (Importspec.Wasmtypes.as_wasm_numeric wt))
+                      p
+                  in
+                  let o =
+                    List.map
+                      (fun (ResultType x) ->
+                        Wasm.Types.NumType
+                          (Importspec.Wasmtypes.as_wasm_numeric x))
+                      r
+                  in
+                  let t_converted = Wasm.Types.FuncType (i, o) in
+                  let t_indexed =
+                    List.mapi (fun i x -> (Int32.of_int i, x)) modi.types
+                  in
+                  let _idx_ft, _fsig =
+                    List.find
+                      (fun (_, (t : Wasm.Ast.type_)) -> t.it = t_converted)
+                      t_indexed
+                  in
+                  _idx_ft
+              | Func f -> f.it.ftype.it
+              | _ -> failwith "not interested"
+            in
+            ms >>=? fun d ->
+            let t' =
+              [
+                Memories.Table.set
+                  (_tabidx, (Some fidx, Some (Int32.of_int 0)))
+                  (List.hd d.tab);
+              ]
+            in
+            let ms' = Memories.Memorystate.update_tables t' ms in
+            ms')
       ms _ass
   in
   let res_eval = List.map (fun x -> eval_result x ms' bindings) res in
@@ -144,9 +183,9 @@ let prep_call ms vals (locs : param list) (typ_ : param list * resulttype list)
   (ms'', bindings_map)
 
 let rec implication (i : Importspec.Term.impl) (ms : MS.t)
-    (bindings : (param * MS.VariableMem.binding) list) =
+    (bindings : (param * MS.VariableMem.binding) list) modi =
   match i with
-  | Implies impl -> implies impl ms bindings
+  | Implies impl -> implies impl ms bindings modi
   | Implication (clause, impl, else_) ->
       let massage_clause bindings c =
         List.fold_left
@@ -159,7 +198,8 @@ let rec implication (i : Importspec.Term.impl) (ms : MS.t)
       let clause' = List.map (fun c -> massage_clause bindings c) clause in
       let t, f = when_ clause' ms in
       let (t', _c_t), (f', _c_f) =
-        (implication (Implies impl) t bindings, implication else_ f bindings)
+        ( implication (Implies impl) t bindings modi,
+          implication else_ f bindings modi )
       in
       (join_ms t' f', List.append _c_t _c_f)
 
@@ -176,7 +216,7 @@ let eval (p : Importspec.Term.term) ms modi =
         in
         (*let args' = List.map2 (fun x (Param (_, n)) -> (n, x)) args t_in in*)
         let ms'', bindings_map = prep_call ms' args t_in (t_in, _tout) in
-        implication impl ms'' bindings_map
+        implication impl ms'' bindings_map modi
         (* after this I have to forget the ctx and go back to old one!!!!!! *)
     | Glob (name, typ_, val_) -> (glob name typ_ val_ ms modi, [])
     | Table (_name, _ttyp, _tbinds, _unspec) ->
