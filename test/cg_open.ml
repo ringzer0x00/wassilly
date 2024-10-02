@@ -36,7 +36,3 @@ let%test "host-code-table-mutable" =
   Interpreter.Eval.cg := Fixpoint.Callgraph.CallGraph.phi;
   Fixpoint.Callgraph.CallGraph.print (p "host-code-table-mutable");
   got (p "host-code-table-mutable") = [ (1, 0); (1, 3); ]
-
-let t =
-  [ (*imports*)
-    (*("host-code-table-mutable", []);*) ]
