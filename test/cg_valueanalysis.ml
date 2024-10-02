@@ -32,13 +32,3 @@ let%test "MATTIA-direct-call-mutated-global-ref" =
   let top_stack = Memories.Memorystate.peek_operand m |> List.hd in
   let val_conc = Memories.Memorystate.operand_as_interval top_stack m in
   got g = [ (1, 0) ] && Apronext.Intervalext.equal val_conc (Apronext.Intervalext.of_int 14 14)
-
-
-let t =
-  [ (*imports*)
-    (*("", [ (1, 0) ]);*)
-    (*("host-callbacks-exports", []);*)
-    (*("host-code-table-mutable", []);*)
-    (*("host-reachable-table-export", []);*)
-    (*("host-reachable-table-import", []);*)
-    (*("table-init-offset-imported-global", []);*) ]
