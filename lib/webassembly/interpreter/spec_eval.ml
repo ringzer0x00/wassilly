@@ -78,13 +78,11 @@ let eval_assignment a m bindings (modi : Memories.Instance.instance) =
         Memories.Operand.Expression (eval_val _val_ m [], wasmtype)
       in
       let _addr_val =
-        Memories.Operand.Expression (eval_val _val_ m [], wasmtype)
+        Memories.Operand.Expression (eval_val _o_start m [], wasmtype)
       in
       let mem' =
         Exprs_math.store_standard d.var d.mem _addr_val operand_val wasmtype
       in
-      (*see exprs_math.store_standard, maybe reuse*)
-      Printf.printf "MEM NOT WORKING @ implies";
       Memories.Memorystate.update_linearmem mem' m
   | TableAss (_, TableBinding (_tabidx, fidx)) ->
       let _f_sig =
