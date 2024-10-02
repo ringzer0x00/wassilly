@@ -217,13 +217,13 @@ let init (_mod : Wasm.Ast.module_) spec =
   let globs_initialized : Eval.MS.ms t = init_globals minst ms_start globs in
   let tab_initialized = init_tab minst globs_initialized minst.elems tabs in
   let ms_inst = init_mem minst tab_initialized minst.datas mems in
-  let (Program s) = spec in
+  let s = match spec with Program t -> t in
   let _postinst_spec =
     List.filter
       (fun x ->
         match x with
         | Importspec.Term.PostInst _ -> true
-        | _ -> failwith "false")
+        | _ -> false )
       s
   in
   (ms_inst, minst)
