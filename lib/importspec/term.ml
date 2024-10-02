@@ -23,13 +23,7 @@ and precond = string
 
 and assignment =
   | GlobAss of int32 * wasmType * value
-  | MemAss of
-      string
-      * int32
-      * int32 (* offset starting - finishing *)
-      * int (*size ~ 32-64...*)
-      * value (*rel / interval*)
-      * wasmType
+  | MemAss of string * value (*offset*) * value (*value*) * wasmType
   | TableAss of string * tableBinding
 
 and implies = result list * assignment list * callee list

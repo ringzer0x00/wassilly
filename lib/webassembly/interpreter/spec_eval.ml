@@ -66,9 +66,26 @@ let global_assignment (idx_ass, _wasmtype, (_value : value)) ms
 let eval_assignment a m bindings (modi : Memories.Instance.instance) =
   match a with
   | GlobAss (n, t, v) -> global_assignment (n, t, v) m bindings
-  | MemAss (_, _, _, _, _, _) ->
+  | MemAss (_, _o_start, _val_, _wt) ->
+      let _w, _s =
+        match _wt with
+        | I32Type | F32Type -> (4, 32)
+        | I64Type | F64Type -> (8, 64)
+      in
+      let wasmtype = Importspec.Wasmtypes.as_wasm_numeric _wt in
+      m >>=? fun d ->
+      let operand_val =
+        Memories.Operand.Expression (eval_val _val_ m [], wasmtype)
+      in
+      let _addr_val =
+        Memories.Operand.Expression (eval_val _val_ m [], wasmtype)
+      in
+      let mem' =
+        Exprs_math.store_standard d.var d.mem _addr_val operand_val wasmtype
+      in
+      (*see exprs_math.store_standard, maybe reuse*)
       Printf.printf "MEM NOT WORKING @ implies";
-      m
+      Memories.Memorystate.update_linearmem mem' m
   | TableAss (_, TableBinding (_tabidx, fidx)) ->
       let _f_sig =
         match List.nth modi.funcs (Int32.to_int fidx) with

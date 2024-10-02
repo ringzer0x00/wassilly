@@ -5,7 +5,6 @@ open Term
 %token <string> ID
 %token <int> INT_LIT
 %token <float> FLOAT_LIT
-%token <int32> INT32_LIT
 
 %token I32 "i32"
 %token I64 "i64"
@@ -111,7 +110,7 @@ let typedresult :=
   | t=wasmvaluetype; v=value; { Result (t, v) } 
 
 let assignment := | EFFECT; GLOB; x=INT_LIT; t=wasmvaluetype; v=value; {GlobAss ((Int32.of_int x),t,v)} 
-                  | EFFECT; MEM; m=ID; fr=INT32_LIT; to_=INT32_LIT; s=INT_LIT; v=value; t=wasmvaluetype; {MemAss (m,fr,to_,s,v,t)}
+                  | EFFECT; MEM; m=ID; off=value; v=value; t=wasmvaluetype; {MemAss (m,off,v,t)}
                   | EFFECT; TABLE; x=ID; b=tablebinding; {TableAss(x,b)}
 
 let call := | CALL; x=INT_LIT; {Calls (Int32.of_int x)}
