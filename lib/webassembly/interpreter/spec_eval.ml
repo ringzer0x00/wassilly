@@ -63,59 +63,57 @@ let global_assignment (idx_ass, _wasmtype, (_value : value)) ms
   let ms' = Memories.Memorystate.assign_var ms Glob binding op in
   ms'
 
+let eval_assignment a m bindings (modi : Memories.Instance.instance) =
+  match a with
+  | GlobAss (n, t, v) -> global_assignment (n, t, v) m bindings
+  | MemAss (_, _, _, _, _, _) ->
+      Printf.printf "MEM NOT WORKING @ implies";
+      m
+  | TableAss (_, TableBinding (_tabidx, fidx)) ->
+      let _f_sig =
+        match List.nth modi.funcs (Int32.to_int fidx) with
+        | ImportedFunc (Func (_, FuncSig (p, r), _)) ->
+            let i =
+              List.map
+                (fun (Param (wt, _)) ->
+                  Wasm.Types.NumType (Importspec.Wasmtypes.as_wasm_numeric wt))
+                p
+            in
+            let o =
+              List.map
+                (fun (ResultType x) ->
+                  Wasm.Types.NumType (Importspec.Wasmtypes.as_wasm_numeric x))
+                r
+            in
+            let t_converted = Wasm.Types.FuncType (i, o) in
+            let t_indexed =
+              List.mapi (fun i x -> (Int32.of_int i, x)) modi.types
+            in
+            let _idx_ft, _fsig =
+              List.find
+                (fun (_, (t : Wasm.Ast.type_)) -> t.it = t_converted)
+                t_indexed
+            in
+            _idx_ft
+        | Func f -> f.it.ftype.it
+        | _ -> failwith "not interested"
+      in
+      m >>=? fun d ->
+      let t' =
+        [
+          Memories.Table.set
+            (_tabidx, (Some fidx, Some (Int32.of_int 0)))
+            (List.hd d.tab);
+        ]
+      in
+      let ms' = Memories.Memorystate.update_tables t' m in
+      ms'
+
 let implies (i : Importspec.Term.implies) ms bindings
     (modi : Memories.Instance.instance) =
   let res, _ass, calls = i in
   let ms' =
-    List.fold_left
-      (fun m a ->
-        match a with
-        | GlobAss (n, t, v) -> global_assignment (n, t, v) ms bindings
-        | MemAss (_, _, _, _, _, _) ->
-            Printf.printf "MEM NOT WORKING @ implies";
-            m
-        | TableAss (_, TableBinding (_tabidx, fidx)) ->
-            let _f_sig =
-              match List.nth modi.funcs (Int32.to_int fidx) with
-              | ImportedFunc (Func (_, FuncSig (p, r), _)) ->
-                  let i =
-                    List.map
-                      (fun (Param (wt, _)) ->
-                        Wasm.Types.NumType
-                          (Importspec.Wasmtypes.as_wasm_numeric wt))
-                      p
-                  in
-                  let o =
-                    List.map
-                      (fun (ResultType x) ->
-                        Wasm.Types.NumType
-                          (Importspec.Wasmtypes.as_wasm_numeric x))
-                      r
-                  in
-                  let t_converted = Wasm.Types.FuncType (i, o) in
-                  let t_indexed =
-                    List.mapi (fun i x -> (Int32.of_int i, x)) modi.types
-                  in
-                  let _idx_ft, _fsig =
-                    List.find
-                      (fun (_, (t : Wasm.Ast.type_)) -> t.it = t_converted)
-                      t_indexed
-                  in
-                  _idx_ft
-              | Func f -> f.it.ftype.it
-              | _ -> failwith "not interested"
-            in
-            ms >>=? fun d ->
-            let t' =
-              [
-                Memories.Table.set
-                  (_tabidx, (Some fidx, Some (Int32.of_int 0)))
-                  (List.hd d.tab);
-              ]
-            in
-            let ms' = Memories.Memorystate.update_tables t' ms in
-            ms')
-      ms _ass
+    List.fold_left (fun m a -> eval_assignment a m bindings modi) ms _ass
   in
   let res_eval = List.map (fun x -> eval_result x ms' bindings) res in
   let ms'' = Memories.Memorystate.push_operand res_eval ms' in
@@ -221,7 +219,8 @@ let eval (p : Importspec.Term.term) ms modi =
     | Glob (name, typ_, val_) -> (glob name typ_ val_ ms modi, [])
     | Table (_name, _ttyp, _tbinds, _unspec) ->
         (table _name _ttyp _tbinds _unspec ms, [])
-    | PostInst a -> (ms, [])
+    | PostInst ass ->
+        (List.fold_left (fun m a -> eval_assignment a m [] modi) ms ass, [])
   in
   match r with
   | Def _ -> (Def { nat = Bot; br = bot_pa.p_br; return = r }, calls)

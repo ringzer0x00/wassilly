@@ -39,4 +39,4 @@ let%test "MATTIA-host-code-table-mutable" =
 let%test "host-code-table-mutable" =
   Interpreter.Eval.cg := Fixpoint.Callgraph.CallGraph.phi;
   Fixpoint.Callgraph.CallGraph.print (p "host-code-table-mutable");
-  got (p "host-code-table-mutable") = [ (0,3) ]
+  got (p "host-code-table-mutable") = [ (0,2) ]
