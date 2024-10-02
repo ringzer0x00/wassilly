@@ -23,6 +23,7 @@ rule read =
     | "calls" { CALL }
     | "unspec" { UNSPEC }
     | "effect" { EFFECT }
+    | "postinst" { POST_INST }
     | "#" { skip_line lexbuf }
     | "i32" { I32 }
     | "i64" { F64 }

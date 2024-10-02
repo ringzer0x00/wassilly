@@ -86,5 +86,18 @@ let%test "IMPORTSPEC-side" =
         Func
           ( "mut",
             FuncSig ([], []),
-            Implies ([], [ GlobAss ((Int32.of_int 0), I32Type, Num (I.of_int 1 1)) ], []) );
+            Implies
+              ([], [ GlobAss (Int32.of_int 0, I32Type, Num (I.of_int 1 1)) ], [])
+          );
+      ]
+
+let%test "IMPORTSPEC-postinst" =
+  parse_program "postinst effect glob 0 i32 [1;1] effect glob 1 i32 [1;1]"
+  = Program
+      [
+        PostInst
+          [
+            GlobAss (Int32.of_int 0, I32Type, Num (I.of_int 1 1));
+            GlobAss (Int32.of_int 1, I32Type, Num (I.of_int 1 1));
+          ];
       ]

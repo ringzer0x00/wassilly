@@ -41,6 +41,7 @@ open Term
 %token ELSE "else"
 %token WHEN "when"
 %token UNSPEC "unspec"
+%token POST_INST "postinst"
 
 
 %token END
@@ -128,7 +129,11 @@ let implication :=
 let func :=
   | FUNC; x=ID; LPAR; s=signature; RPAR; i=implication; {Func (x, s, i)}
 
+let postinst :=
+  | POST_INST; a=assignment*; {PostInst (a)}
+
 let term :=
   | glob
   | table
   | func
+  | postinst

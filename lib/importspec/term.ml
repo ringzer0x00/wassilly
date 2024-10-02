@@ -38,6 +38,7 @@ and impl = Implication of precond list * implies * impl | Implies of implies
 and term =
   | Glob of string * wasmType * value
   | Table of string * tabType * tableBinding list * unspec
+  | PostInst of assignment list
   | Func of string * funcsig * impl
 
 and program = Program of term list [@@deriving show]

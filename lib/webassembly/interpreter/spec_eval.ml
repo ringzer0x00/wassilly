@@ -221,6 +221,7 @@ let eval (p : Importspec.Term.term) ms modi =
     | Glob (name, typ_, val_) -> (glob name typ_ val_ ms modi, [])
     | Table (_name, _ttyp, _tbinds, _unspec) ->
         (table _name _ttyp _tbinds _unspec ms, [])
+    | PostInst _ -> (ms, [])
   in
   match r with
   | Def _ -> (Def { nat = r; br = bot_pa.p_br; return = r }, calls)
