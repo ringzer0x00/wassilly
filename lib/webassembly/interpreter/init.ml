@@ -220,10 +220,14 @@ let init (_mod : Wasm.Ast.module_) spec =
   let s = match spec with Program t -> t in
   let _postinst_spec =
     List.filter
-      (fun x ->
-        match x with
-        | Importspec.Term.PostInst _ -> true
-        | _ -> false )
+      (fun x -> match x with Importspec.Term.PostInst _ -> true | _ -> false)
       s
   in
-  (ms_inst, minst)
+  let posti =
+    List.fold_left
+      (fun ms s ->
+        let ans, _ = Spec_eval.eval s ms minst in
+        ans >>=? fun d -> d.return)
+      ms_inst _postinst_spec
+  in
+  (posti, minst)

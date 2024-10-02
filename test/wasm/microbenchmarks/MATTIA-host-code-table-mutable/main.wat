@@ -13,7 +13,9 @@
 ;; Reachable (actually executed) functions:
 ;;   $main, $export2
 (module
+    (import "host" "mutate" (func $mutate))
     (func $main (export "main")
+        call $mutate
         i32.const 0
         call_indirect
     )

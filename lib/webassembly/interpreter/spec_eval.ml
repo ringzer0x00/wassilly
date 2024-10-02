@@ -221,9 +221,9 @@ let eval (p : Importspec.Term.term) ms modi =
     | Glob (name, typ_, val_) -> (glob name typ_ val_ ms modi, [])
     | Table (_name, _ttyp, _tbinds, _unspec) ->
         (table _name _ttyp _tbinds _unspec ms, [])
-    | PostInst _ -> (ms, [])
+    | PostInst a -> (ms, [])
   in
   match r with
-  | Def _ -> (Def { nat = r; br = bot_pa.p_br; return = r }, calls)
+  | Def _ -> (Def { nat = Bot; br = bot_pa.p_br; return = r }, calls)
   | Bot -> failwith "undef imported func!!!!"
 (*return { p_br = ans_bot.p_br; p_return = ms }*)
