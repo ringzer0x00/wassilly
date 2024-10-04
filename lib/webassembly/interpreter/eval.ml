@@ -362,63 +362,6 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
                   MS.func_res (func_ans computed) ms' (List.length _to)
                 in
                 (Cflow.call_answer p_ans _f_res, cache', scg)
-            (*| CallIndirect (_fsign, _table_idx) ->
-                let _ti, _to =
-                  match gettype modi (Int32.to_int _fsign.it) with
-                  | FuncType (_ti, _to) -> (_ti, _to)
-                in
-                let expr_idx, ms' =
-                  (MS.peek_n_operand 1 ms |> List.hd, MS.pop_operand ms)
-                in
-                let _interval_idx = MS.operand_as_interval expr_idx ms in
-                let _refs =
-                  MS.table_getrefs _interval_idx (Some _fsign.it) ms'
-                in
-                let _targets =
-                  List.map
-                    (fun x -> fst (snd x))
-                    (Memories.Table.T.bindings _refs)
-                  |> List.filter_map (fun x -> x)
-                in
-                List.iter
-                  (fun x ->
-                    cg := CallSet.union (CallSet.singleton (fin, x)) !cg)
-                  _targets;
-                let typ_ = gettype modi (Int32.to_int _fsign.it) in
-                let _ti, _to =
-                  (*list * list*)
-                  match typ_ with FuncType (_ti, _to) -> (_ti, _to)
-                in
-                let _vals, _ms'' =
-                  ( MS.peek_n_operand (List.length _ti) ms',
-                    MS.pop_n_operand (List.length _ti) ms' )
-                in
-                let funcs =
-                  List.map
-                    (fun x -> (getfbody modi (Int32.to_int x), x))
-                    _targets
-                in
-                let _mses_prepped =
-                  List.map
-                    (fun ((_f, _locs, (typ_idx : Wasm.Ast.var)), _) ->
-                      Cflow.prep_call _ms'' _vals modi _locs typ_idx.it)
-                    funcs
-                in
-                let computed, cache', scg =
-                  List.fold_left2
-                    (fun (a, c, g) m ((f, _, _), fin') ->
-                      let a', c', g' =
-                        fixpoint modi
-                          ((m, f), true)
-                          sk c fin' (_ti, _to) p_ans step
-                      in
-                      (Answer.j a a', c', SCG.union g g'))
-                    (Bot, cache, SCG.empty) _mses_prepped funcs
-                in
-                let _f_res =
-                  MS.func_res (func_ans computed) ms' (List.length _to)
-                in
-                (Cflow.call_answer p_ans _f_res, cache', scg)*)
             | Compare _r ->
                 (cmd_result (Ops.eval_relop _r ms) p_ans, cache, SCG.empty)
             | Test t ->
