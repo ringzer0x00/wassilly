@@ -10,6 +10,7 @@ module Cache = struct
 
   let empty : t = M.empty
   let call_in_cache k m = M.find_opt k m
+  let lub _ c' = c' (*someday*)
   let find = M.find
   let mem = M.mem
   let add = M.add
