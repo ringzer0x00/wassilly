@@ -148,7 +148,6 @@ let when_ (_clause : precond list) (ms_start : MS.ms t) =
   let ms_f_vm =
     List.fold_left (fun ad c -> neg_filter ad c) d.var _clause_as_constr
   in
-  (*this doesnt check for bottoms, i think!*)
   let ms_t = Memories.Memorystate.update_varmem ms_t_vm ms_start in
   let ms_f = Memories.Memorystate.update_varmem ms_f_vm ms_start in
 
