@@ -37,8 +37,12 @@ let update_tables tab' (k : t) =
 let update_linearmem mem' (k : t) =
   k >>= fun a -> return { ops = a.ops; var = a.var; mem = mem'; tab = a.tab }
 
-let update_varmem var' (k : t) =
-  k >>= fun a -> return { ops = a.ops; var = var'; mem = a.mem; tab = a.tab }
+let update_varmem (var' : VariableMem.t) (k : t) =
+  match Apronext.Abstractext.is_bottom Apronext.Apol.man var'.ad with
+  | true -> Bot
+  | false ->
+      k >>= fun a ->
+      return { ops = a.ops; var = var'; mem = a.mem; tab = a.tab }
 
 (* pop functions *)
 let pop_operand k : t = k >>= fun a -> update_operandstack (a.ops |> pop) k
@@ -172,7 +176,6 @@ let new_fun_ctx k locs =
 let func_res _k_from _k_to tp =
   _k_from >>= fun from ->
   _k_to >>= fun to_ ->
-
   let _to_sk = Operandstack.concretize_ret to_.ops to_.var in
   let _peeked_conc =
     List.map
