@@ -2,7 +2,6 @@ let d = "/home/ringzero/gitrepos/wassilly/test/wasm/microbenchmarks/"
 
 let p path =
   Interpreter.Analysis.callgraph_analysis' (d ^ path ^ "/main.wasm") ""
-(*"./tc/fib.wasm"*)
 
 let got = Fixpoint.Callgraph.CallGraph.edges
 

@@ -4,7 +4,6 @@ let p path =
   Interpreter.Analysis.value_and_callgraph
     (d ^ path ^ "/main.wasm")
     (d ^ path ^ "/spec.wassilly")
-(*"./tc/fib.wasm"*)
 
 let got = Fixpoint.Callgraph.CallGraph.edges
 
