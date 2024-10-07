@@ -1,0 +1,1 @@
+func absval ([param i32 x] -> [i32]) when x<0 => { i32 -x } else { i32 x }
