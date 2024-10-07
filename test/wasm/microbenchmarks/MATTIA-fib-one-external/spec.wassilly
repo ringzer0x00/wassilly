@@ -1,0 +1,1 @@
+func fib ([param i32 x] -> [i32]) when x=0 => { i32 [0;0] } else { when x=1 => { i32 [1;1] } else { i32 [1;PINF] calls 0 } }

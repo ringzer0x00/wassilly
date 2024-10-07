@@ -124,18 +124,20 @@ let eval_assignment a m bindings (modi : Memories.Instance.instance) =
       let ms' = Memories.Memorystate.update_tables t' m in
       ms'
 
-let implies (i : Importspec.Term.implies) ms bindings
+let implies (i : Importspec.Term.implies) (ms : MS.t) bindings
     (modi : Memories.Instance.instance) =
-  let res, _ass, calls = i in
-  let ms' =
-    List.fold_left (fun m a -> eval_assignment a m bindings modi) ms _ass
-  in
-  let res_eval = List.map (fun x -> eval_result x ms' bindings) res in
-  let ms'' = Memories.Memorystate.push_operand res_eval ms' in
-  (ms'', calls)
+  match ms with
+  | Bot -> (ms, [])
+  | _ ->
+      let res, _ass, calls = i in
+      let ms' =
+        List.fold_left (fun m a -> eval_assignment a m bindings modi) ms _ass
+      in
+      let res_eval = List.map (fun x -> eval_result x ms' bindings) res in
+      let ms'' = Memories.Memorystate.push_operand res_eval ms' in
+      (ms'', calls)
 
 let when_ (_clause : precond list) (ms_start : MS.ms t) =
-  let _clause = failwith "not massaged yet!" in
   ms_start >>=? fun d ->
   let _clause_as_constr =
     List.map (fun x -> Apron.Parser.tcons1_of_string d.var.ad.env x) _clause
