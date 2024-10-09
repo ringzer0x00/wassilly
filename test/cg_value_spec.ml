@@ -5,10 +5,10 @@ let p path =
     (d ^ path ^ "/main.wasm")
     (d ^ path ^ "/spec.wassilly")
 
-let got = Fixpoint.Callgraph.CallGraph.edges
+let got = Datastructures.Callgraph.CallGraph.edges
 
 let%test "MATTIA-fib-one-external" =
-  Interpreter.Eval.cg := Fixpoint.Callgraph.CallGraph.phi;
+  Interpreter.Eval.cg := Datastructures.Callgraph.CallGraph.phi;
   let m, g = p "MATTIA-fib-one-external" in
   let top_stack = Memories.Memorystate.peek_operand m |> List.hd in
   let val_conc = Memories.Memorystate.operand_as_interval top_stack m in
@@ -20,7 +20,7 @@ let%test "MATTIA-fib-one-external" =
   got g = [ (0, 0); (1, 0) ] && Apronext.Intervalext.cmp val_conc one_pinf = 0
 
 let%test "MATTIA-abs-val-external" =
-  Interpreter.Eval.cg := Fixpoint.Callgraph.CallGraph.phi;
+  Interpreter.Eval.cg := Datastructures.Callgraph.CallGraph.phi;
   let m, g = p "MATTIA-abs-val-external" in
   let top_stack = Memories.Memorystate.peek_operand m |> List.hd in
   let val_conc = Memories.Memorystate.operand_as_interval top_stack m in

@@ -19,8 +19,8 @@
 
 (package
  (name wassilly)
- (synopsis "A short synopsis")
- (description "A longer description")
+ (synopsis "wassilly")
+ (description "Call graph extraction for the WebAssembly language.")
  (depends
   ocaml
   ocaml-base-compiler

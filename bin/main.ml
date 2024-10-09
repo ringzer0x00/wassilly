@@ -1,4 +1,4 @@
-let usage_msg = "append [-verbose] <file1> [<file2>] ... -o <output>"
+let usage_msg = "append <file1> ... -o <output>"
 let verbose = ref false
 let input_files = ref ""
 let specfile = ref ""
@@ -14,5 +14,7 @@ let speclist =
 
 let () =
   Arg.parse speclist anon_fun usage_msg;
-  let g = Interpreter.Analysis.callgraph_analysis' !input_files !specfile in
-  Fixpoint.Callgraph.CallGraph.print g
+  if !input_files = "" then print_endline usage_msg
+  else
+    Interpreter.Analysis.callgraph_analysis' !input_files !specfile
+    |> Datastructures.Callgraph.CallGraph.print

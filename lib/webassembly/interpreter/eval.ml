@@ -12,7 +12,7 @@ open Fixpoint.Answer
 module Cache = Cache.Cache
 module Stack = Stack.Stack
 module SCG = Scg.SCC
-module CallSet = Callgraph.CallGraph
+module CallSet = Datastructures.Callgraph.CallGraph
 
 let cg = ref CallSet.phi
 let cmd_result = Cflow.simplecmd_answer
