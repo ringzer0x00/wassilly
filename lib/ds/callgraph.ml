@@ -33,21 +33,31 @@ module CallGraph = struct
 end
 
 module G = struct
-
   module IntInt = struct
     type t = int32 * int32
+
     let compare = Stdlib.compare
-    let equal = (=)
+    let equal = ( = )
     let hash = Hashtbl.hash
   end
+
   module Int = struct
     type t = int32
+
     let compare = Stdlib.compare
     let hash = Hashtbl.hash
-    let equal = (=)
+    let equal = ( = )
     let default = Int32.zero
   end
 
-  include Graph.Imperative.Digraph.ConcreteLabeled(IntInt)(Int)
+  include Graph.Persistent.Digraph.ConcreteLabeled (IntInt) (Int)
 
+  let phi = empty
+
+  let union (g1 : t) (g2 : t) =
+    let g1' = fold_vertex (fun v g -> add_vertex g v) g2 g1 in
+    fold_edges_e (fun v e -> add_edge_e e v) g2 g1'
+
+  let add_vertex = add_vertex
+  let add_edge = add_edge_e
 end
