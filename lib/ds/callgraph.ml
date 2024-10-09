@@ -31,3 +31,23 @@ module CallGraph = struct
     S.to_seq g |> List.of_seq
     |> List.map (fun (x, y) -> (Int32.to_int x, Int32.to_int y))
 end
+
+module G = struct
+
+  module IntInt = struct
+    type t = int32 * int32
+    let compare = Stdlib.compare
+    let equal = (=)
+    let hash = Hashtbl.hash
+  end
+  module Int = struct
+    type t = int32
+    let compare = Stdlib.compare
+    let hash = Hashtbl.hash
+    let equal = (=)
+    let default = Int32.zero
+  end
+
+  include Graph.Imperative.Digraph.ConcreteLabeled(IntInt)(Int)
+
+end
