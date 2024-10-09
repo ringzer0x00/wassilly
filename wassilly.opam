@@ -11,7 +11,18 @@ doc: "https://there/is/no/documentation"
 bug-reports: "https://github.com/ringzer0x00/wassilly/issues"
 depends: [
   "ocaml"
+  "ocaml-base-compiler"
   "dune" {>= "3.12"}
+  "wasm"
+  "apron" {< "0.9.15"}
+  "apronext" {= "1.0.4"}
+  "stdio"
+  "ppx_inline_test"
+  "ppx_deriving"
+  "ppx_show"
+  "ocamlgraph"
+  "ounit2"
+  "menhir"
   "odoc" {with-doc}
 ]
 build: [

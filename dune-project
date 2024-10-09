@@ -1,5 +1,7 @@
 (lang dune 3.12)
+
 (using menhir 2.1)
+
 (name wassilly)
 
 (generate_opam_files true)
@@ -19,7 +21,22 @@
  (name wassilly)
  (synopsis "A short synopsis")
  (description "A longer description")
- (depends ocaml dune)
+ (depends
+  ocaml
+  ocaml-base-compiler
+  dune
+  wasm
+  (apron
+   (< 0.9.15))
+  (apronext (= 1.0.4))
+  stdio
+  ppx_inline_test
+  ppx_deriving
+  ppx_show
+  ocamlgraph
+  ounit2
+  menhir
+  )
  (tags
   (topics "to describe" your project)))
 
