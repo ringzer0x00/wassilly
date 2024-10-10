@@ -101,3 +101,38 @@ let%test "IMPORTSPEC-postinst" =
             GlobAss (Int32.of_int 1, I32Type, Num (I.of_int 1 1));
           ];
       ]
+
+let%test "importspec-rsa-test-mangled" =
+  parse_program "func __wbg_new_693216e109162396 ([] -> [i32]) i32 [NINF;PINF]"
+  = Program
+      [
+        Func
+          ( "__wbg_new_693216e109162396",
+            FuncSig ([], [ ResultType I32Type ]),
+            Implies
+              ( [
+                  Result
+                    ( I32Type,
+                      Num (I.of_scalar (I.inf_scalar (-1)) (I.inf_scalar 1)) );
+                ],
+                [],
+                [] ) );
+      ]
+
+let%test "importspec-rsa-test-id" =
+  parse_program "func example ([] -> []) id"
+  = Program [ Func ("example", FuncSig ([], []), Implies ([], [], [])) ]
+
+let%test "func-sequence" =
+  parse_program "func example1 ([] -> []) id\nfunc example2 ([] -> []) id\nfunc example3 ([] -> []) id"
+  = Program
+      [
+        Func ("example1", FuncSig ([], []), Implies ([], [], []));
+        Func ("example2", FuncSig ([], []), Implies ([], [], []));
+        Func ("example3", FuncSig ([], []), Implies ([], [], []));
+
+      ]
+(*\n
+  func __wbg_stack_0ddaca5d1abfb52f ([param i32 x param i32 y] -> []) id\n
+  func __wbg_error_09919627ac0992f5 ([param i32 x param i32 y] -> []) id\n
+  func __wbindgen_throw ([param i32 x param i32 y] -> []) id*)

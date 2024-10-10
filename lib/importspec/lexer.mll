@@ -14,6 +14,7 @@ rule read =
   parse
     | white { read lexbuf }
     | newline { END }
+    | "id" { IDENTITY }
     | "glob" { GLOB }
     | "table" { TABLE }
     | "memory" { MEM }

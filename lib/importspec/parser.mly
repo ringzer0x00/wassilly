@@ -41,7 +41,7 @@ open Term
 %token WHEN "when"
 %token UNSPEC "unspec"
 %token POST_INST "postinst"
-
+%token IDENTITY "id"
 
 %token END
 %token EOF
@@ -51,9 +51,11 @@ open Term
 
 let break := | END | EOF
 
-let program:=
-  | EOF; {Program []}
-  | t=term; break; tl=term*; EOF; { concat t tl }
+let term_break := | EOF; { [] }
+                  | h = term; break; t = term_break; { (h :: t) }
+
+let program :=
+  | ts=term_break; { Program ts }
 
 let wasmtype_integer :=
   | I32; { I32Type }
@@ -116,6 +118,7 @@ let assignment := | EFFECT; GLOB; x=INT_LIT; t=wasmvaluetype; v=value; {GlobAss 
 let call := | CALL; x=INT_LIT; {Calls (Int32.of_int x)}
 
 let postcondition :=
+  | IDENTITY; { [],[],[] }
   | r=typedresult*; a=assignment*; c=call*; { r, a, c }
 
 let precondition :=
