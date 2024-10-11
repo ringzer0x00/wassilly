@@ -185,11 +185,18 @@ let init_globals (mod_ : modinst) (s : Memories.Memorystate.t) prepped =
   aux prepped s
 
 let init (_mod : Wasm.Ast.module_) spec =
+  let mpages =
+    match List.nth_opt _mod.it.memories 0 with
+    | None -> 0
+    | Some m -> (
+        let mem = m.it.mtype in
+        match mem with MemoryType i -> Int32.to_int i.min)
+  in
   let ms_start : Eval.MS.ms t =
     Def
       {
         ops = [];
-        mem = Memories.Linearmem.alloc_page;
+        mem = Memories.Linearmem.alloc_page mpages;
         var =
           VM.empty
             (Apronext.Apol.top (Datastructures.Aprondomain.make_env [||] [||]));

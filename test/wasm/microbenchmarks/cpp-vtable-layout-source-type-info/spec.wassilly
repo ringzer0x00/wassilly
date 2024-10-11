@@ -1,0 +1,3 @@
+func args_sizes_get ([param i32 x param i32 y] -> [i32]) i32 [NINF;PINF]
+func args_get ([param i32 x param i32 y] -> [i32]) i32 [NINF;PINF]
+func proc_exit ([param i32 x] -> []) id

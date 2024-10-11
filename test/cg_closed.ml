@@ -70,9 +70,3 @@ let%test "indirect-call-index-expr-double-load" =
 let%test "entry-point-wasi" =
   Interpreter.Eval.cg := Datastructures.Callgraph.CallGraph.phi;
   got (p "entry-point-wasi") = [ (0, 1) ]
-
-(* TODO
-   let%test "cpp-vtable-layout-source-type-info/main.wasm" =
-     Interpreter.Eval.cg := Datastructures.Callgraph.CallGraph.phi;
-     got (p "cpp-vtable-layout-source-type-info/main.wasm") = []
-*)

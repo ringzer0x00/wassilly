@@ -191,7 +191,7 @@ let prep_call ms vals (locs : param list) (typ_ : param list * resulttype list)
   in
   let bindings_map = List.combine locs bindings_input in
   let ms' = MS.new_fun_ctx ms ti in
-  let ms'' =
+  let ms'' = (*broken here apparently*)
     List.fold_right2
       (fun b v m -> MS.assign_var m Loc b v)
       bindings_input vals ms'

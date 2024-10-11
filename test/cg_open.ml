@@ -41,4 +41,9 @@ let%test "host-code-table-mutable" =
 
 let%test "MATTIA-indirect-call-index-expr-load-const-exported-memory-mutable" =
   Interpreter.Eval.cg := Datastructures.Callgraph.CallGraph.phi;
-  got (p "MATTIA-indirect-call-index-expr-load-const-exported-memory-mutable") = [ (0, 1) ]
+  got (p "MATTIA-indirect-call-index-expr-load-const-exported-memory-mutable")
+  = [ (0, 1) ]
+
+let%test "cpp-vtable-layout-source-type-info" =
+  Interpreter.Eval.cg := Datastructures.Callgraph.CallGraph.phi;
+  got (p "cpp-vtable-layout-source-type-info") = []
