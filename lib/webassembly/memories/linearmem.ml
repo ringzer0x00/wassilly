@@ -16,7 +16,9 @@ let alloc_page_top n : page =
 
 let pageconcat (pold : t) (pnew : t) : t = Array.concat [ pold; pnew ]
 let size m = Array.length m / wasm_page_size
-let read_byte o (m : t) = m.(o)
+
+let length_max m = Array.length m
+let read_byte o (m : t) = Array.get m o
 
 let internal_write_byte_raw b o (m : t) =
   let c = Array.copy m in

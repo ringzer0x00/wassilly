@@ -261,6 +261,7 @@ let lshift_expr vm l r =
   | false -> Expression (const_expr vm I.top, type_of_operand l)
 
 let load_standard vm _mem _o _t (_offset_expl : int32) =
+  let mem_min, mem_max = (0, Memories.Linearmem.length_max _mem) in
   let _w, _s =
     match _t with
     | Wasm.Types.I32Type | F32Type -> (4, 32)
@@ -286,6 +287,7 @@ let load_standard vm _mem _o _t (_offset_expl : int32) =
   (*concretized range of offset addresses*)
   let _addrs =
     List.init (start_to - start_from + 1) (fun x -> start_from + x)
+    |> List.filter (fun a -> a >= mem_min && a <= mem_max)
   in
   (*concretized set of addresses to read from (each sublist represents all of the words to read from memory)*)
   let addrs_list_set =
