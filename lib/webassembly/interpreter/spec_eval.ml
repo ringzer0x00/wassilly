@@ -81,7 +81,7 @@ let eval_assignment a m bindings (modi : Memories.Instance.instance) =
         Memories.Operand.Expression (eval_val _o_start m [], wasmtype)
       in
       let mem' =
-        Exprs_math.store_standard d.var d.mem _addr_val operand_val wasmtype
+        Exprs_math.store_standard d.var d.mem _addr_val operand_val wasmtype (Int32.zero)
       in
       Memories.Memorystate.update_linearmem mem' m
   | TableAss (_, TableBinding (_tabidx, fidx)) ->
@@ -210,9 +210,9 @@ let prep_call ms vals (locs : param list) (typ_ : param list * resulttype list)
   in
   let ms'' =
     (*broken here apparently*)
-    List.fold_right2
-      (fun b v m -> MS.assign_var m Loc b v)
-      bindings_input vals ms'
+    List.fold_left2
+      (fun m v b -> MS.assign_var m Loc b v)
+      ms' vals bindings_input
   in
   (ms'', bindings_map)
 
@@ -251,7 +251,11 @@ let eval (p : Importspec.Term.term) ms modi =
         in
         (*let args' = List.map2 (fun x (Param (_, n)) -> (n, x)) args t_in in*)
         let ms'', bindings_map = prep_call ms' args t_in (t_in, _tout) in
-        implication impl ms'' bindings_map modi
+        let in_called_ctx, cg = implication impl ms'' bindings_map modi in
+        let in_caller_ctx =
+          Memories.Memorystate.func_res in_called_ctx ms' (List.length _tout)
+        in
+        (in_caller_ctx, cg)
         (* after this I have to forget the ctx and go back to old one!!!!!! *)
     | Glob (name, typ_, val_) -> (glob name typ_ val_ ms modi, [])
     | Table (_name, _ttyp, _tbinds, _unspec) ->

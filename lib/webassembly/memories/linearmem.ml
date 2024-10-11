@@ -20,7 +20,7 @@ let read_byte o (m : t) = m.(o)
 
 let internal_write_byte_raw b o (m : t) =
   let c = Array.copy m in
-  c.(o) <- b;
+  (try Array.set c o b with Invalid_argument _ -> ());
   c
 
 let internal_write_byte_weak b o m =

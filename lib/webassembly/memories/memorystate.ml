@@ -179,10 +179,13 @@ let func_res _k_from _k_to tp =
   let _peeked_conc =
     List.map
       (fun x ->
-        Operand.Expression
-          (Operand.concretize_in_exp from.var x, Operand.type_of_operand x))
+        let e =
+          Apronext.Texprext.to_expr (Operand.concretize_in_exp from.var x)
+          |> Apronext.Texprext.of_expr to_.var.ad.env
+        in
+        Operand.Expression (e, Operand.type_of_operand x))
       (peek_n_operand tp _k_from)
   in
   let _sk_to = _peeked_conc @ _to_sk in
   let _vmem' = VariableMem.return_ from.var to_.var in
-  return { ops = _sk_to; var = _vmem'; tab = to_.tab; mem = to_.mem }
+  return { ops = _sk_to; var = _vmem'; tab = from.tab; mem = from.mem }

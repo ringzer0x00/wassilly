@@ -33,6 +33,7 @@ let%test "host-reachable-table-import" =
 
 let%test "MATTIA-host-code-table-mutable" =
   Interpreter.Eval.cg := Datastructures.Callgraph.CallGraph.phi;
+  Datastructures.Callgraph.CallGraph.print (p "MATTIA-host-code-table-mutable");
   got (p "MATTIA-host-code-table-mutable") = [ (1, 0); (1, 3) ]
 
 let%test "host-code-table-mutable" =

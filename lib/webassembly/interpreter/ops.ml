@@ -49,12 +49,11 @@ let eval_loadop ({ ty; align; offset; pack } : Wasm.Ast.loadop) _ms =
 
 let eval_storeop ({ ty; align; offset; pack } : Wasm.Ast.storeop) _ms =
   let _ =
-    assert (Int32.equal Int32.zero offset);
     match pack with None -> assert true | Some _psize -> assert false
   in
   ignore align;
   match ty with
-  | Wasm.Types.I32Type -> Instructions.store_i32 _ms
+  | Wasm.Types.I32Type -> Instructions.store_i32 _ms offset
   | Wasm.Types.I64Type -> failwith "store i64"
   | Wasm.Types.F32Type -> failwith "store f32"
   | Wasm.Types.F64Type -> failwith "store f64"

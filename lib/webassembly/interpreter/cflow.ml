@@ -116,8 +116,24 @@ let prep_call ms vals mod_ locs typ_idx =
         })
       _ti
   in
-
+  let vals_as_interval =
+    List.map
+      (fun o ->
+        Memories.Memorystate.concretize_expr
+          (Memories.Memorystate.concretize_operand o ms)
+          ms)
+      vals
+  in
   let ms' = MS.new_fun_ctx ms (_ti @ locs) in
+  ms' >>=? fun d ->
+  let vals =
+    List.map2
+      (fun o i ->
+        Memories.Operand.Expression
+          ( Memories.Operand.const_expr d.var i,
+            Memories.Operand.type_of_operand o ))
+      vals vals_as_interval
+  in
   Printf.printf "here ok";
   let ms'' =
     List.fold_right2

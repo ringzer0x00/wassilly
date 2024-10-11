@@ -324,7 +324,7 @@ let load_standard vm _mem _o _t (_offset_expl : int32) =
   in
   Expression (const_expr vm i, _t)
 
-let store_standard _vm _mem _addr _val _t =
+let store_standard _vm _mem _addr _val _t (_offset_expl : int32) =
   let addr, val_ = (concretize _vm _addr, concretize _vm _val) in
   let _w, _s =
     match _t with
@@ -346,7 +346,10 @@ let store_standard _vm _mem _addr _val _t =
     and then reversed in order for endiannes consistency. then they can be written
     type of func to use to write: bit array array -> int -> t -> t*)
   (*range of offset addresses*)
-  let start_from, start_to = I.to_float addr |> tappl Float.to_int in
+  let start_from, start_to =
+    I.to_float addr |> tappl Float.to_int
+    |> tappl (Int.add (Int32.to_int _offset_expl))
+  in
   (*concretized range of offset addresses*)
   let _addrs =
     List.init (start_to - start_from + 1) (fun x -> start_from + x)
