@@ -336,7 +336,7 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
                             Importspec.Helpers.getfuncspec term
                           in
                           (*call spec_eval.eval*)
-                          let _res, _cs = Spec_eval.eval term ms modi in
+                          let _res, _cs = Spec_eval.eval term _ms'' modi in
                           let called_idxex =
                             List.map
                               (fun (Importspec.Term.Calls x) -> (fidx, x))
@@ -392,6 +392,7 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
                 (cmd_result (Ops.eval_loadop l ms) p_ans, cache, SCG.empty)
             | Store s ->
                 (cmd_result (Ops.eval_storeop s ms) p_ans, cache, SCG.empty)
+            | Unreachable -> (Bot, cache, SCG.empty)
             | _ ->
                 Wasm.Print.instr Stdlib.stdout 100 c1;
                 failwith "other commands"

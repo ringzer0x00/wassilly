@@ -63,11 +63,6 @@ let add_expr vm l r =
   let l_ex = operand_to_expr vm l in
   let r_ex = operand_to_expr vm r in
   let ex = Apronext.Texprext.binary Apronext.Texprext.Add l_ex r_ex in
-  Printf.printf "Expression:\n";
-  Apronext.Texprext.print_expr Format.std_formatter
-    (Apronext.Texprext.to_expr ex);
-  Printf.printf "\n";
-
   Expression (ex, type_of_operand l)
 
 let sub_expr vm l r =
@@ -265,7 +260,7 @@ let lshift_expr vm l r =
       Expression (const_expr vm ival, type_of_operand l)
   | false -> Expression (const_expr vm I.top, type_of_operand l)
 
-let load_standard vm _mem _o _t =
+let load_standard vm _mem _o _t (_offset_expl : int32) =
   let _w, _s =
     match _t with
     | Wasm.Types.I32Type | F32Type -> (4, 32)
@@ -284,7 +279,10 @@ let load_standard vm _mem _o _t =
   in
   let c = Memories.Operand.concretize vm _o in
   (*range of offset addresses*)
-  let start_from, start_to = I.to_float c |> tappl Float.to_int in
+  let start_from, start_to =
+    I.to_float c |> tappl Float.to_int
+    |> tappl (Int.add (Int32.to_int _offset_expl))
+  in
   (*concretized range of offset addresses*)
   let _addrs =
     List.init (start_to - start_from + 1) (fun x -> start_from + x)

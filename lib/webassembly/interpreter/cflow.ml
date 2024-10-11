@@ -118,6 +118,7 @@ let prep_call ms vals mod_ locs typ_idx =
   in
 
   let ms' = MS.new_fun_ctx ms (_ti @ locs) in
+  Printf.printf "here ok";
   let ms'' =
     List.fold_right2
       (fun b v m -> MS.assign_var m Loc b v)

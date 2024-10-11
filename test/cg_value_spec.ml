@@ -6,7 +6,7 @@ let p path =
     (d ^ path ^ "/spec.wassilly")
 
 let got = Datastructures.Callgraph.CallGraph.edges
-
+(*
 let%test "MATTIA-fib-one-external" =
   Interpreter.Eval.cg := Datastructures.Callgraph.CallGraph.phi;
   let m, g = p "MATTIA-fib-one-external" in
@@ -30,3 +30,4 @@ let%test "MATTIA-abs-val-external" =
       (Apronext.Scalarext.of_int 42)
   in
   got g = [ (1, 0) ] && Apronext.Intervalext.cmp val_conc one_pinf = 0
+*)

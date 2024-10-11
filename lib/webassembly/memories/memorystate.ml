@@ -121,7 +121,6 @@ let get_var_binding k gl idx =
       VariableMem.find_in_map a.var idx gl
       |> VariableMem.M.bindings |> List.hd |> fst
 
-(* abstract domain operations *)
 let join (k1 : t) (k2 : t) =
   match (k1, k2) with
   | Bot, _ -> k2

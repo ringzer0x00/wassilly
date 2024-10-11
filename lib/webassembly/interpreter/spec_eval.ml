@@ -191,7 +191,25 @@ let prep_call ms vals (locs : param list) (typ_ : param list * resulttype list)
   in
   let bindings_map = List.combine locs bindings_input in
   let ms' = MS.new_fun_ctx ms ti in
-  let ms'' = (*broken here apparently*)
+  let vals_as_interval =
+    List.map
+      (fun o ->
+        Memories.Memorystate.concretize_expr
+          (Memories.Memorystate.concretize_operand o ms)
+          ms)
+      vals
+  in
+  ms' >>=? fun d ->
+  let vals =
+    List.map2
+      (fun o i ->
+        Memories.Operand.Expression
+          ( Memories.Operand.const_expr d.var i,
+            Memories.Operand.type_of_operand o ))
+      vals vals_as_interval
+  in
+  let ms'' =
+    (*broken here apparently*)
     List.fold_right2
       (fun b v m -> MS.assign_var m Loc b v)
       bindings_input vals ms'
@@ -220,6 +238,7 @@ let rec implication (i : Importspec.Term.impl) (ms : MS.t)
       (join_ms t' f', List.append _c_t _c_f)
 
 let eval (p : Importspec.Term.term) ms modi =
+  Importspec.Term.pp_term Format.std_formatter p;
   let r, calls =
     match p with
     | Func (_name, funsig, impl) ->
