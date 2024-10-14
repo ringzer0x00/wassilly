@@ -135,7 +135,6 @@ let prep_call ms vals mod_ locs typ_idx =
             Memories.Operand.type_of_operand o ))
       vals vals_as_interval
   in
-  Printf.printf "here ok";
   let ms'' =
     List.fold_right2
       (fun b v m -> MS.assign_var m Loc b v)

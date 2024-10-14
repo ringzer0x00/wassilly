@@ -6,7 +6,7 @@ let p path =
     (d ^ path ^ "/spec.wassilly")
 
 let got = Datastructures.Callgraph.CallGraph.edges
-
+(*
 let%test "memory-init-offset-imported-global" =
   Interpreter.Eval.cg := Datastructures.Callgraph.CallGraph.phi;
   got (p "memory-init-offset-imported-global") = [ (0, 1) ]
@@ -44,7 +44,7 @@ let%test "MATTIA-indirect-call-index-expr-load-const-exported-memory-mutable" =
   Interpreter.Eval.cg := Datastructures.Callgraph.CallGraph.phi;
   got (p "MATTIA-indirect-call-index-expr-load-const-exported-memory-mutable")
   = [ (0, 1) ]
-(*
+
 let%test "cpp-vtable-layout-source-type-info" =
   Interpreter.Eval.cg := Datastructures.Callgraph.CallGraph.phi;
   got (p "cpp-vtable-layout-source-type-info") = []

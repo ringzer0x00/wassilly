@@ -138,6 +138,7 @@
           i32.sub
           local.tee 3
           global.set 0
+          ;; BUG HERE !!!!
           local.get 0
           local.get 2
           i32.add

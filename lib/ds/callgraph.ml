@@ -50,14 +50,24 @@ module G = struct
     let default = Int32.zero
   end
 
-  include Graph.Persistent.Digraph.ConcreteLabeled (IntInt) (Int)
+  include Graph.Persistent.Digraph.AbstractLabeled (IntInt) (Int)
+  include Graph.Graphviz.DotAttributes
 
   let phi = empty
+  let add_vertex = add_vertex
+  let add_edge = add_edge_e
 
   let union (g1 : t) (g2 : t) =
     let g1' = fold_vertex (fun v g -> add_vertex g v) g2 g1 in
     fold_edges_e (fun v e -> add_edge_e e v) g2 g1'
 
-  let add_vertex = add_vertex
-  let add_edge = add_edge_e
+  let graph_attributes _ = failwith ""
+  let default_vertex_attributes _ = failwith ""
+  let vertex_name _ = failwith ""
+  let vertex_attributes _ = failwith ""
+  let get_subgraph _ = failwith ""
+  let default_edge_attributes _ = failwith ""
+  let edge_attributes _ = failwith ""
 end
+
+module PP = Graph.Graphviz.Dot (G)

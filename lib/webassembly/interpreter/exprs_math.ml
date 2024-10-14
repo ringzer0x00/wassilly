@@ -219,8 +219,11 @@ let lxor_expr vm _o1 _o2 =
   Expression (const_expr vm v, _l_ex.t)
 
 let select_expr vm fst snd trd (_rt : Wasm.Types.value_type list option) =
+  Printf.printf "SELECT";
   let _rt =
-    match _rt with None -> type_of_operand fst | Some _ -> failwith "some @ select_expr"
+    match _rt with
+    | None -> type_of_operand fst
+    | Some _ -> failwith "some @ select_expr"
   in
   let zero_interval = Apronext.Intervalext.of_int 0 0 in
   let fst_i = concretize vm fst in
@@ -342,7 +345,17 @@ let load_standard vm _mem _o _t (_offset_expl : int32) =
   else Bottom
 
 let store_standard _vm _mem _addr _val _t (_offset_expl : int32) =
+  Format.print_newline ();
+  Format.printf "STORE: Operand:(before conc)";
+  Memories.Operand.print_operand _addr;
   let addr, val_ = (concretize _vm _addr, concretize _vm _val) in
+  Format.print_newline ();
+  Format.printf "Interval of pos to write:";
+  Apronext.Intervalext.print Format.std_formatter addr;
+  Format.print_newline ();
+  Format.printf "value to write:";
+  Apronext.Intervalext.print Format.std_formatter val_;
+  Format.print_newline ();
   let _w, _s =
     match _t with
     | Wasm.Types.I32Type | F32Type -> (4, 32)
@@ -380,8 +393,8 @@ let store_standard _vm _mem _addr _val _t (_offset_expl : int32) =
       (fun x _a ->
         try wf _b _a x
         with Invalid_argument _ ->
-          Printf.printf "WARNING: INVALID MEMORY WRITE \n\n";
-          x)
+          Printf.printf "\naddr waaaat:%i\n" _a;
+          failwith "fallito")
       _mem _addrs
   in
   mem'

@@ -121,12 +121,11 @@ let callgraph_analysis' fn _spec_path =
         r_start >>=? fun d ->
         Cflow.prep_call d.return (unbound_input t_in d.return) minst locs ft.it
       in
-      let _, _c', _ =
+      let _, cache', _ =
         Eval.fixpoint minst
           ((call_ms, fb), true)
           Eval.Stack.empty cache y.it (t_in, _t_out) Eval.MA.bot_pa Eval.step
       in
-      Printf.printf "ONE DONE!\n";
-      (Datastructures.Callgraph.CallGraph.union cg !Eval.cg, _c'))
+      (Datastructures.Callgraph.CallGraph.union cg !Eval.cg, cache'))
     (!Eval.cg, c) entrypoints
   |> fst
