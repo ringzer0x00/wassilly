@@ -1,22 +1,36 @@
-type t = Abstractbit.t array
+open Monad.DefBot
 
-let def_init = Abstractbit.Zero
-let def_init_top = Abstractbit.Top
+type tt = Abstractbit.t array t
+type t = tt
+
+let def_init = Abstractbit.zero
+let def_init_top = Abstractbit.top
 
 (** Abstract [Byte] allocation, set to [Zero]. *)
-let alloc_byte : t = Array.make 8 def_init
+let alloc_byte : t = Def (Array.make 8 def_init)
 
 (** Abstract [Byte] allocation, set to [Top]. *)
-let alloc_byte_top : t = Array.make 8 def_init_top
+let alloc_byte_top : t = Def (Array.make 8 def_init_top)
+
+let bot_byte : t = Bot
 
 (** Abstract operations between [Byte]s. *)
-let join b1 b2 = Array.map2 (fun fst snd -> Abstractbit.join fst snd) b1 b2
+let join b1 b2 =
+  match (b1, b2) with
+  | _, Bot -> b1
+  | Bot, b2 -> b2
+  | Def db1, Def db2 ->
+      return (Array.map2 (fun fst snd -> Abstractbit.join fst snd) db1 db2)
 
 let widen = join
 
 (** Inclusion operations between [Byte]s. *)
 let byte_leq b1 b2 =
-  Array.for_all2 (fun fst snd -> Abstractbit.leq fst snd) b1 b2
+  match (b1, b2) with
+  | _, Bot -> true
+  | Bot, _ -> false
+  | Def b1, Def b2 ->
+      Array.for_all2 (fun fst snd -> Abstractbit.leq fst snd) b1 b2
 
 let byte_eq b1 b2 = Array.for_all2 (fun fst snd -> Abstractbit.eq fst snd) b1 b2
 
@@ -44,7 +58,8 @@ let to_int_array =
 
 let to_int_array_minmax =
   Array.map (fun x ->
-      match x with
+      x >>=? fun b ->
+      match b with
       | Abstractbit.Zero -> (0, 0)
       | Abstractbit.One -> (1, 1)
       | Abstractbit.Top -> (0, 1))
@@ -100,7 +115,8 @@ let as_min_max a signed =
         match s with
         | Abstractbit.Zero -> Array.map minmax_pos a
         | One -> Array.map minmax_neg a
-        | Top -> minmax_negpos v |> Array.of_list)
+        | Top -> minmax_negpos v |> Array.of_list
+        | Bot -> failwith "handle bot case")
   in
   Array.split minmax
 
