@@ -218,6 +218,18 @@ let lxor_expr vm _o1 _o2 =
   let v = I.of_int _rmin _rmax in
   Expression (const_expr vm v, _l_ex.t)
 
+let select_expr vm fst snd trd (_rt : Wasm.Types.value_type list option) =
+  let _rt =
+    match _rt with None -> type_of_operand fst | Some _ -> failwith "some @ select_expr"
+  in
+  let zero_interval = Apronext.Intervalext.of_int 0 0 in
+  let fst_i = concretize vm fst in
+  let snd_i = concretize vm snd in
+  let trd_i = concretize vm trd in
+  if Apronext.Intervalext.equal fst_i zero_interval then
+    Expression (const_expr vm snd_i, _rt)
+  else Expression (const_expr vm (Apronext.Intervalext.join trd_i snd_i), _rt)
+
 let shift_stub_expr vm l _ = Expression (const_expr vm I.top, type_of_operand l)
 
 let lshift_expr vm l r =

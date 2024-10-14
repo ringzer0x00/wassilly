@@ -377,7 +377,7 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
             | Store s ->
                 (cmd_result (Ops.eval_storeop s ms) p_ans, cache, SCG.empty)
             | Unreachable -> (Bot, cache, SCG.empty)
-            | Select _rt -> failwith "select"
+            | Select _rt -> (cmd_result (Instructions.select ms _rt) p_ans, cache, SCG.empty)
             | _ ->
                 Wasm.Print.instr Stdlib.stdout 100 c1;
                 failwith "other commands"

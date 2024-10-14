@@ -90,6 +90,14 @@ let binop s f =
   let res = f l r in
   (res, s)
 
+let ternop s f =
+  let operand, s = (peek_n 3 s, pop_n 3 s) in
+  let fst, snd, trd =
+    (List.nth operand 2, List.nth operand 1, List.nth operand 0)
+  in
+  let res = f fst snd trd in
+  (res, s)
+
 let cmpop s f =
   let operand, s = (peek_n 2 s, pop_n 2 s) in
   let l, r = (List.nth operand 1, List.nth operand 0) in

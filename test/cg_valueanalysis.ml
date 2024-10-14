@@ -6,7 +6,7 @@ let p path =
     (d ^ path ^ "/spec.wassilly")
 
 let got = Datastructures.Callgraph.CallGraph.edges
-(*
+
 let%test "MATTIA-direct-call-value" =
   Interpreter.Eval.cg := Datastructures.Callgraph.CallGraph.phi;
   let m, g = p "MATTIA-direct-call-value" in
@@ -29,4 +29,4 @@ let%test "MATTIA-direct-call-mutated-global-ref" =
   let m, g = p "MATTIA-direct-call-mutated-global-ref" in
   let top_stack = Memories.Memorystate.peek_operand m |> List.hd in
   let val_conc = Memories.Memorystate.operand_as_interval top_stack m in
-  got g = [ (1, 0) ] && Apronext.Intervalext.equal val_conc (Apronext.Intervalext.of_int 14 14)*)
+  got g = [ (1, 0) ] && Apronext.Intervalext.equal val_conc (Apronext.Intervalext.of_int 14 14)

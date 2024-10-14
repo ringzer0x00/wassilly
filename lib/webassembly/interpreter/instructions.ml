@@ -213,34 +213,44 @@ let extend_u_i32 _prec = failwith "extend unsign"
 let load_i32 prec offset =
   prec >>= fun d ->
   let opsk' =
-    unop d.ops (fun x -> load_standard d.var d.mem x Wasm.Types.I32Type offset) |> push
+    unop d.ops (fun x -> load_standard d.var d.mem x Wasm.Types.I32Type offset)
+    |> push
   in
   return { ops = opsk'; var = d.var; mem = d.mem; tab = d.tab }
 
 let load_i64 prec offset =
   prec >>= fun d ->
   let opsk' =
-    unop d.ops (fun x -> load_standard d.var d.mem x Wasm.Types.I64Type offset) |> push
+    unop d.ops (fun x -> load_standard d.var d.mem x Wasm.Types.I64Type offset)
+    |> push
   in
   return { ops = opsk'; var = d.var; mem = d.mem; tab = d.tab }
 
 let load_f32 prec offset =
   prec >>= fun d ->
   let opsk' =
-    unop d.ops (fun x -> load_standard d.var d.mem x Wasm.Types.F32Type offset) |> push
+    unop d.ops (fun x -> load_standard d.var d.mem x Wasm.Types.F32Type offset)
+    |> push
   in
   return { ops = opsk'; var = d.var; mem = d.mem; tab = d.tab }
 
 let load_f64 prec offset =
   prec >>= fun d ->
   let opsk' =
-    unop d.ops (fun x -> load_standard d.var d.mem x Wasm.Types.F64Type offset) |> push
+    unop d.ops (fun x -> load_standard d.var d.mem x Wasm.Types.F64Type offset)
+    |> push
   in
   return { ops = opsk'; var = d.var; mem = d.mem; tab = d.tab }
 
 let store_i32 prec offset =
   prec >>= fun d ->
   let mem', opsk' =
-    storeop d.ops (fun x y -> store_standard d.var d.mem x y Wasm.Types.I32Type offset)
+    storeop d.ops (fun x y ->
+        store_standard d.var d.mem x y Wasm.Types.I32Type offset)
   in
   return { ops = opsk'; var = d.var; mem = mem'; tab = d.tab }
+
+let select prec _rt =
+  prec >>= fun d ->
+    let opsk' = ternop d.ops (fun x y z -> select_expr d.var x y z _rt) |> push in
+    return { ops = opsk'; var = d.var; mem = d.mem; tab = d.tab }
