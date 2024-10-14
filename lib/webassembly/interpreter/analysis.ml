@@ -103,14 +103,14 @@ let callgraph_analysis' fn _spec_path =
       mod_.it.exports
   in
   let _fs_all = List.mapi (fun i _ -> Int32.of_int i) mod_.it.funcs in
-  let r_start, _, _ =
+  let r_start, c, _ =
     i >>=? fun _ ->
     Eval.fixpoint minst
       ((i, startf), true)
       Eval.Stack.empty Eval.Cache.empty fstart ([], []) Eval.MA.bot_pa Eval.step
   in
   List.fold_left
-    (fun cg (y : Wasm.Ast.var) ->
+    (fun (cg, cache) (y : Wasm.Ast.var) ->
       Eval.cg := Datastructures.Callgraph.CallGraph.phi;
       let fb, locs, ft = Eval.getfbody minst (Int32.to_int y.it) in
       let t_in, _t_out =
@@ -121,11 +121,12 @@ let callgraph_analysis' fn _spec_path =
         r_start >>=? fun d ->
         Cflow.prep_call d.return (unbound_input t_in d.return) minst locs ft.it
       in
-      let _ =
+      let _, _c', _ =
         Eval.fixpoint minst
           ((call_ms, fb), true)
-          Eval.Stack.empty Eval.Cache.empty y.it
-          (t_in, _t_out) Eval.MA.bot_pa Eval.step
+          Eval.Stack.empty cache y.it (t_in, _t_out) Eval.MA.bot_pa Eval.step
       in
-      Datastructures.Callgraph.CallGraph.union cg !Eval.cg)
-    !Eval.cg entrypoints
+      Printf.printf "ONE DONE!\n";
+      (Datastructures.Callgraph.CallGraph.union cg !Eval.cg, _c'))
+    (!Eval.cg, c) entrypoints
+  |> fst

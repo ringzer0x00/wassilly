@@ -66,7 +66,11 @@ let peek_binop k = peek_n_operand 2 k
 let peek_nth_label k n = k >>=? fun a -> peek_nth_label a.ops n
 
 (* push functions *)
-let push_operand x k = k >>= fun a -> update_operandstack (x @ a.ops) k
+let push_operand x k =
+  let isb =
+    List.exists (fun o -> match o with Operand.Bottom -> true | _ -> false) x
+  in
+  if isb then Bot else k >>= fun a -> update_operandstack (x @ a.ops) k
 
 (*table stuff*)
 let table_getrefs idx typ k =
@@ -94,13 +98,15 @@ let is_lsk_empty k =
 
 let write_mem_raw k _off _data =
   k >>= fun a ->
-  return
-    {
-      ops = a.ops;
-      var = a.var;
-      tab = a.tab;
-      mem = Linearmem.internal_write_byte_raw _data _off a.mem;
-    }
+  try
+    return
+      {
+        ops = a.ops;
+        var = a.var;
+        tab = a.tab;
+        mem = Linearmem.internal_write_byte_raw _data _off a.mem;
+      }
+  with Invalid_argument _ -> Bot
 
 let assign_var k gl b e =
   k >>= fun a ->

@@ -308,23 +308,26 @@ let load_standard vm _mem _o _t (_offset_expl : int32) =
       reads
   in
   (*bitwise result*)
-  let read =
-    List.fold_left
-      (fun r x -> Datastructures.Abstractbyte.join r x)
-      (List.nth reads' 0) reads'
-  in
-  let lim1, lim2 =
-    (*BUG(29 aug-2024): when all top, the values produced are -1;0 (all 1s and all 0s.)
-      as_min_max has to work differently to work correctly*)
-    Datastructures.Abstractbyte.as_int_arrays ~signed:true read
-    |> tappl Array.to_list |> tappl conv_f |> tappl Mpqf.of_string
-    |> tappl S.of_mpqf
-  in
-  let i =
-    if S.cmp lim1 lim2 <= 0 then I.of_scalar lim1 lim2
-    else I.of_scalar lim2 lim1
-  in
-  Expression (const_expr vm i, _t)
+  if reads' != [] then
+    let read =
+      List.fold_left
+        (fun r x -> Datastructures.Abstractbyte.join r x)
+        (List.nth reads' 0) reads'
+    in
+    let lim1, lim2 =
+      (*BUG(29 aug-2024): when all top, the values produced are -1;0 (all 1s and all 0s.)
+        as_min_max has to work differently to work correctly*)
+      Datastructures.Abstractbyte.as_int_arrays ~signed:true read
+      |> tappl Array.to_list |> tappl conv_f |> tappl Mpqf.of_string
+      |> tappl S.of_mpqf
+    in
+    let i =
+      if S.cmp lim1 lim2 <= 0 then I.of_scalar lim1 lim2
+      else I.of_scalar lim2 lim1
+    in
+    if Apronext.Intervalext.is_bottom i then Bottom
+    else Expression (const_expr vm i, _t)
+  else Bottom
 
 let store_standard _vm _mem _addr _val _t (_offset_expl : int32) =
   let addr, val_ = (concretize _vm _addr, concretize _vm _val) in
@@ -360,5 +363,13 @@ let store_standard _vm _mem _addr _val _t (_offset_expl : int32) =
     if List.length _addrs == 1 then Memories.Linearmem.strong_write_to_mem
     else Memories.Linearmem.write_to_mem
   in
-  let mem' = List.fold_left (fun x _a -> wf _b _a x) _mem _addrs in
+  let mem' =
+    List.fold_left
+      (fun x _a ->
+        try wf _b _a x
+        with Invalid_argument _ ->
+          Printf.printf "WARNING: INVALID MEMORY WRITE \n\n";
+          x)
+      _mem _addrs
+  in
   mem'

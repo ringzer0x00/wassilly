@@ -16,7 +16,6 @@ let eval_val (v : value) (ms : MS.t) loc_bindings =
           c)
       c bindings
   in
-  Printf.printf "eval_val";
   ms >>=? fun def ->
   let interval =
     match v with
@@ -238,7 +237,7 @@ let rec implication (i : Importspec.Term.impl) (ms : MS.t)
       (join_ms t' f', List.append _c_t _c_f)
 
 let eval (p : Importspec.Term.term) ms modi =
-  Importspec.Term.pp_term Format.std_formatter p;
+  (*Importspec.Term.pp_term Format.std_formatter p;*)
   let r, calls =
     match p with
     | Func (_name, funsig, impl) ->

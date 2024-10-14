@@ -12,6 +12,7 @@ type operand =
   | GVarRef of VariableMem.binding * wasmNumeric
   | FuncRef of Wasm.Types.ref_type * int32 option * int32 option
   | Label of Label.label
+  | Bottom
 
 let type_of_operand = function
   | Expression (_, wasmNumeric) -> wasmNumeric
@@ -20,6 +21,7 @@ let type_of_operand = function
   | BooleanExpression _ -> Wasm.Types.I32Type
   | Label _ -> failwith "labeeeeeeeeeeeel"
   | FuncRef _ -> failwith "funcref @ type of operand"
+  | Bottom -> failwith "bottom asked for type"
 
 let size_of_type = function
   | Wasm.Types.I32Type | Wasm.Types.F32Type -> 32
@@ -35,6 +37,7 @@ let print_operand = function
   | GVarRef _ -> Printf.printf "GVarRef;"
   | FuncRef _ -> Printf.printf "FuncRef;"
   | Label _ -> Printf.printf "label"
+  | Bottom -> Printf.printf "bottom"
 
 let is_label = function Label _ -> true | _ -> false
 
@@ -49,11 +52,12 @@ let ref_to_apronvar op =
   match op with
   | LVarRef (i, _) -> VariableMem.apronvar_of_binding i VariableMem.Loc
   | GVarRef (i, _) -> VariableMem.apronvar_of_binding i VariableMem.Glob
-  | Expression _ -> failwith "ref to apronvar @ operandstack - expr case"
+  | Expression _ -> Apron.Var.of_string "non-existing-variable"
   | BooleanExpression _ ->
       failwith "ref to apronvar @ operandstack - bexpr case"
   | FuncRef _ -> failwith "no correspondance of funcref here"
   | Label _ -> failwith "apronvar of label lmao"
+  | Bottom -> failwith "bottom @ ref"
 
 let ref_of_binding b gl =
   match gl with
@@ -86,6 +90,7 @@ let operand_to_expr (mem : varmemories) op =
   | BooleanExpression constr -> const_expr mem (boole_as_int constr mem)
   | FuncRef _ -> failwith "cannot convert funcref to expr"
   | Label _ -> failwith "cannot convert to expr label"
+  | Bottom -> failwith "bottom has no expr"
 
 let concretize (mem : varmemories) op =
   match op with
@@ -96,6 +101,7 @@ let concretize (mem : varmemories) op =
   | BooleanExpression c -> boole_as_int c mem
   | FuncRef _ -> failwith "idk @ concretize funcref"
   | Label _ -> failwith "cannot concretize label"
+  | Bottom -> failwith "cannot conc bottom"
 
 let operand_to_bits mem op =
   let _typ_ = type_of_operand op in
@@ -150,6 +156,7 @@ let repl operand to_replace (mem : varmemories) =
       failwith "re-construct bex', analyse stuff in bex blabla"
   | FuncRef _ -> failwith "funcref @ concretize"
   | Label _ as l -> l
+  | Bottom -> failwith "bottom @ operand to replace"
 
 let convert_extend vm op dt =
   match op with

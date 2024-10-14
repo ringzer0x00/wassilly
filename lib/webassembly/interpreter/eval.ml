@@ -191,7 +191,9 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
                     l ms
                 in
                 let _a_t, c', scg =
-                  Cflow.br depth ms_t p_ans cache modi ft fixf
+                  match ms_t with
+                  | Bot -> (Bot, cache, SCG.empty)
+                  | _ -> Cflow.br depth ms_t p_ans cache modi ft fixf
                 in
                 let ans =
                   match _a_t with
@@ -375,6 +377,7 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
             | Store s ->
                 (cmd_result (Ops.eval_storeop s ms) p_ans, cache, SCG.empty)
             | Unreachable -> (Bot, cache, SCG.empty)
+            | Select _rt -> failwith "select"
             | _ ->
                 Wasm.Print.instr Stdlib.stdout 100 c1;
                 failwith "other commands"
