@@ -250,7 +250,7 @@ let store_i32 prec offset =
   in
   return { ops = opsk'; var = d.var; mem = mem'; tab = d.tab }
 
-let select prec _rt =
+let select prec rt =
   prec >>= fun d ->
-    let opsk' = ternop d.ops (fun x y z -> select_expr d.var x y z _rt) |> push in
+    let opsk' = ternop d.ops (fun x y z -> select_expr d.var x y z rt) |> push in
     return { ops = opsk'; var = d.var; mem = d.mem; tab = d.tab }
