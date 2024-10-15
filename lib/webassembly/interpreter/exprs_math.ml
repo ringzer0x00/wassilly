@@ -242,7 +242,6 @@ let select_expr vm fst snd trd (_rt : Wasm.Types.value_type list option) =
 let shift_stub_expr vm l _ = Expression (const_expr vm I.top, type_of_operand l)
 
 let lshift_expr vm l r =
-  (*stub really, always gives top*)
   let _by = Memories.Operand.concretize vm r in
   let l_i = Memories.Operand.concretize vm l in
   let lb = Language.Bitwisenumber.of_interval l_i (type_of_operand l) in
@@ -251,6 +250,7 @@ let lshift_expr vm l r =
   (*range == 0*)
   | true ->
       let _r = Bitwisealu.shift_left lb (Float.to_int (S.to_float _by.inf)) in
+      Datastructures.Abstractbyte.print_byte _r;
       let min, max =
         Datastructures.Abstractbyte.as_int_arrays _r ~signed:true
       in
@@ -305,13 +305,6 @@ let load_standard vm _mem _o _t (_offset_expl : int32) =
     I.to_float c |> tappl Float.to_int
     |> tappl (Int.add (Int32.to_int _offset_expl))
   in
-  (*concretized range of offset addresses*)
-  Format.printf "Interval:";
-  Apronext.Intervalext.print Format.std_formatter c;
-
-  Format.print_newline ();
-  Format.printf "Kaboom???";
-  Format.print_newline ();
   let threshold_mem = 10 in
   let is_past_thresh =
     Apronext.Scalarext.cmp_int (Apronext.Intervalext.range c) threshold_mem >= 0
@@ -327,8 +320,6 @@ let load_standard vm _mem _o _t (_offset_expl : int32) =
   let addrs_list_set =
     listmap' (fun f -> List.init _w (fun x -> f + x)) _addrs
   in
-  Format.printf "NO KABOOM";
-  Format.print_newline ();
   (*word by word reading*)
   let reads =
     listmap'
@@ -403,7 +394,7 @@ let store_standard _vm _mem _addr _val _t (_offset_expl : int32) =
     Apronext.Scalarext.cmp_int (Apronext.Intervalext.range addr) threshold_mem
     >= 0
   in
-  if is_past_thresh then failwith "past threshold, todo"
+  if is_past_thresh then failwith "threshold write"
   else
     let start_from, start_to =
       I.to_float addr |> tappl Float.to_int

@@ -13,7 +13,6 @@ let alloc_page n : page = Array.make (wasm_page_size * n) AByte.alloc_byte
 
 let alloc_page_top n : page =
   Array.make (wasm_page_size * n) AByte.alloc_byte_top
-
 let pageconcat (pold : t) (pnew : t) : t = Array.concat [ pold; pnew ]
 let size m = Array.length m / wasm_page_size
 let length_max m = Array.length m

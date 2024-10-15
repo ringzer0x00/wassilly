@@ -9,4 +9,16 @@ let%test "largemem" =
   let val_conc = Memories.Memorystate.operand_as_interval top_stack m in
   Apronext.Intervalext.equal val_conc (Apronext.Intervalext.of_int 7 7)
 
-(*todo rest in tc*)
+let%test "and" =
+  Interpreter.Eval.cg := Datastructures.Callgraph.CallGraph.phi;
+  let m, _ = p "and" in
+  let top_stack = Memories.Memorystate.peek_operand m |> List.hd in
+  let val_conc = Memories.Memorystate.operand_as_interval top_stack m in
+  Apronext.Intervalext.equal val_conc (Apronext.Intervalext.of_int 0 1)
+
+let%test "br" =
+  Interpreter.Eval.cg := Datastructures.Callgraph.CallGraph.phi;
+  let m, _ = p "br" in
+  let top_stack = Memories.Memorystate.peek_operand m |> List.hd in
+  let val_conc = Memories.Memorystate.operand_as_interval top_stack m in
+  Apronext.Intervalext.equal val_conc (Apronext.Intervalext.top)
