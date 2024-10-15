@@ -300,30 +300,45 @@ let load_standard vm _mem _o _t (_offset_expl : int32) =
     |> tappl (Int.add (Int32.to_int _offset_expl))
   in
   (*concretized range of offset addresses*)
+  Format.printf "Interval:";
+
+  Apronext.Intervalext.print Format.std_formatter c;
+
+  Format.print_newline ();
+  Format.printf "Kaboom???";
+  Format.print_newline ();
   let _addrs =
     List.init (start_to - start_from + 1) (fun x -> start_from + x)
     |> List.filter (fun a -> a >= mem_min && a <= mem_max)
   in
   (*concretized set of addresses to read from (each sublist represents all of the words to read from memory)*)
-  let addrs_list_set =
-    List.map (fun f -> List.init _w (fun x -> f + x)) _addrs
+  (*BUG: stack overflow this one*)
+  Format.printf "start_from:%i, start_to:%i, len:%i\n" start_from start_to
+    (List.length _addrs);
+  let[@tail_mod_cons] rec map f = function
+    | [] -> []
+    | x :: xs -> f x :: map f xs
   in
+  let addrs_list_set = map (fun f -> List.init _w (fun x -> f + x)) _addrs in
+  Format.printf "NO KABOOM";
+  Format.print_newline ();
   (*word by word reading*)
   let reads =
-    List.map
+    map
       (fun addr_list ->
-        List.map (fun a -> Memories.Linearmem.read_byte a _mem) addr_list)
+        map (fun a -> Memories.Linearmem.read_byte a _mem) addr_list)
       addrs_list_set
   in
   (*readings*)
   let reads' =
-    List.map
+    map
       (*memory is little endian, this makes it big endian*)
         (fun r -> List.fold_left (fun acc v -> Array.append v acc) [||] r)
       reads
   in
   (*bitwise result*)
-  if reads' != [] then
+  if reads' = [] then Bottom
+  else
     let read =
       List.fold_left
         (fun r x -> Datastructures.Abstractbyte.join r x)
@@ -342,7 +357,6 @@ let load_standard vm _mem _o _t (_offset_expl : int32) =
     in
     if Apronext.Intervalext.is_bottom i then Bottom
     else Expression (const_expr vm i, _t)
-  else Bottom
 
 let store_standard _vm _mem _addr _val _t (_offset_expl : int32) =
   Format.print_newline ();
@@ -388,13 +402,5 @@ let store_standard _vm _mem _addr _val _t (_offset_expl : int32) =
     if List.length _addrs == 1 then Memories.Linearmem.strong_write_to_mem
     else Memories.Linearmem.write_to_mem
   in
-  let mem' =
-    List.fold_left
-      (fun x _a ->
-        try wf _b _a x
-        with Invalid_argument _ ->
-          Printf.printf "\naddr waaaat:%i\n" _a;
-          failwith "fallito")
-      _mem _addrs
-  in
+  let mem' = List.fold_left (fun x _a -> wf _b _a x) _mem _addrs in
   mem'

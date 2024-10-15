@@ -48,21 +48,24 @@ let ite_condition ms =
 
 let enter_label _l ms mod_ =
   ms >>= fun _ ->
-    let in_, _ =
-      match _l with
-      | Memories.Operand.Label lab ->
-          Memories.Label.type_of_peeked_label lab
-          |> Memories.Label.extract_type_of_label mod_
-      | _ -> failwith "booooooo enter label bnoooo"
-    in
-    let vals, ms' =
-      ( MS.peek_n_operand (List.length in_) ms,
-        MS.pop_n_operand (List.length in_) ms )
-    in
-    Memories.Memorystate.push_operand (vals @ [ _l ]) ms'
+  let in_, _ =
+    match _l with
+    | Memories.Operand.Label lab ->
+        Memories.Label.type_of_peeked_label lab
+        |> Memories.Label.extract_type_of_label mod_
+    | _ -> failwith "booooooo enter label bnoooo"
+  in
+  let vals, ms' =
+    ( MS.peek_n_operand (List.length in_) ms,
+      MS.pop_n_operand (List.length in_) ms )
+  in
+  Memories.Memorystate.push_operand (vals @ [ _l ]) ms'
 
 let monad_step c1 ca f =
-  match c1 with Bot -> (Bot, ca, SCG.SCC.empty) | Def d -> f d
+  match c1 with
+  | Bot -> (Bot, ca, SCG.SCC.empty)
+  | Def d -> (
+      match d.nat with Def _ -> f d | Bot -> (Bot, ca, SCG.SCC.empty))
 
 let block_result r_b block_body =
   Printf.printf "BLCOK RESULT";

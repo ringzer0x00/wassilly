@@ -55,12 +55,12 @@ let fixpoint _module (call, ifb) stack cache fin ft pres stepf =
 let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
     ans * Cache.t * SCG.t =
   let (ms : MS.t), (p : p) = call in
-  match ms with
+  (*match ms with
   | Bot ->
       ( return { nat = Bot; return = p_ans.p_return; br = p_ans.p_br },
         cache,
         SCG.empty )
-  | Def _ -> (
+  | Def _ -> ( *)
       match p with
       | [] ->
           if MS.is_lsk_empty ms then (end_of_func ms p_ans, cache, SCG.empty)
@@ -388,4 +388,5 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
                   ((x.nat, c2), false)
                   sk cache' fin ft (pans_of_answer x) step)
           in
-          (seq_result res1 res2, cache'', SCG.union scg_h scg_t))
+          (seq_result res1 res2, cache'', SCG.union scg_h scg_t)
+          (* ) *)
