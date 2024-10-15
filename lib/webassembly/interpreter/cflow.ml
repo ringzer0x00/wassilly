@@ -64,8 +64,7 @@ let enter_label _l ms mod_ =
 let monad_step c1 ca f =
   match c1 with
   | Bot -> (Bot, ca, SCG.SCC.empty)
-  | Def d -> (
-      match d.nat with Def _ -> f d | Bot -> (Bot, ca, SCG.SCC.empty))
+  | Def d -> ( match d.nat with Def _ -> f d | Bot -> (c1, ca, SCG.SCC.empty))
 
 let block_result r_b block_body =
   Printf.printf "BLCOK RESULT";
@@ -185,6 +184,7 @@ let br depth ms p_ans cache modul_ ft fixf =
       fixf l ms'''
       (*this is wrong... probably, i think i should do stack manips beforehand*)
   | None ->
+      Printf.printf "RETURN CASE";
       let ms'' =
         if not (MS.is_lsk_empty ms') then MS.pop_n_labels ms' depth else ms'
       in

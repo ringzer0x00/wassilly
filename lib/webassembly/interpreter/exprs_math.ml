@@ -359,7 +359,6 @@ let load_standard vm _mem _o _t (_offset_expl : int32) =
     else Expression (const_expr vm i, _t)
 
 let store_standard _vm _mem _addr _val _t (_offset_expl : int32) =
-  let mem_min, mem_max = (0, Memories.Linearmem.length_max _mem) in
   Printf.printf "STORE: Operand:(before conc)";
   Memories.Operand.print_operand _addr;
   let addr, val_ = (concretize _vm _addr, concretize _vm _val) in
@@ -374,6 +373,7 @@ let store_standard _vm _mem _addr _val _t (_offset_expl : int32) =
     | Wasm.Types.I32Type | F32Type -> (4, 32)
     | Wasm.Types.I64Type | F64Type -> (8, 64)
   in
+  let mem_min, mem_max = (0, Memories.Linearmem.length_max _mem - _s) in
   let _bytes_to_split =
     Language.Bitwisenumber.of_interval val_ _t
     |> Language.Bitwisenumber.binary_interval_to_abstract_bitwise
@@ -408,7 +408,7 @@ let store_standard _vm _mem _addr _val _t (_offset_expl : int32) =
     in
     let wf =
       match List.length _addrs with
-      | 0 -> raise NoValidWritesExn
+      | 0 -> failwith "raise NoValidWritesExn"
       | 1 -> Memories.Linearmem.strong_write_to_mem
       | _ -> Memories.Linearmem.write_to_mem
     in
