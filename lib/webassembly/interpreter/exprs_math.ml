@@ -2,6 +2,9 @@ open Memories.Operand
 module I = Apronext.Intervalext
 module S = Apronext.Scalarext
 
+exception NoValidWritesExn
+
+let listmap' = Utilities.List_.listmap'
 let tappl = Utilities.Tuple.tuple_appl
 
 let const (n : Wasm.Ast.num) (vm : varmemories) =
@@ -219,7 +222,7 @@ let lxor_expr vm _o1 _o2 =
   Expression (const_expr vm v, _l_ex.t)
 
 let select_expr vm fst snd trd (_rt : Wasm.Types.value_type list option) =
-  Printf.printf "SELECT";
+  Printf.printf "SELECT\n\n";
   let _rt =
     match _rt with
     | None -> type_of_operand fst
@@ -229,8 +232,11 @@ let select_expr vm fst snd trd (_rt : Wasm.Types.value_type list option) =
   let fst_i = concretize vm fst in
   let snd_i = concretize vm snd in
   let trd_i = concretize vm trd in
-  if Apronext.Intervalext.equal fst_i zero_interval then
-    Expression (const_expr vm snd_i, _rt)
+  Apronext.Intervalext.print Format.std_formatter fst_i;
+  Apronext.Intervalext.print Format.std_formatter snd_i;
+  Apronext.Intervalext.print Format.std_formatter trd_i;
+  Format.print_newline ();
+  if Apronext.Intervalext.equal fst_i zero_interval then snd
   else Expression (const_expr vm (Apronext.Intervalext.join trd_i snd_i), _rt)
 
 let shift_stub_expr vm l _ = Expression (const_expr vm I.top, type_of_operand l)
@@ -301,40 +307,43 @@ let load_standard vm _mem _o _t (_offset_expl : int32) =
   in
   (*concretized range of offset addresses*)
   Format.printf "Interval:";
-
   Apronext.Intervalext.print Format.std_formatter c;
 
   Format.print_newline ();
   Format.printf "Kaboom???";
   Format.print_newline ();
+  let threshold_mem = 10 in
+  let is_past_thresh =
+    Apronext.Scalarext.cmp_int (Apronext.Intervalext.range c) threshold_mem >= 0
+  in
   let _addrs =
-    List.init (start_to - start_from + 1) (fun x -> start_from + x)
-    |> List.filter (fun a -> a >= mem_min && a <= mem_max)
+    if is_past_thresh then []
+    else
+      List.init (start_to - start_from + 1) (fun x -> start_from + x)
+      |> List.filter (fun a -> a >= mem_min && a <= mem_max - _s)
   in
   (*concretized set of addresses to read from (each sublist represents all of the words to read from memory)*)
   (*BUG: stack overflow this one*)
-  Format.printf "start_from:%i, start_to:%i, len:%i\n" start_from start_to
-    (List.length _addrs);
-  let[@tail_mod_cons] rec map f = function
-    | [] -> []
-    | x :: xs -> f x :: map f xs
+  let addrs_list_set =
+    listmap' (fun f -> List.init _w (fun x -> f + x)) _addrs
   in
-  let addrs_list_set = map (fun f -> List.init _w (fun x -> f + x)) _addrs in
   Format.printf "NO KABOOM";
   Format.print_newline ();
   (*word by word reading*)
   let reads =
-    map
+    listmap'
       (fun addr_list ->
-        map (fun a -> Memories.Linearmem.read_byte a _mem) addr_list)
+        listmap' (fun a -> Memories.Linearmem.read_byte a _mem) addr_list)
       addrs_list_set
   in
   (*readings*)
   let reads' =
-    map
-      (*memory is little endian, this makes it big endian*)
-        (fun r -> List.fold_left (fun acc v -> Array.append v acc) [||] r)
-      reads
+    if not is_past_thresh then
+      listmap'
+        (*memory is little endian, this makes it big endian*)
+          (fun r -> List.fold_left (fun acc v -> Array.append v acc) [||] r)
+        reads
+    else [ Array.make _s Bitwisealu.Bit.Top ]
   in
   (*bitwise result*)
   if reads' = [] then Bottom
@@ -359,17 +368,16 @@ let load_standard vm _mem _o _t (_offset_expl : int32) =
     else Expression (const_expr vm i, _t)
 
 let store_standard _vm _mem _addr _val _t (_offset_expl : int32) =
-  Format.print_newline ();
-  Format.printf "STORE: Operand:(before conc)";
+  let mem_min, mem_max = (0, Memories.Linearmem.length_max _mem) in
+  Printf.printf "STORE: Operand:(before conc)";
   Memories.Operand.print_operand _addr;
   let addr, val_ = (concretize _vm _addr, concretize _vm _val) in
-  Format.print_newline ();
-  Format.printf "Interval of pos to write:";
+  Printf.printf "Interval of pos to write:";
   Apronext.Intervalext.print Format.std_formatter addr;
-  Format.print_newline ();
-  Format.printf "value to write:";
+  Printf.printf "value to write:";
   Apronext.Intervalext.print Format.std_formatter val_;
   Format.print_newline ();
+  let _ = Format.flush_str_formatter () in
   let _w, _s =
     match _t with
     | Wasm.Types.I32Type | F32Type -> (4, 32)
@@ -390,17 +398,28 @@ let store_standard _vm _mem _addr _val _t (_offset_expl : int32) =
     and then reversed in order for endiannes consistency. then they can be written
     type of func to use to write: bit array array -> int -> t -> t*)
   (*range of offset addresses*)
-  let start_from, start_to =
-    I.to_float addr |> tappl Float.to_int
-    |> tappl (Int.add (Int32.to_int _offset_expl))
+  let threshold_mem = 10 in
+  let is_past_thresh =
+    Apronext.Scalarext.cmp_int (Apronext.Intervalext.range addr) threshold_mem
+    >= 0
   in
-  (*concretized range of offset addresses*)
-  let _addrs =
-    List.init (start_to - start_from + 1) (fun x -> start_from + x)
-  in
-  let wf =
-    if List.length _addrs == 1 then Memories.Linearmem.strong_write_to_mem
-    else Memories.Linearmem.write_to_mem
-  in
-  let mem' = List.fold_left (fun x _a -> wf _b _a x) _mem _addrs in
-  mem'
+  if is_past_thresh then failwith "past threshold, todo"
+  else
+    let start_from, start_to =
+      I.to_float addr |> tappl Float.to_int
+      |> tappl (Int.add (Int32.to_int _offset_expl))
+    in
+    (*concretized range of offset addresses*)
+    let _addrs =
+      List.init
+        (min mem_max start_to - max mem_min start_from + 1)
+        (fun x -> max mem_min start_from + x)
+    in
+    let wf =
+      match List.length _addrs with
+      | 0 -> raise NoValidWritesExn
+      | 1 -> Memories.Linearmem.strong_write_to_mem
+      | _ -> Memories.Linearmem.write_to_mem
+    in
+    let mem' = List.fold_left (fun x _a -> wf _b _a x) _mem _addrs in
+    mem'

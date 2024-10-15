@@ -18,6 +18,7 @@ module CallGraph = struct
   let add = S.add
   let union = S.union
   let of_list = S.of_list
+  let to_list g = S.to_seq g |> List.of_seq
 
   let print g =
     Printf.printf "Callgraph:[";

@@ -107,5 +107,9 @@ let cmpop s f =
 let storeop s f =
   let operand, s = (peek_n 2 s, pop_n 2 s) in
   let l, r = (List.nth operand 1, List.nth operand 0) in
+  Format.printf "operands store:";
+  Operand.print_operand l;
+  Operand.print_operand r;
+  Format.print_newline ();
   let res = f l r in
   (res, s)
