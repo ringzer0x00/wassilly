@@ -124,15 +124,47 @@ let%test "importspec-rsa-test-id" =
   = Program [ Func ("example", FuncSig ([], []), Implies ([], [], [])) ]
 
 let%test "func-sequence" =
-  parse_program "func example1 ([] -> []) id\nfunc example2 ([] -> []) id\nfunc example3 ([] -> []) id"
+  parse_program
+    "func example1 ([] -> []) id\n\
+     func example2 ([] -> []) id\n\
+     func example3 ([] -> []) id"
   = Program
       [
         Func ("example1", FuncSig ([], []), Implies ([], [], []));
         Func ("example2", FuncSig ([], []), Implies ([], [], []));
         Func ("example3", FuncSig ([], []), Implies ([], [], []));
-
       ]
-(*\n
-  func __wbg_stack_0ddaca5d1abfb52f ([param i32 x param i32 y] -> []) id\n
-  func __wbg_error_09919627ac0992f5 ([param i32 x param i32 y] -> []) id\n
-  func __wbindgen_throw ([param i32 x param i32 y] -> []) id*)
+
+let%test "IMPORTSPEC-side" =
+  parse_program "func mut ([] -> []) effect glob 0 i32 [1;1]"
+  = Program
+      [
+        Func
+          ( "mut",
+            FuncSig ([], []),
+            Implies
+              ([], [ GlobAss (Int32.of_int 0, I32Type, Num (I.of_int 1 1)) ], [])
+          );
+      ]
+
+(*let assignment := | EFFECT; GLOB; x=INT_LIT; t=wasmvaluetype; v=value; {GlobAss ((Int32.of_int x),t,v)}
+            | EFFECT; MEM; m=ID; off=value; v=value; t=wasmvaluetype; {MemAss (m,off,v,t)}
+            | EFFECT; TABLE; x=ID; b=tablebinding; {TableAss(x,b)}*)
+let%test "effect-mem" =
+  parse_program
+    "func args_sizes_get ([param i32 x param i32 y] -> []) i32 [1;1] \
+     effect memmut memory x x i32"
+  = Program
+      [
+        Func
+          ( "args_sizes_get",
+            FuncSig ([ Param (I32Type, "x"); Param (I32Type, "y") ], []),
+            Implies
+              ( [
+                  Result
+                    ( I32Type,
+                      Num (I.of_int 1 1) );
+                ],
+                [ MemAss ("memory", Rel "x", Rel "x", I32Type) ],
+                [] ) );
+      ]

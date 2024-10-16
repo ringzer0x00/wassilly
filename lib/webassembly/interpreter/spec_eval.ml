@@ -6,6 +6,7 @@ let apron_expr_parse (m : MS.ms) e =
   Apron.Parser.texpr1_of_string m.var.ad.env e
 
 let join_ms = Memories.Memorystate.join
+let printer = Utilities.Printer.print
 
 let eval_val (v : value) (ms : MS.t) loc_bindings =
   let massage_value bindings c =
@@ -74,13 +75,14 @@ let eval_assignment a m bindings (modi : Memories.Instance.instance) =
       let wasmtype = Importspec.Wasmtypes.as_wasm_numeric _wt in
       m >>=? fun d ->
       let operand_val =
-        Memories.Operand.Expression (eval_val _val_ m [], wasmtype)
+        Memories.Operand.Expression (eval_val _val_ m bindings, wasmtype)
       in
       let _addr_val =
-        Memories.Operand.Expression (eval_val _o_start m [], wasmtype)
+        Memories.Operand.Expression (eval_val _o_start m bindings, wasmtype)
       in
       let mem' =
-        Exprs_math.store_standard d.var d.mem _addr_val operand_val wasmtype (Int32.zero)
+        Exprs_math.store_standard d.var d.mem _addr_val operand_val wasmtype
+          Int32.zero
       in
       Memories.Memorystate.update_linearmem mem' m
   | TableAss (_, TableBinding (_tabidx, fidx)) ->
@@ -248,6 +250,22 @@ let eval (p : Importspec.Term.term) ms modi =
           ( Memories.Memorystate.peek_n_operand n ms,
             Memories.Memorystate.pop_n_operand n ms )
         in
+        printer Format.print_string "\t~ Imported Function parameters:\n\t\t# ";
+        printer
+          (List.iter (fun x ->
+               Memories.Operand.print_operand x;
+               Format.print_string ", "))
+          args;
+        printer Format.print_string "\n";
+        printer Format.print_string "\t~ Concretized:\n\t\t";
+        printer
+          (List.iter (fun x ->
+               let i = Memories.Memorystate.operand_as_interval x ms in
+               Apronext.Intervalext.print Format.std_formatter i;
+               Format.print_string ", "))
+          args;
+        printer Format.print_string "\n";
+
         (*let args' = List.map2 (fun x (Param (_, n)) -> (n, x)) args t_in in*)
         let ms'', bindings_map = prep_call ms' args t_in (t_in, _tout) in
         let in_called_ctx, cg = implication impl ms'' bindings_map modi in

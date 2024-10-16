@@ -17,7 +17,7 @@ rule read =
     | "id" { IDENTITY }
     | "glob" { GLOB }
     | "table" { TABLE }
-    | "memory" { MEM }
+    | "memmut" { MEM }
     | "funcref" { FUNCREF }
     | "externref" { EXTERNREF }
     | "func" { FUNC }

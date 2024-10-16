@@ -30,7 +30,7 @@ open Term
 
 %token GLOB "glob"
 %token TABLE "table"
-%token MEM "memory"
+%token MEM "memmut"
 %token CALL "calls"
 %token EXTERNREF "externref"
 %token FUNCREF "funcref"
