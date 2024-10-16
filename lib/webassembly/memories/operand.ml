@@ -52,7 +52,7 @@ let ref_to_apronvar op =
   match op with
   | LVarRef (i, _) -> VariableMem.apronvar_of_binding i VariableMem.Loc
   | GVarRef (i, _) -> VariableMem.apronvar_of_binding i VariableMem.Glob
-  | Expression _ -> failwith "Apron.Var.of_string non-existing-variable"
+  | Expression _ -> Apron.Var.of_string "non-existing-variable"
   | BooleanExpression _ ->
       failwith "ref to apronvar @ operandstack - bexpr case"
   | FuncRef _ -> failwith "no correspondance of funcref here"

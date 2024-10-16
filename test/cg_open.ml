@@ -44,7 +44,7 @@ let%test "MATTIA-indirect-call-index-expr-load-const-exported-memory-mutable" =
   Interpreter.Eval.cg := Datastructures.Callgraph.CallGraph.phi;
   got (p "MATTIA-indirect-call-index-expr-load-const-exported-memory-mutable")
   = [ (0, 1) ]
-(*
+
 let%test "cpp-vtable-layout-source-type-info" =
   Interpreter.Eval.cg := Datastructures.Callgraph.CallGraph.phi;
   let g = got (p "cpp-vtable-layout-source-type-info") in
@@ -58,4 +58,3 @@ let%test "cpp-vtable-layout-source-type-info" =
   in
   List.iter (fun x -> Printf.printf "%s\n" x) l';
   g = []
-*)

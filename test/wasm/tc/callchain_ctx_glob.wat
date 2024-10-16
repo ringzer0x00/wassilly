@@ -1,6 +1,6 @@
 (module
   (global $from_wasm (mut i32) (i32.const 10))
-  (func (;0;) (param i32) (result i32)
+  (func (;0;) (result i32)
     global.get 0
     i32.const 5
     i32.add

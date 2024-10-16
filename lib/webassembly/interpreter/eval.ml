@@ -14,6 +14,7 @@ module Stack = Stack.Stack
 module SCG = Scg.SCC
 module CallSet = Datastructures.Callgraph.CallGraph
 
+let printer = Utilities.Printer.print
 let cg = ref CallSet.phi
 let cmd_result = Cflow.simplecmd_answer
 let seq_result = Cflow.seq_answer
@@ -68,6 +69,9 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
         let eob = Instructions.end_of_block ms modi in
         (cmd_result eob p_ans, cache, SCG.empty)
   | c1 :: c2 ->
+      let msg = Printf.sprintf "in %i, eval:" (Int32.to_int fin) in
+      printer Format.print_string msg;
+      printer (Wasm.Print.instr Stdlib.stdout 100) c1;
       let (res1 : ans), cache', scg_h =
         (*as opposed to ms this should return a vector of values which is then appended to the ms's operand stack*)
         match c1.it with
