@@ -1,5 +1,7 @@
 module VariableMem = Variablemem.VariableMem
 
+let printer = Utilities.Printer.print
+
 type aval = Apronext.Texprext.t (*this has to b*)
 type constr = Apronext.Tconsext.t (*this has to b*)
 type varmemories = VariableMem.t
@@ -28,16 +30,23 @@ let size_of_type = function
   | Wasm.Types.I64Type | Wasm.Types.F64Type -> 64
 
 let print_operand = function
-  | BooleanExpression _ -> Printf.printf "Boolex;"
+  | BooleanExpression c ->
+      Format.print_string "Boolex:";
+      Apronext.Tconsext.print Format.std_formatter c;
+      Format.print_string ";\n"
   | Expression (e, _) ->
       Format.print_string "Expr:";
       Apronext.Texprext.print Format.std_formatter e;
       Format.print_string ";\n"
-  | LVarRef _ -> Printf.printf "LVarRef;"
-  | GVarRef _ -> Printf.printf "GVarRef;"
-  | FuncRef _ -> Printf.printf "FuncRef;"
-  | Label _ -> Printf.printf "label"
-  | Bottom -> Printf.printf "bottom"
+  | LVarRef (v, _) ->
+      Format.print_string
+        (Printf.sprintf "LVarRef:%s" (VariableMem.string_of_binding v))
+  | GVarRef (v, _) ->
+      Format.print_string
+        (Printf.sprintf "GVarRef:%s" (VariableMem.string_of_binding v))
+  | FuncRef _ -> Format.print_string "FuncRef;"
+  | Label _ -> Format.print_string "label"
+  | Bottom -> Format.print_string "bottom"
 
 let is_label = function Label _ -> true | _ -> false
 
@@ -138,13 +147,13 @@ let repl operand to_replace (mem : varmemories) =
       in
       Expression (v, t)
   | LVarRef (_, t) as o ->
-      Printf.printf "Concretize LVarRef\n";
+      printer Format.print_string "Concretize LVarRef\n";
       let v_expr = concretize_in_exp mem o in
-      Printf.printf "LVarRef Concretized as:\n";
-      Apronext.Texprext.print Format.std_formatter v_expr;
+      printer Format.print_string "LVarRef Concretized as:\n";
+      printer (Apronext.Texprext.print Format.std_formatter) v_expr;
       if operand = to_replace then Expression (v_expr, t) else to_replace
   | GVarRef (_, t) as o ->
-      Printf.printf "Concretize GVarRef\n";
+      Format.printf "Concretize GVarRef\n";
       let v_expr = concretize_in_exp mem o in
       if operand = to_replace then Expression (v_expr, t) else to_replace
   | BooleanExpression bex ->
@@ -187,12 +196,12 @@ let jw_operand (mem1, o1) (mem2, o2) operation =
     let t = type_of_operand o1 in
     let a = concretize mem1 o1 in
     let b = concretize mem2 o2 in
-    Printf.printf "J/W operands:";
+    Format.printf "J/W operands:";
     Apron.Interval.print Format.std_formatter a;
-    Printf.printf "\n";
+    Format.printf "\n";
 
     Apron.Interval.print Format.std_formatter b;
-    Printf.printf "\n-----------------\n";
+    Format.printf "\n-----------------\n";
 
     Expression (const_expr mem1 (operation a b), t)
 

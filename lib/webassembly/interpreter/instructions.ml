@@ -19,7 +19,6 @@ let end_of_block prec mod_ =
   let _vals, ops' =
     (peek_n (List.length _t) d.ops, pop_n (List.length _t) d.ops)
   in
-  Printf.printf "_t length: %i, d.ops: %i" (List.length _t) (List.length d.ops);
   let prec' =
     return
       (*peek first label, discover type and blabla*)

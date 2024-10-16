@@ -4,6 +4,11 @@ module S = Apronext.Scalarext
 
 exception NoValidWritesExn
 
+let printer a b =
+  Format.print_flush ();
+  Utilities.Printer.print a b;
+  Format.print_flush ()
+
 let listmap' = Utilities.List_.listmap'
 let tappl = Utilities.Tuple.tuple_appl
 
@@ -18,8 +23,7 @@ let const (n : Wasm.Ast.num) (vm : varmemories) =
         (I.of_float c c, Wasm.Types.F64Type)
     | I32 c ->
         let c = Wasm.I32.to_int_s c in
-        let interval = I.of_int c c in
-        (interval, Wasm.Types.I32Type)
+        (I.of_int c c, Wasm.Types.I32Type)
     | I64 c ->
         let c = Wasm.I64.to_int_s c in
         (I.of_int c c, Wasm.Types.I64Type)
@@ -177,6 +181,11 @@ let land_expr vm _o1 _o2 =
   let _l, _r =
     (Memories.Operand.concretize vm _o1, Memories.Operand.concretize vm _o2)
   in
+  printer Format.print_string "~ Operands:";
+  printer Memories.Operand.print_operand _o1;
+  printer Format.print_string ",";
+  printer Memories.Operand.print_operand _o2;
+  printer Format.print_string ";\n";
   let _l_ex, _r_ex =
     ( Language.Bitwisenumber.of_interval _l (type_of_operand _o1),
       Language.Bitwisenumber.of_interval _r (type_of_operand _o2) )
@@ -222,7 +231,7 @@ let lxor_expr vm _o1 _o2 =
   Expression (const_expr vm v, _l_ex.t)
 
 let select_expr vm fst snd trd (_rt : Wasm.Types.value_type list option) =
-  Printf.printf "SELECT\n\n";
+  Format.printf "SELECT\n\n";
   let _rt =
     match _rt with
     | None -> type_of_operand fst
@@ -359,14 +368,14 @@ let load_standard vm _mem _o _t (_offset_expl : int32) =
     else Expression (const_expr vm i, _t)
 
 let store_standard _vm _mem _addr _val _t (_offset_expl : int32) =
-  Printf.printf "STORE: Operand:(before conc)";
-  Memories.Operand.print_operand _addr;
+  printer Format.printf "~ Symbolic Operand for Address:";
+  printer Memories.Operand.print_operand _addr;
   let addr, val_ = (concretize _vm _addr, concretize _vm _val) in
-  Printf.printf "Interval of pos to write:";
-  Apronext.Intervalext.print Format.std_formatter addr;
-  Printf.printf "value to write:";
-  Apronext.Intervalext.print Format.std_formatter val_;
-  Format.print_newline ();
+  printer Format.printf "~ Interval of ADDR to write:";
+  printer (Apronext.Intervalext.print Format.str_formatter) addr;
+  printer Format.printf "~ Value to write:";
+  printer (Apronext.Intervalext.print Format.str_formatter) val_;
+  printer Format.print_newline ();
   let _ = Format.flush_str_formatter () in
   let _w, _s =
     match _t with
@@ -394,7 +403,7 @@ let store_standard _vm _mem _addr _val _t (_offset_expl : int32) =
     Apronext.Scalarext.cmp_int (Apronext.Intervalext.range addr) threshold_mem
     >= 0
   in
-  if is_past_thresh then failwith "threshold write"
+  if is_past_thresh then failwith "threshold write, todo"
   else
     let start_from, start_to =
       I.to_float addr |> tappl Float.to_int

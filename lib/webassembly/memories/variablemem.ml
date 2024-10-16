@@ -42,13 +42,16 @@ module VariableMem = struct
     in
     match gl with Glob -> aux b "Glob_" | Loc -> aux b "Loc_"
 
+  let string_of_binding ({ i : Int32.t; t : WT.num_type } : binding) =
+    string_of_nt t ^ Int32.to_string i
+
   let assign { loc : apronvar M.t; glob : apronvar M.t; ad : aprondomain } gl b
       exp : t =
     let aux b ma =
       let var = M.find_opt b ma in
       match var with
       | None ->
-          Printf.printf "bindings len: %i\n" (List.length (M.bindings loc));
+          Format.printf "bindings len: %i\n" (List.length (M.bindings loc));
           failwith "assignment failed, cannot find key-var"
       | Some var -> (ma, AD.assign_expr ad var exp)
     in

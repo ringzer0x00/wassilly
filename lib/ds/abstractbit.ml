@@ -55,6 +55,6 @@ let filter_until arr filter =
 
 (** Print **)
 let print = function
-  | Zero -> Printf.printf "Zero"
-  | One -> Printf.printf "One"
-  | Top -> Printf.printf "Top"
+  | Zero -> Format.printf "Zero"
+  | One -> Format.printf "One"
+  | Top -> Format.printf "Top"

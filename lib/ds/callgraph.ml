@@ -21,12 +21,12 @@ module CallGraph = struct
   let to_list g = S.to_seq g |> List.of_seq
 
   let print g =
-    Printf.printf "Callgraph:[";
+    Format.printf "Callgraph:[";
     S.iter
       (fun (f, t) ->
-        Printf.printf "%s -> %s\n" (Int32.to_string f) (Int32.to_string t))
+        Format.printf "%s -> %s\n" (Int32.to_string f) (Int32.to_string t))
       g;
-    Printf.printf "]\n"
+    Format.printf "]\n"
 
   let edges g =
     S.to_seq g |> List.of_seq

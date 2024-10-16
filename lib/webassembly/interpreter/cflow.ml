@@ -22,16 +22,16 @@ let intbool (exp : Memories.Operand.operand) (ms : MS.ms) =
   let ms_f ms = MS.update_varmem vm_f' (Def ms) in
   match (Apronext.Apol.is_bottom t, Apronext.Apol.is_bottom f) with
   | true, true ->
-      Printf.printf "BOT BOT @ intbool\n";
+      Format.printf "BOT BOT @ intbool\n";
       (Bot, Bot)
   | false, false ->
-      Printf.printf "Def Def @ intbool\n";
+      Format.printf "Def Def @ intbool\n";
       (ms_t ms, ms_f ms)
   | true, false ->
-      Printf.printf "BOT Def @ intbool\n";
+      Format.printf "BOT Def @ intbool\n";
       (Bot, ms_f ms)
   | false, true ->
-      Printf.printf "Def BOT @ intbool\n";
+      Format.printf "Def BOT @ intbool\n";
       (ms_t ms, Bot)
 
 let cond ms =
@@ -67,7 +67,6 @@ let monad_step c1 ca f =
   | Def d -> ( match d.nat with Def _ -> f d | Bot -> (c1, ca, SCG.SCC.empty))
 
 let block_result r_b block_body =
-  Printf.printf "BLCOK RESULT";
   r_b >>= fun r ->
   return
     {
@@ -184,7 +183,7 @@ let br depth ms p_ans cache modul_ ft fixf =
       fixf l ms'''
       (*this is wrong... probably, i think i should do stack manips beforehand*)
   | None ->
-      Printf.printf "RETURN CASE";
+      Format.printf "RETURN CASE";
       let ms'' =
         if not (MS.is_lsk_empty ms') then MS.pop_n_labels ms' depth else ms'
       in

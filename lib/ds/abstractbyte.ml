@@ -119,4 +119,4 @@ let as_int_arrays ?(signed = false) a =
   let min, max = as_min_max a signed in
   (to_int_array min, to_int_array max)
 
-let print_byte b = Array.iter (fun x -> Abstractbit.print x) b
+let print_byte b = Array.iter (fun x -> Abstractbit.print x; Format.printf " ";) b

@@ -7,9 +7,9 @@ type t = operand list
 type varmemories = VariableMem.t
 
 let print_stack s =
-  Printf.printf "[";
+  Format.printf "OPStack:[";
   List.iter (fun x -> print_operand x) s;
-  Printf.printf "]\n"
+  Format.printf "]\n"
 
 let empty : t = []
 let peek_n = SK.peek_n
@@ -105,9 +105,5 @@ let cmpop s f =
 let storeop s f =
   let operand, s = (peek_n 2 s, pop_n 2 s) in
   let l, r = (List.nth operand 1, List.nth operand 0) in
-  Format.printf "operands store:";
-  Operand.print_operand l;
-  Operand.print_operand r;
-  Format.print_newline ();
   let res = f l r in
   (res, s)

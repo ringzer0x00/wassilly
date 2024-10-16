@@ -57,5 +57,5 @@ let printmem (mem : t) =
   Array.iter
     (fun x ->
       AByte.print_byte x;
-      Printf.printf "\n")
+      Format.printf "\n")
     mem

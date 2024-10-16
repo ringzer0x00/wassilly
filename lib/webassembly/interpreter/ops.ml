@@ -30,13 +30,13 @@ let eval_cvtop (op : Wasm.Ast.cvtop) ms =
 
 let eval_loadop ({ ty; align; offset; pack } : Wasm.Ast.loadop) _ms =
   ignore align;
-  Printf.printf "offset: %i" (Int32.to_int offset);
+  Format.printf "offset: %i" (Int32.to_int offset);
   let _ =
     (*suuport 1 memory, no pack!*)
     match pack with
     | None -> assert true
     | Some _ ->
-        Printf.printf "pack!!!! wtf is this shiiiiit";
+        Format.printf "pack!!!! wtf is this shiiiiit";
         assert false
     (*Wasm.Types
       type pack_size = Pack8 | Pack16 | Pack32 | Pack64

@@ -76,28 +76,37 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
         (*as opposed to ms this should return a vector of values which is then appended to the ms's operand stack*)
         match c1.it with
         | LocalSet var ->
-            (*rewrite monadic*)
             let val_, ms' =
               (MS.peek_operand ms |> List.hd, MS.pop_operand ms)
             in
+            printer Memories.Operand.print_operand val_;
             let b = MS.get_var_binding ms' Loc var.it in
             let ms' = MS.assign_var ms' Loc b val_ in
             (cmd_result ms' p_ans, cache, SCG.empty)
         | GlobalSet var ->
-            (*rewrite monadic*)
             let val_, ms' =
               (MS.peek_operand ms |> List.hd, MS.pop_operand ms)
             in
+            printer Format.print_string "~ Assigning:";
+            printer Memories.Operand.print_operand val_;
+            printer Format.print_string "";
+            printer Format.print_string "\n# Concretized:";
+            let to_interval =
+              Memories.Memorystate.operand_as_interval val_ ms'
+            in
+            printer
+              (Apronext.Intervalext.print Format.std_formatter)
+              to_interval;
+            printer Format.print_string "";
+            printer Format.print_newline ();
             let b = MS.get_var_binding ms' Glob var.it in
             let ms' = MS.assign_var ms' Glob b val_ in
             (cmd_result ms' p_ans, cache, SCG.empty)
         | LocalGet var ->
-            (*rewrite monadic*)
             let b = MS.get_var_binding ms Loc var.it in
             let ref = Memories.Operand.ref_of_binding b Loc in
             (cmd_result (Instructions.read ms ref) p_ans, cache, SCG.empty)
         | GlobalGet var ->
-            (*rewrite monadic*)
             let b = MS.get_var_binding ms Glob var.it in
             let ref = Memories.Operand.ref_of_binding b Glob in
             (cmd_result (Instructions.read ms ref) p_ans, cache, SCG.empty)

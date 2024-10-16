@@ -56,5 +56,5 @@ let%test "cpp-vtable-layout-source-type-info" =
   let l' =
     List.map (fun (f, t) -> List.assoc f corr ^ "->" ^ List.assoc t corr) g_lst
   in
-  List.iter (fun x -> Printf.printf "%s\n" x) l';
+  List.iter (fun x -> Format.printf "%s\n" x) l';
   g = []
