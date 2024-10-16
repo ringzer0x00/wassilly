@@ -37,3 +37,10 @@ let%test "callchain_ctx" =
   let val_conc = Memories.Memorystate.operand_as_interval top_stack m in
   let m = match top_stack with Expression _ -> true | _ -> false in
   Apronext.Intervalext.equal val_conc (Apronext.Intervalext.of_int 42 42) && m
+
+let%test "callchain_ctx_glob" =
+  Interpreter.Eval.cg := Datastructures.Callgraph.CallGraph.phi;
+  let m, _ = p "callchain_ctx_glob" in
+  let top_stack = Memories.Memorystate.peek_operand m |> List.hd in
+  let val_conc = Memories.Memorystate.operand_as_interval top_stack m in
+  Apronext.Intervalext.equal val_conc (Apronext.Intervalext.of_int 57 57)

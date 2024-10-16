@@ -87,16 +87,16 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
             let b = MS.get_var_binding ms' Glob var.it in
             let ms' = MS.assign_var ms' Glob b val_ in
             (cmd_result ms' p_ans, cache, SCG.empty)
-        | LocalGet _var ->
+        | LocalGet var ->
             (*rewrite monadic*)
-            let _b = MS.get_var_binding ms Loc _var.it in
-            let _ref = Memories.Operand.ref_of_binding _b Loc in
-            (cmd_result (Instructions.read ms _ref) p_ans, cache, SCG.empty)
-        | GlobalGet _var ->
+            let b = MS.get_var_binding ms Loc var.it in
+            let ref = Memories.Operand.ref_of_binding b Loc in
+            (cmd_result (Instructions.read ms ref) p_ans, cache, SCG.empty)
+        | GlobalGet var ->
             (*rewrite monadic*)
-            let _b = MS.get_var_binding ms Glob _var.it in
-            let _ref = Memories.Operand.ref_of_binding _b Glob in
-            (cmd_result (Instructions.read ms _ref) p_ans, cache, SCG.empty)
+            let b = MS.get_var_binding ms Glob var.it in
+            let ref = Memories.Operand.ref_of_binding b Glob in
+            (cmd_result (Instructions.read ms ref) p_ans, cache, SCG.empty)
         | LocalTee var ->
             let val_, ms' =
               (MS.peek_operand ms |> List.hd, MS.pop_operand ms)
