@@ -8,9 +8,6 @@ type abool = Datastructures.Abstractbit.t
 
 (*NOTE: this belongs to operand*)
 let intbool (exp : Memories.Operand.operand) (ms : MS.ms) =
-  (*Top*)
-  (*sat soving shenanigans.
-    is it zero, non-zero or can it be both?*)
   let t, f = Memories.Operand.boole_filter exp ms.var in
   let vm_t' : MS.VariableMem.t =
     { loc = ms.var.loc; glob = ms.var.glob; ad = t }
@@ -21,18 +18,10 @@ let intbool (exp : Memories.Operand.operand) (ms : MS.ms) =
   let ms_t ms = MS.update_varmem vm_t' (Def ms) in
   let ms_f ms = MS.update_varmem vm_f' (Def ms) in
   match (Apronext.Apol.is_bottom t, Apronext.Apol.is_bottom f) with
-  | true, true ->
-      Format.printf "BOT BOT @ intbool\n";
-      (Bot, Bot)
-  | false, false ->
-      Format.printf "Def Def @ intbool\n";
-      (ms_t ms, ms_f ms)
-  | true, false ->
-      Format.printf "BOT Def @ intbool\n";
-      (Bot, ms_f ms)
-  | false, true ->
-      Format.printf "Def BOT @ intbool\n";
-      (ms_t ms, Bot)
+  | true, true -> (Bot, Bot)
+  | false, false -> (ms_t ms, ms_f ms)
+  | true, false -> (Bot, ms_f ms)
+  | false, true -> (ms_t ms, Bot)
 
 let cond ms =
   let cond = MS.peek_operand ms |> List.hd in
@@ -183,7 +172,6 @@ let br depth ms p_ans cache modul_ ft fixf =
       fixf l ms'''
       (*this is wrong... probably, i think i should do stack manips beforehand*)
   | None ->
-      Format.printf "RETURN CASE";
       let ms'' =
         if not (MS.is_lsk_empty ms') then MS.pop_n_labels ms' depth else ms'
       in

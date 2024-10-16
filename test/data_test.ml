@@ -1,6 +1,9 @@
 open Datastructures.Abstractbit
 
 let min_siexteen = Array.append (Array.make 28 One) (Array.make 4 Zero)
+let vtables_gt = [
+
+] |> List.map (fun (x, y) -> (Int32.of_int x, Int32.of_int y))
 
 let vtables_corr =
   [
@@ -16,16 +19,12 @@ let vtables_corr =
     (9, "C::method__");
     (10, "D::method__");
     (11, "_start");
-    (12, "__original_main");
-    (13, "__main_void");
-    (14, "main.1");
-    (15, "_Exit");
-    (16, "libc_exit_fini");
-    (17, "exit");
-    (18, "_fini");
-    (19, "stackSave");
-    (20, "stackRestore");
-    (21, "stackAlloc");
-    (22, "__errno_location");
+    (12, "__main_void");
+    (13, "dummy");
+    (14, "libc_exit_fini");
+    (15, "exit");
+    (16, "_Exit");
+    (17, "_emscripten_stack_restore");
+    (18, "emscripten_stack_get_current");
   ]
   |> List.map (fun (x, y) -> (Int32.of_int x, y))

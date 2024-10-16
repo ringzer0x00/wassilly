@@ -79,7 +79,14 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
             let val_, ms' =
               (MS.peek_operand ms |> List.hd, MS.pop_operand ms)
             in
+            printer Format.print_string "\t~ Assigning:";
             printer Memories.Operand.print_operand val_;
+            let to_interval =
+              Memories.Memorystate.operand_as_interval val_ ms'
+            in
+            printer
+              (Apronext.Intervalext.print Format.std_formatter)
+              to_interval;
             let b = MS.get_var_binding ms' Loc var.it in
             let ms' = MS.assign_var ms' Loc b val_ in
             (cmd_result ms' p_ans, cache, SCG.empty)
@@ -87,17 +94,16 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
             let val_, ms' =
               (MS.peek_operand ms |> List.hd, MS.pop_operand ms)
             in
-            printer Format.print_string "~ Assigning:";
+            printer Format.print_string "\t~ Assigning:";
             printer Memories.Operand.print_operand val_;
-            printer Format.print_string "";
-            printer Format.print_string "\n# Concretized:";
+            printer Format.print_string "\n\t# (when concretized:";
             let to_interval =
               Memories.Memorystate.operand_as_interval val_ ms'
             in
             printer
               (Apronext.Intervalext.print Format.std_formatter)
               to_interval;
-            printer Format.print_string "";
+            printer Format.print_string ")";
             printer Format.print_newline ();
             let b = MS.get_var_binding ms' Glob var.it in
             let ms' = MS.assign_var ms' Glob b val_ in
@@ -105,10 +111,28 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
         | LocalGet var ->
             let b = MS.get_var_binding ms Loc var.it in
             let ref = Memories.Operand.ref_of_binding b Loc in
+            printer Format.print_string "\t~ Getting:";
+            printer Memories.Operand.print_operand ref;
+            printer Format.print_string "\n\t# (when concretized:";
+            let to_interval = Memories.Memorystate.operand_as_interval ref ms in
+            printer
+              (Apronext.Intervalext.print Format.std_formatter)
+              to_interval;
+            printer Format.print_string ")";
+            printer Format.print_newline ();
             (cmd_result (Instructions.read ms ref) p_ans, cache, SCG.empty)
         | GlobalGet var ->
             let b = MS.get_var_binding ms Glob var.it in
             let ref = Memories.Operand.ref_of_binding b Glob in
+            printer Format.print_string "\t~ Getting:";
+            printer Memories.Operand.print_operand ref;
+            printer Format.print_string "\n\t# (when concretized:";
+            let to_interval = Memories.Memorystate.operand_as_interval ref ms in
+            printer
+              (Apronext.Intervalext.print Format.std_formatter)
+              to_interval;
+            printer Format.print_string ")";
+            printer Format.print_newline ();
             (cmd_result (Instructions.read ms ref) p_ans, cache, SCG.empty)
         | LocalTee var ->
             let val_, ms' =

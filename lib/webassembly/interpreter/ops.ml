@@ -28,9 +28,8 @@ let eval_cvtop (op : Wasm.Ast.cvtop) ms =
   | Wasm.Values.F32 floatop | Wasm.Values.F64 floatop ->
       Alu.float_cvtop floatop ms
 
-let eval_loadop ({ ty; align; offset; pack } : Wasm.Ast.loadop) _ms =
+let eval_loadop ({ ty; align; offset; pack } : Wasm.Ast.loadop) ms =
   ignore align;
-  Format.printf "offset: %i" (Int32.to_int offset);
   let _ =
     (*suuport 1 memory, no pack!*)
     match pack with
@@ -46,10 +45,10 @@ let eval_loadop ({ ty; align; offset; pack } : Wasm.Ast.loadop) _ms =
   (* align = 0,1,2,3 for load_8, load_16,load_32, load_64*)
   (* offset is the memory index *)
   match ty with
-  | Wasm.Types.I32Type -> Instructions.load_i32 _ms offset
-  | Wasm.Types.I64Type -> Instructions.load_i64 _ms offset
-  | Wasm.Types.F32Type -> Instructions.load_f32 _ms offset
-  | Wasm.Types.F64Type -> Instructions.load_f64 _ms offset
+  | Wasm.Types.I32Type -> Instructions.load_i32 ms offset
+  | Wasm.Types.I64Type -> Instructions.load_i64 ms offset
+  | Wasm.Types.F32Type -> Instructions.load_f32 ms offset
+  | Wasm.Types.F64Type -> Instructions.load_f64 ms offset
 
 let eval_storeop ({ ty; align; offset; pack } : Wasm.Ast.storeop) _ms =
   let _ = match pack with None -> assert true | Some _psize -> assert false in

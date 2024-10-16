@@ -32,12 +32,10 @@ let size_of_type = function
 let print_operand = function
   | BooleanExpression c ->
       Format.print_string "Boolex:";
-      Apronext.Tconsext.print Format.std_formatter c;
-      Format.print_string ";\n"
+      Apronext.Tconsext.print Format.std_formatter c
   | Expression (e, _) ->
       Format.print_string "Expr:";
-      Apronext.Texprext.print Format.std_formatter e;
-      Format.print_string ";\n"
+      Apronext.Texprext.print Format.std_formatter e
   | LVarRef (v, _) ->
       Format.print_string
         (Printf.sprintf "LVarRef:%s" (VariableMem.string_of_binding v))
@@ -153,8 +151,10 @@ let repl operand to_replace (mem : varmemories) =
       printer (Apronext.Texprext.print Format.std_formatter) v_expr;
       if operand = to_replace then Expression (v_expr, t) else to_replace
   | GVarRef (_, t) as o ->
-      Format.printf "Concretize GVarRef\n";
+      printer Format.print_string "Concretize GVarRef\n";
       let v_expr = concretize_in_exp mem o in
+      printer Format.print_string "GVarRef Concretized as:\n";
+      printer (Apronext.Texprext.print Format.std_formatter) v_expr;
       if operand = to_replace then Expression (v_expr, t) else to_replace
   | BooleanExpression bex ->
       let exp = Apronext.Tconsext.get_texpr1 bex in
@@ -196,13 +196,6 @@ let jw_operand (mem1, o1) (mem2, o2) operation =
     let t = type_of_operand o1 in
     let a = concretize mem1 o1 in
     let b = concretize mem2 o2 in
-    Format.printf "J/W operands:";
-    Apron.Interval.print Format.std_formatter a;
-    Format.printf "\n";
-
-    Apron.Interval.print Format.std_formatter b;
-    Format.printf "\n-----------------\n";
-
     Expression (const_expr mem1 (operation a b), t)
 
 let ival_leq = Apronext.Intervalext.is_leq

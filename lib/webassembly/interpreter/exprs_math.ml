@@ -4,11 +4,7 @@ module S = Apronext.Scalarext
 
 exception NoValidWritesExn
 
-let printer a b =
-  Format.print_flush ();
-  Utilities.Printer.print a b;
-  Format.print_flush ()
-
+let printer a b = Utilities.Printer.print a b
 let listmap' = Utilities.List_.listmap'
 let tappl = Utilities.Tuple.tuple_appl
 
@@ -151,6 +147,9 @@ let cmpstub_expr vm _ _ =
 
 let eqz_expr vm o =
   let l_ex = operand_to_expr vm o in
+  printer Format.print_string "\t Terst:";
+  printer (Apronext.Texprext.print Format.std_formatter) l_ex;
+  printer Format.print_newline ();
   BooleanExpression (Apronext.Tconsext.make l_ex Apronext.Tconsext.EQ)
 
 let popcnt_expr vm o =
@@ -181,11 +180,11 @@ let land_expr vm _o1 _o2 =
   let _l, _r =
     (Memories.Operand.concretize vm _o1, Memories.Operand.concretize vm _o2)
   in
-  printer Format.print_string "~ Operands:";
+  printer Format.print_string "\t~ Operands:(";
   printer Memories.Operand.print_operand _o1;
   printer Format.print_string ",";
   printer Memories.Operand.print_operand _o2;
-  printer Format.print_string ";\n";
+  printer Format.print_string ")\n";
   let _l_ex, _r_ex =
     ( Language.Bitwisenumber.of_interval _l (type_of_operand _o1),
       Language.Bitwisenumber.of_interval _r (type_of_operand _o2) )
@@ -231,7 +230,6 @@ let lxor_expr vm _o1 _o2 =
   Expression (const_expr vm v, _l_ex.t)
 
 let select_expr vm fst snd trd (_rt : Wasm.Types.value_type list option) =
-  Format.printf "SELECT\n\n";
   let _rt =
     match _rt with
     | None -> type_of_operand fst
@@ -290,15 +288,15 @@ let lshift_expr vm l r =
       Expression (const_expr vm ival, type_of_operand l)
   | false -> Expression (const_expr vm I.top, type_of_operand l)
 
-let load_standard vm _mem _o _t (_offset_expl : int32) =
-  let mem_min, mem_max = (0, Memories.Linearmem.length_max _mem) in
+let load_standard vm mem o t (offset_expl : int32) =
+  let mem_min, mem_max = (0, Memories.Linearmem.length_max mem) in
   let _w, _s =
-    match _t with
+    match t with
     | Wasm.Types.I32Type | F32Type -> (4, 32)
     | Wasm.Types.I64Type | F64Type -> (8, 64)
   in
   let conv_f b =
-    match _t with
+    match t with
     | I32Type ->
         Utilities.Conversions.int32_binary_to_decimal b |> Int32.to_string
     | I64Type ->
@@ -308,11 +306,11 @@ let load_standard vm _mem _o _t (_offset_expl : int32) =
     | F64Type ->
         Utilities.Conversions.float64_binary_to_decimal b |> Float.to_string
   in
-  let c = Memories.Operand.concretize vm _o in
+  let c = Memories.Operand.concretize vm o in
   (*range of offset addresses*)
   let start_from, start_to =
     I.to_float c |> tappl Float.to_int
-    |> tappl (Int.add (Int32.to_int _offset_expl))
+    |> tappl (Int.add (Int32.to_int offset_expl))
   in
   let threshold_mem = 10 in
   let is_past_thresh =
@@ -324,6 +322,9 @@ let load_standard vm _mem _o _t (_offset_expl : int32) =
       List.init (start_to - start_from + 1) (fun x -> start_from + x)
       |> List.filter (fun a -> a >= mem_min && a <= mem_max - _s)
   in
+  printer Format.print_string "\t~ Set of addresses:";
+  printer (List.iter (fun i -> Format.print_int i)) _addrs;
+  printer Format.print_newline ();
   (*concretized set of addresses to read from (each sublist represents all of the words to read from memory)*)
   (*BUG: stack overflow this one*)
   let addrs_list_set =
@@ -333,7 +334,7 @@ let load_standard vm _mem _o _t (_offset_expl : int32) =
   let reads =
     listmap'
       (fun addr_list ->
-        listmap' (fun a -> Memories.Linearmem.read_byte a _mem) addr_list)
+        listmap' (fun a -> Memories.Linearmem.read_byte a mem) addr_list)
       addrs_list_set
   in
   (*readings*)
@@ -364,8 +365,11 @@ let load_standard vm _mem _o _t (_offset_expl : int32) =
       if S.cmp lim1 lim2 <= 0 then I.of_scalar lim1 lim2
       else I.of_scalar lim2 lim1
     in
+    printer Format.print_string "\t~ Loaded:";
+    printer (Apronext.Intervalext.print Format.std_formatter) i;
+    printer Format.print_string "\n";
     if Apronext.Intervalext.is_bottom i then Bottom
-    else Expression (const_expr vm i, _t)
+    else Expression (const_expr vm i, t)
 
 let store_standard _vm _mem _addr _val _t (_offset_expl : int32) =
   printer Format.printf "~ Symbolic Operand for Address:";

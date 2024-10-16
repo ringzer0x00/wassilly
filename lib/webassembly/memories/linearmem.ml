@@ -6,6 +6,7 @@ type byte = AByte.t
 type page = byte array
 type t = page (*page array really*)
 
+let printer = Utilities.Printer.print
 (* a maximim number of pages is defined within the module *)
 
 let wasm_page_size = 65536
@@ -13,12 +14,16 @@ let alloc_page n : page = Array.make (wasm_page_size * n) AByte.alloc_byte
 
 let alloc_page_top n : page =
   Array.make (wasm_page_size * n) AByte.alloc_byte_top
+
 let pageconcat (pold : t) (pnew : t) : t = Array.concat [ pold; pnew ]
 let size m = Array.length m / wasm_page_size
 let length_max m = Array.length m
 let read_byte o (m : t) = Array.get m o
 
 let internal_write_byte_raw b o (m : t) =
+  printer Format.print_string "\t ~ RAW MEMWRITRE (INIT) in: ";
+  printer Format.print_int o;
+  printer Format.print_newline ();
   let c = Array.copy m in
   Array.set c o b;
   c
