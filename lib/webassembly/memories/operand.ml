@@ -202,7 +202,11 @@ let ival_leq = Apronext.Intervalext.is_leq
 let ival_eq = Apronext.Intervalext.equal
 
 let leq_operand m1 (o1 : operand) m2 (o2 : operand) =
-  ival_leq (concretize m1 o1) (concretize m2 o2)
+  match (o1, o2) with
+  | Label _, Label _ -> true (*prova*)
+  | _ -> ival_leq (concretize m1 o1) (concretize m2 o2)
 
 let eq_operand m1 (o1 : operand) m2 (o2 : operand) =
-  ival_eq (concretize m1 o1) (concretize m2 o2)
+  match (o1, o2) with
+  | Label _, Label _ -> true (*prova*)
+  | _ -> ival_eq (concretize m1 o1) (concretize m2 o2)

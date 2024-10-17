@@ -402,17 +402,22 @@ let store_standard _vm _mem _addr _val _t (_offset_expl : int32) =
     and then reversed in order for endiannes consistency. then they can be written
     type of func to use to write: bit array array -> int -> t -> t*)
   (*range of offset addresses*)
-  let threshold_mem = 10 in
+  let threshold_mem = 1000 in
   let is_past_thresh =
     Apronext.Scalarext.cmp_int (Apronext.Intervalext.range addr) threshold_mem
     >= 0
   in
-  if is_past_thresh then failwith "threshold write, todo"
+  let start_from, start_to =
+    I.to_float addr |> tappl Float.to_int
+    |> tappl (Int.add (Int32.to_int _offset_expl))
+  in
+  if is_past_thresh then (
+    let m' = Array.copy _mem in
+    for i = max mem_min start_from to mem_max do
+      Array.set _mem i Datastructures.Abstractbyte.alloc_byte_top
+    done;
+    m')
   else
-    let start_from, start_to =
-      I.to_float addr |> tappl Float.to_int
-      |> tappl (Int.add (Int32.to_int _offset_expl))
-    in
     (*concretized range of offset addresses*)
     let _addrs =
       List.init
@@ -421,7 +426,7 @@ let store_standard _vm _mem _addr _val _t (_offset_expl : int32) =
     in
     let wf =
       match List.length _addrs with
-      | 0 -> failwith "raise NoValidWritesExn"
+      | 0 -> raise NoValidWritesExn
       | 1 -> Memories.Linearmem.strong_write_to_mem
       | _ -> Memories.Linearmem.write_to_mem
     in

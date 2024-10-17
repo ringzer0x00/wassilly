@@ -1,9 +1,34 @@
 open Datastructures.Abstractbit
 
 let min_siexteen = Array.append (Array.make 28 One) (Array.make 4 Zero)
-let vtables_gt = [
 
-] |> List.map (fun (x, y) -> (Int32.of_int x, Int32.of_int y))
+let vtables_gt =
+  [
+    (4, 7);
+    (4, 8);
+    (4, 9);
+    (4, 10);
+    (5, 7);
+    (5, 8);
+    (5, 9);
+    (5, 10);
+    (6, 4);
+    (6, 5);
+    (11, 3);
+    (11, 12);
+    (11, 17);
+    (12, 13);
+    (13, 0);
+    (13, 1);
+    (13, 2);
+    (13, 14);
+    (14, 6);
+    (15, 2);
+    (16, 18);
+    (17, 15);
+    (17, 16);
+    (17, 18);
+  ]
 
 let vtables_corr =
   [

@@ -48,20 +48,4 @@ let%test "MATTIA-indirect-call-index-expr-load-const-exported-memory-mutable" =
 let%test "cpp-vtable-layout-source-type-info" =
   Interpreter.Eval.cg := Datastructures.Callgraph.CallGraph.phi;
   let a = p "cpp-vtable-layout-source-type-info" in
-  Datastructures.Callgraph.CallGraph.print a;
-  false
-(*
-let%test "cpp-vtable-layout-source-type-info" =
-  Interpreter.Eval.cg := Datastructures.Callgraph.CallGraph.phi;
-  let g = got (p "cpp-vtable-layout-source-type-info") in
-  let g_lst =
-    p "cpp-vtable-layout-source-type-info"
-    |> Datastructures.Callgraph.CallGraph.to_list
-  in
-  let corr = Data_test.vtables_corr in
-  let l' =
-    List.map (fun (f, t) -> List.assoc f corr ^ "->" ^ List.assoc t corr) g_lst
-  in
-  List.iter (fun x -> Format.printf "%s\n" x) l';
-  g = []
-*)
+  got a = Data_test.vtables_gt

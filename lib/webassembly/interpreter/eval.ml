@@ -37,20 +37,23 @@ let gettype (mod_ : module_) idx =
 
 let fixpoint _module (call, ifb) stack cache fin ft pres stepf =
   let _ms, _p = call in
-  match ifb with
-  | false -> stepf _module call stack cache fin ft pres
-  | true -> (
-      match Cache.call_in_cache call cache with
-      | Some cached -> (
-          let stable, resCached = cached in
-          match stable with
-          | Cache.Stable -> (resCached, cache, SCG.empty)
-          | Cache.Unstable -> (resCached, cache, SCG.singleton call))
-      | None -> (
-          match Stack.call_in_stack call stack with
-          | true -> (Bot, cache, SCG.singleton call)
-          | false -> Iterate.iterate _module call stack cache fin ft pres stepf)
-      )
+  match _ms with
+  | Bot -> (Bot, cache, SCG.empty)
+  | _ -> (
+      match ifb with
+      | false -> stepf _module call stack cache fin ft pres
+      | true -> (
+          match Cache.call_in_cache call cache with
+          | Some cached -> (
+              let stable, resCached = cached in
+              match stable with
+              | Cache.Stable -> (resCached, cache, SCG.empty)
+              | Cache.Unstable -> (resCached, cache, SCG.singleton call))
+          | None -> (
+              match Stack.call_in_stack call stack with
+              | true -> (Bot, cache, SCG.singleton call)
+              | false ->
+                  Iterate.iterate _module call stack cache fin ft pres stepf)))
 
 (*eval should not be called recursively*)
 let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
