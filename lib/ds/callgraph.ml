@@ -33,42 +33,52 @@ module CallGraph = struct
     |> List.map (fun (x, y) -> (Int32.to_int x, Int32.to_int y))
 end
 
-module G = struct
-  module IntInt = struct
-    type t = int32 * int32
+module Vertex = struct
+  type t = int
 
-    let compare = Stdlib.compare
-    let equal = ( = )
-    let hash = Hashtbl.hash
-  end
+  let compare = Stdlib.compare
+  let hash = Hashtbl.hash
+  let equal = ( = )
+end
 
-  module Int = struct
-    type t = int32
+module Edge = struct
+  type t = string
 
-    let compare = Stdlib.compare
-    let hash = Hashtbl.hash
-    let equal = ( = )
-    let default = Int32.zero
-  end
+  let compare = Stdlib.compare
+  let equal = ( = )
+  let default = ""
+end
 
-  include Graph.Persistent.Digraph.AbstractLabeled (IntInt) (Int)
-  include Graph.Graphviz.DotAttributes
+module GRaw =
+  Graph.Imperative.Digraph.ConcreteBidirectionalLabeled (Vertex) (Edge)
 
-  let phi = empty
+module Ga = struct
+  include GRaw
+
+  let phi = create ()
   let add_vertex = add_vertex
   let add_edge = add_edge_e
 
   let union (g1 : t) (g2 : t) =
-    let g1' = fold_vertex (fun v g -> add_vertex g v) g2 g1 in
-    fold_edges_e (fun v e -> add_edge_e e v) g2 g1'
-
-  let graph_attributes _ = failwith ""
-  let default_vertex_attributes _ = failwith ""
-  let vertex_name _ = failwith ""
-  let vertex_attributes _ = failwith ""
-  let get_subgraph _ = failwith ""
-  let default_edge_attributes _ = failwith ""
-  let edge_attributes _ = failwith ""
+    let g_res = phi in
+    iter_vertex (fun v -> add_vertex g_res v) g1;
+    iter_edges_e (fun e -> add_edge_e g_res e) g1;
+    iter_vertex (fun v -> add_vertex g_res v) g2;
+    iter_edges_e (fun e -> add_edge_e g_res e) g2
 end
 
-module PP = Graph.Graphviz.Dot (G)
+module Dot = Graph.Graphviz.Dot (struct
+  include Ga (* use the graph module from above *)
+
+  let edge_attributes (_, e, _) = [ `Label e; `Color 4711 ]
+  let default_edge_attributes _ = []
+  let get_subgraph _ = None
+  let vertex_attributes _ = [ `Shape `Box ]
+  let vertex_name v = string_of_int v
+  let default_vertex_attributes _ = []
+  let graph_attributes _ = []
+end)
+
+let write_to_file f g =
+  let file = open_out_bin f in
+  Dot.output_graph file g
