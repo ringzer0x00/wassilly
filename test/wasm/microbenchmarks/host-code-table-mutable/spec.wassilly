@@ -1,2 +1,2 @@
 importobj func print ([] -> [])
-postinst effect table tab ( 0 -> 3 );
+postinst effect table tab ( 0 -> 2 );

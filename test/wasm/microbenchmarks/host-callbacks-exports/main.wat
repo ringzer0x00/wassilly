@@ -12,7 +12,7 @@
 ;;   $export1
 ;;   $a
 (module
-    (import "host" "imported" (func $imported))
+    ;;(import "host" "imported" (func $imported))
     (func $main (export "main")
         call $imported
     )

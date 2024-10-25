@@ -58,7 +58,7 @@ let imported_funcs (i : Wasm.Ast.import list) (importspecs : spec list) =
 
   let injected = List.filter_map filter_map_injected importspecs in
   (*parse here from importspec ImportObj*)
-  injected @ List.filter_map filter_map_imports i
+  List.filter_map filter_map_imports i @ injected
 
 let ifun_indexed x =
   List.filter

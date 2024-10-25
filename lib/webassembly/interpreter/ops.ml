@@ -35,7 +35,6 @@ let eval_loadop ({ ty; align; offset; pack } : Wasm.Ast.loadop) ms =
     match pack with
     | None -> assert true
     | Some _ ->
-        Format.printf "pack!!!! wtf is this shiiiiit";
         assert false
     (*Wasm.Types
       type pack_size = Pack8 | Pack16 | Pack32 | Pack64

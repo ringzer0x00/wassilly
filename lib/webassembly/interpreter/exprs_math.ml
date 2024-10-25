@@ -239,10 +239,6 @@ let select_expr vm fst snd trd (_rt : Wasm.Types.value_type list option) =
   let fst_i = concretize vm fst in
   let snd_i = concretize vm snd in
   let trd_i = concretize vm trd in
-  Apronext.Intervalext.print Format.std_formatter fst_i;
-  Apronext.Intervalext.print Format.std_formatter snd_i;
-  Apronext.Intervalext.print Format.std_formatter trd_i;
-  Format.print_newline ();
   if Apronext.Intervalext.equal fst_i zero_interval then snd
   else Expression (const_expr vm (Apronext.Intervalext.join trd_i snd_i), _rt)
 
@@ -257,7 +253,6 @@ let lshift_expr vm l r =
   (*range == 0*)
   | true ->
       let _r = Bitwisealu.shift_left lb (Float.to_int (S.to_float _by.inf)) in
-      Datastructures.Abstractbyte.print_byte _r;
       let min, max =
         Datastructures.Abstractbyte.as_int_arrays _r ~signed:true
       in
@@ -380,7 +375,6 @@ let store_standard _vm _mem _addr _val _t (_offset_expl : int32) =
   printer Format.printf "~ Value to write:";
   printer (Apronext.Intervalext.print Format.str_formatter) val_;
   printer Format.print_newline ();
-  let _ = Format.flush_str_formatter () in
   let _w, _s =
     match _t with
     | Wasm.Types.I32Type | F32Type -> (4, 32)
