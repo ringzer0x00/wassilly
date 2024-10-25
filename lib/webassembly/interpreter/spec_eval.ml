@@ -279,6 +279,7 @@ let eval (p : Importspec.Term.term) ms modi =
         (table _name _ttyp _tbinds _unspec ms, [])
     | PostInst ass ->
         (List.fold_left (fun m a -> eval_assignment a m [] modi) ms ass, [])
+    | ImportObj _ -> failwith "i never eval this! @ spec_eval"
   in
   match r with
   | Def _ -> (Def { nat = Bot; br = bot_pa.p_br; return = r }, calls)

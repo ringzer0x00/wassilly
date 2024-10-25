@@ -24,6 +24,7 @@ rule read =
     | "calls" { CALL }
     | "unspec" { UNSPEC }
     | "effect" { EFFECT }
+    | "importobj" { IMPOBJ }
     | "postinst" { POST_INST }
     | "#" { skip_line lexbuf }
     | "i32" { I32 }

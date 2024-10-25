@@ -34,6 +34,7 @@ and term =
   | Table of string * tabType * tableBinding list * unspec
   | PostInst of assignment list
   | Func of string * funcsig * impl
+  | ImportObj of term
 
 and program = Program of term list [@@deriving show]
 

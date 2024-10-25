@@ -135,6 +135,25 @@ let%test "func-sequence" =
         Func ("example3", FuncSig ([], []), Implies ([], [], []));
       ]
 
+let%test "ImportObj-fib" =
+  parse_program
+    "importobj func fib ([param i32 x] -> [i32]) i32 [0;PINF] calls 0"
+  = Program
+      [
+        ImportObj
+          (Func
+             ( "fib",
+               FuncSig ([ Param (I32Type, "x") ], [ ResultType I32Type ]),
+               Implies
+                 ( [
+                     Result
+                       ( I32Type,
+                         Num (I.of_scalar (I.int_scalar 0) (I.inf_scalar 1)) );
+                   ],
+                   [],
+                   [ Calls (Int32.of_int 0) ] ) ));
+      ]
+
 let%test "IMPORTSPEC-side" =
   parse_program "func mut ([] -> []) effect glob 0 i32 [1;1]"
   = Program
@@ -152,19 +171,15 @@ let%test "IMPORTSPEC-side" =
             | EFFECT; TABLE; x=ID; b=tablebinding; {TableAss(x,b)}*)
 let%test "effect-mem" =
   parse_program
-    "func args_sizes_get ([param i32 x param i32 y] -> []) i32 [1;1] \
-     effect memmut memory x x i32"
+    "func args_sizes_get ([param i32 x param i32 y] -> []) i32 [1;1] effect \
+     memmut memory x x i32"
   = Program
       [
         Func
           ( "args_sizes_get",
             FuncSig ([ Param (I32Type, "x"); Param (I32Type, "y") ], []),
             Implies
-              ( [
-                  Result
-                    ( I32Type,
-                      Num (I.of_int 1 1) );
-                ],
+              ( [ Result (I32Type, Num (I.of_int 1 1)) ],
                 [ MemAss ("memory", Rel "x", Rel "x", I32Type) ],
                 [] ) );
       ]
