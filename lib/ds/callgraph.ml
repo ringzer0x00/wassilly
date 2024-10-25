@@ -49,11 +49,8 @@ module Edge = struct
   let default = ""
 end
 
-module GRaw =
-  Graph.Imperative.Digraph.ConcreteBidirectionalLabeled (Vertex) (Edge)
-
 module Ga = struct
-  include GRaw
+  include Graph.Imperative.Digraph.ConcreteBidirectionalLabeled (Vertex) (Edge)
 
   let phi = create ()
   let add_vertex = add_vertex
