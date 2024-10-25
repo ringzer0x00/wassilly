@@ -1,1 +1,2 @@
-postinst effect table tab ( 0 -> 2 );
+importobj func print ([] -> [])
+postinst effect table tab ( 0 -> 3 );

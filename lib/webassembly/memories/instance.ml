@@ -38,7 +38,7 @@ type instance = {
 }
 
 let imported_funcs (i : Wasm.Ast.import list) (importspecs : spec list) =
-  let filter_map (x : Wasm.Ast.import) =
+  let filter_map_imports (x : Wasm.Ast.import) =
     match x.it.idesc.it with
     | FuncImport _v ->
         let n = Wasm.Utf8.encode x.it.item_name in
@@ -52,7 +52,13 @@ let imported_funcs (i : Wasm.Ast.import list) (importspecs : spec list) =
                 importspecs))
     | _ -> None
   in
-  List.filter_map filter_map i
+  let filter_map_injected (p : spec) =
+    match p with ImportObj f -> Some (ImportedFunc f) | _ -> None
+  in
+
+  let injected = List.filter_map filter_map_injected importspecs in
+  (*parse here from importspec ImportObj*)
+  injected @ List.filter_map filter_map_imports i
 
 let ifun_indexed x =
   List.filter

@@ -38,7 +38,7 @@ let%test "MATTIA-host-code-table-mutable" =
 
 let%test "host-code-table-mutable" =
   Interpreter.Eval.cg := Datastructures.Callgraph.CallGraph.phi;
-  got (p "host-code-table-mutable") = [ (0, 2) ]
+  got (p "host-code-table-mutable") = [ (0, 3) ]
 
 let%test "MATTIA-indirect-call-index-expr-load-const-exported-memory-mutable" =
   Interpreter.Eval.cg := Datastructures.Callgraph.CallGraph.phi;
