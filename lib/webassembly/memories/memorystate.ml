@@ -49,7 +49,6 @@ let pop_operand k : t = k >>= fun a -> update_operandstack (a.ops |> pop) k
 
 let rec pop_n_labels _ms _n =
   _ms >>= fun a ->
-  Printf.printf "popping";
   let n', sk' =
     match peek a.ops with Label _ -> (_n - 1, pop a.ops) | _ -> (_n, pop a.ops)
   in

@@ -1,1 +1,1 @@
-postinst effect memory mem [1337;1337] [1;1] i32
+postinst effect memmut mem [1337;1337] [1;1] i32

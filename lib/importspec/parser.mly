@@ -30,7 +30,7 @@ open Term
 
 %token GLOB "glob"
 %token TABLE "table"
-%token MEM "memory"
+%token MEM "memmut"
 %token CALL "calls"
 %token EXTERNREF "externref"
 %token FUNCREF "funcref"
@@ -42,6 +42,8 @@ open Term
 %token UNSPEC "unspec"
 %token POST_INST "postinst"
 %token IDENTITY "id"
+
+%token IMPOBJ "importobj"
 
 %token END
 %token EOF
@@ -134,8 +136,11 @@ let func :=
 let postinst :=
   | POST_INST; a=assignment*; {PostInst (a)}
 
+let importobj := | IMPOBJ; t=term; {ImportObj (t)}
+
 let term :=
   | glob
   | table
   | func
   | postinst
+  | importobj

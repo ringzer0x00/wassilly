@@ -35,11 +35,19 @@ let of_interval interval (type_ : num) =
     | true -> (
         match type_ with
         | I32Type | F32Type ->
-            ( Array.make 32 Datastructures.Abstractbit.Zero,
-              Array.make 32 Datastructures.Abstractbit.One )
+            ( Array.append
+                (Array.make 1 Datastructures.Abstractbit.One)
+                (Array.make 31 Datastructures.Abstractbit.Zero),
+              Array.append
+                (Array.make 1 Datastructures.Abstractbit.Zero)
+                (Array.make 31 Datastructures.Abstractbit.One) )
         | I64Type | F64Type ->
-            ( Array.make 64 Datastructures.Abstractbit.Zero,
-              Array.make 64 Datastructures.Abstractbit.One ))
+            ( Array.append
+                (Array.make 1 Datastructures.Abstractbit.One)
+                (Array.make 63 Datastructures.Abstractbit.Zero),
+              Array.append
+                (Array.make 1 Datastructures.Abstractbit.Zero)
+                (Array.make 63 Datastructures.Abstractbit.One) ))
     | false -> (
         let val_ = Apronext.Intervalext.to_float interval in
         match type_ with

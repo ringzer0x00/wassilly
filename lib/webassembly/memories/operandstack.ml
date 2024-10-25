@@ -7,9 +7,9 @@ type t = operand list
 type varmemories = VariableMem.t
 
 let print_stack s =
-  Printf.printf "[";
+  Format.printf "OPStack:[";
   List.iter (fun x -> print_operand x) s;
-  Printf.printf "]\n"
+  Format.printf "]\n"
 
 let empty : t = []
 let peek_n = SK.peek_n
@@ -57,11 +57,9 @@ let ival_widen (smaller : Apron.Interval.t) (bigger : Apron.Interval.t) =
     Apron.Interval.of_scalar lower' upper'
 
 let join (m1, s1) (m2, s2) =
-  Printf.printf "Joining: %i, %i\n" (List.length s1) (List.length s2);
   List.map2 (fun x y -> Operand.jw_operand (m1, x) (m2, y) ival_join) s1 s2
 
 let widen (m1, s1) (m2, s2) =
-  Printf.printf "Widening: %i, %i\n" (List.length s1) (List.length s2);
   List.map2 (fun x y -> Operand.jw_operand (m1, x) (m2, y) ival_widen) s1 s2
 
 let leq (m1, s1) (m2, s2) =

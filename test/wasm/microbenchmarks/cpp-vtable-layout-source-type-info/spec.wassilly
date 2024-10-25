@@ -1,3 +1,6 @@
-func args_sizes_get ([param i32 x param i32 y] -> [i32]) i32 [NINF;PINF]
-func args_get ([param i32 x param i32 y] -> [i32]) i32 [NINF;PINF]
+# we assume a maximum argc of 10. the interval [0;1000] is used to activate a threshold which unconctrains the memory from the address y onwards.
+# given the semantics of WASI's args_sizes_get you can either make further assumptions about what execution traces you're interested in or 
+# you can simply say it could be "anything".
+func args_sizes_get ([param i32 x param i32 y] -> [i32]) i32 [NINF;PINF] effect memmut memory x [1;10] i32 effect memmut memory y [0;1000] i32
+func args_get ([param i32 x param i32 y] -> [i32]) i32 [NINF;PINF]  effect memmut memory x [1;10] i32 effect memmut memory y [0;1000] i32
 func proc_exit ([param i32 x] -> []) id

@@ -29,21 +29,18 @@ let l_and l r =
   match (l, r) with
   | One, One -> One
   | _, Zero | Zero, _ -> Zero
-  | One, Top | Top, One | Top, Top -> Top
+  | _, Top | Top, _ -> Top
 
 (** Logic OR between [Bit]s. *)
 let l_or l r =
-  match (l, r) with
-  | Zero, Zero -> Zero
-  | One, _ | _, One -> One
-  | Top, Zero | Zero, Top | Top, Top -> Top
+  match (l, r) with Zero, Zero -> Zero | One, _ | _, One -> One | _ -> Top
 
 (** Logic XOR between [Bit]s. *)
 let l_xor l r =
   match (l, r) with
   | Zero, Zero | One, One -> Zero
   | One, Zero | Zero, One -> One
-  | Top, Zero | Zero, Top | One, Top | Top, One | Top, Top -> Top
+  | _ -> Top
 
 let filter_until arr filter =
   let l = Array.to_list arr in
@@ -58,6 +55,6 @@ let filter_until arr filter =
 
 (** Print **)
 let print = function
-  | Zero -> Printf.printf "Zero"
-  | One -> Printf.printf "One"
-  | Top -> Printf.printf "Top"
+  | Zero -> Format.printf "Zero"
+  | One -> Format.printf "One"
+  | Top -> Format.printf "Top"

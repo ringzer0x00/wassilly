@@ -8,9 +8,6 @@ type abool = Datastructures.Abstractbit.t
 
 (*NOTE: this belongs to operand*)
 let intbool (exp : Memories.Operand.operand) (ms : MS.ms) =
-  (*Top*)
-  (*sat soving shenanigans.
-    is it zero, non-zero or can it be both?*)
   let t, f = Memories.Operand.boole_filter exp ms.var in
   let vm_t' : MS.VariableMem.t =
     { loc = ms.var.loc; glob = ms.var.glob; ad = t }
@@ -21,18 +18,10 @@ let intbool (exp : Memories.Operand.operand) (ms : MS.ms) =
   let ms_t ms = MS.update_varmem vm_t' (Def ms) in
   let ms_f ms = MS.update_varmem vm_f' (Def ms) in
   match (Apronext.Apol.is_bottom t, Apronext.Apol.is_bottom f) with
-  | true, true ->
-      Printf.printf "BOT BOT @ intbool\n";
-      (Bot, Bot)
-  | false, false ->
-      Printf.printf "Def Def @ intbool\n";
-      (ms_t ms, ms_f ms)
-  | true, false ->
-      Printf.printf "BOT Def @ intbool\n";
-      (Bot, ms_f ms)
-  | false, true ->
-      Printf.printf "Def BOT @ intbool\n";
-      (ms_t ms, Bot)
+  | true, true -> (Bot, Bot)
+  | false, false -> (ms_t ms, ms_f ms)
+  | true, false -> (Bot, ms_f ms)
+  | false, true -> (ms_t ms, Bot)
 
 let cond ms =
   let cond = MS.peek_operand ms |> List.hd in
@@ -48,24 +37,25 @@ let ite_condition ms =
 
 let enter_label _l ms mod_ =
   ms >>= fun _ ->
-    let in_, _ =
-      match _l with
-      | Memories.Operand.Label lab ->
-          Memories.Label.type_of_peeked_label lab
-          |> Memories.Label.extract_type_of_label mod_
-      | _ -> failwith "booooooo enter label bnoooo"
-    in
-    let vals, ms' =
-      ( MS.peek_n_operand (List.length in_) ms,
-        MS.pop_n_operand (List.length in_) ms )
-    in
-    Memories.Memorystate.push_operand (vals @ [ _l ]) ms'
+  let in_, _ =
+    match _l with
+    | Memories.Operand.Label lab ->
+        Memories.Label.type_of_peeked_label lab
+        |> Memories.Label.extract_type_of_label mod_
+    | _ -> failwith "booooooo enter label bnoooo"
+  in
+  let vals, ms' =
+    ( MS.peek_n_operand (List.length in_) ms,
+      MS.pop_n_operand (List.length in_) ms )
+  in
+  Memories.Memorystate.push_operand (vals @ [ _l ]) ms'
 
 let monad_step c1 ca f =
-  match c1 with Bot -> (Bot, ca, SCG.SCC.empty) | Def d -> f d
+  match c1 with
+  | Bot -> (Bot, ca, SCG.SCC.empty)
+  | Def d -> ( match d.nat with Def _ -> f d | Bot -> (c1, ca, SCG.SCC.empty))
 
 let block_result r_b block_body =
-  Printf.printf "BLCOK RESULT";
   r_b >>= fun r ->
   return
     {
@@ -135,7 +125,6 @@ let prep_call ms vals mod_ locs typ_idx =
             Memories.Operand.type_of_operand o ))
       vals vals_as_interval
   in
-  Printf.printf "here ok";
   let ms'' =
     List.fold_right2
       (fun b v m -> MS.assign_var m Loc b v)

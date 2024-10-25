@@ -138,6 +138,7 @@
           i32.sub
           local.tee 3
           global.set 0
+          ;; BUG HERE !!!!
           local.get 0
           local.get 2
           i32.add
@@ -212,10 +213,10 @@
   (export "memory" (memory 0))
   (export "__indirect_function_table" (table 0))
   (export "_start" (func 11))
-  ;;(export "__errno_location" (func 22))
-  ;;(export "stackSave" (func 19))
-  ;;(export "stackRestore" (func 20))
-  ;;(export "stackAlloc" (func 21))
+  (export "__errno_location" (func 22))
+  (export "stackSave" (func 19))
+  (export "stackRestore" (func 20))
+  (export "stackAlloc" (func 21))
   (elem (;0;) (i32.const 1) func 7 8 9 10 3)
   (data (;0;) (i32.const 1032) "\01")
   (data (;1;) (i32.const 1044) "\02")

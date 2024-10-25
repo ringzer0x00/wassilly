@@ -17,13 +17,14 @@ rule read =
     | "id" { IDENTITY }
     | "glob" { GLOB }
     | "table" { TABLE }
-    | "memory" { MEM }
+    | "memmut" { MEM }
     | "funcref" { FUNCREF }
     | "externref" { EXTERNREF }
     | "func" { FUNC }
     | "calls" { CALL }
     | "unspec" { UNSPEC }
     | "effect" { EFFECT }
+    | "importobj" { IMPOBJ }
     | "postinst" { POST_INST }
     | "#" { skip_line lexbuf }
     | "i32" { I32 }
