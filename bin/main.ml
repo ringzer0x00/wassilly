@@ -17,4 +17,4 @@ let () =
   if !input_files = "" then print_endline usage_msg
   else
     Interpreter.Analysis.callgraph_analysis' !input_files !specfile
-    |> Datastructures.Callgraph.CallGraph.print
+    |> Datastructures.Callgraph.Ga.print

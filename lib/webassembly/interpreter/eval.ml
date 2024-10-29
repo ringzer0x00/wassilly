@@ -12,7 +12,7 @@ open Fixpoint.Answer
 module Cache = Cache.Cache
 module Stack = Stack.Stack
 module SCG = Scg.SCC
-module CallGraph = Datastructures.Callgraph.CallGraph
+module CallGraph = Datastructures.Callgraph.Ga
 
 let printer = Utilities.Printer.print
 let cg = ref CallGraph.phi
@@ -244,7 +244,7 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
               cache,
               SCG.empty )
         | Call _i ->
-            cg := CallGraph.union (CallGraph.singleton (fin, _i.it)) !cg;
+            cg := CallGraph.add_edge !cg fin _i.it;
             let fin' = _i.it in
             let f = getfbody_wrapped modi (Int32.to_int _i.it) in
             let fres, cache', g =
@@ -255,9 +255,10 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
                   let _res, _cs = Spec_eval.eval term ms modi in
                   let called_idxex =
                     List.map (fun (Importspec.Term.Calls x) -> (_i.it, x)) _cs
-                    |> CallGraph.of_list
                   in
-                  cg := CallGraph.union called_idxex !cg;
+                  List.iter
+                    (fun (s, d) -> cg := CallGraph.add_edge !cg s d)
+                    called_idxex;
                   (func_ans _res, cache, SCG.empty)
               | Memories.Instance.Func f ->
                   let funbody, locs, typ_idx =
@@ -307,9 +308,7 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
               List.map (fun x -> fst (snd x)) (Memories.Table.T.bindings _refs)
               |> List.filter_map (fun x -> x)
             in
-            List.iter
-              (fun x -> cg := CallGraph.union (CallGraph.singleton (fin, x)) !cg)
-              _targets;
+            List.iter (fun x -> cg := CallGraph.add_edge !cg fin x) _targets;
             let typ_ = gettype modi (Int32.to_int _fsign.it) in
             let _ti, _to =
               (*list * list*)
@@ -338,9 +337,10 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
                         List.map
                           (fun (Importspec.Term.Calls x) -> (fidx, x))
                           _cs
-                        |> CallGraph.of_list
                       in
-                      cg := CallGraph.union called_idxex !cg;
+                      List.iter
+                        (fun (s, d) -> cg := CallGraph.add_edge !cg s d)
+                        called_idxex;
                       (_res, cache, SCG.empty)
                   | Memories.Instance.Func f ->
                       let fbody, _locs, (typ_idx : Wasm.Ast.var) =

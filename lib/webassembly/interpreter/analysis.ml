@@ -110,8 +110,7 @@ let callgraph_analysis' fn _spec_path =
       Eval.Stack.empty Eval.Cache.empty fstart ([], []) Eval.MA.bot_pa Eval.step
   in
   List.fold_left
-    (fun (cg, cache) (y : Wasm.Ast.var) ->
-      Eval.cg := Datastructures.Callgraph.CallGraph.phi;
+    (fun (_, cache) (y : Wasm.Ast.var) ->
       let fb, locs, ft = Eval.getfbody minst (Int32.to_int y.it) in
       let t_in, _t_out =
         match Eval.gettype minst (Int32.to_int ft.it) with
@@ -126,6 +125,6 @@ let callgraph_analysis' fn _spec_path =
           ((call_ms, fb), true)
           Eval.Stack.empty cache y.it (t_in, _t_out) Eval.MA.bot_pa Eval.step
       in
-      (Datastructures.Callgraph.CallGraph.union cg !Eval.cg, cache'))
+      (!Eval.cg, cache'))
     (!Eval.cg, c) entrypoints
   |> fst

@@ -71,7 +71,10 @@ module Ga = struct
 
   let phi = empty
   let add_vertex = add_vertex
-  let add_edge = add_edge_e
+  let add_edge g s d = add_edge_e g (s, "", d)
+  let print _ = failwith ""
+  let edges g = fold_edges (fun f t l -> (f, t) :: l) g []
+  let edges_as_int g = fold_edges (fun f t l -> (Int32.to_int f, Int32.to_int t) :: l) g [] |> List.rev
 end
 
 module Dot = Graph.Graphviz.Dot (struct
@@ -89,3 +92,5 @@ end)
 let write_to_file f g =
   let file = open_out_bin f in
   Dot.output_graph file g
+
+let print_graph g = Dot.fprint_graph g
