@@ -72,7 +72,6 @@ module Ga = struct
   let phi = empty
   let add_vertex = add_vertex
   let add_edge g s d = add_edge_e g (s, "", d)
-  let print _ = failwith ""
   let edges g = fold_edges (fun f t l -> (f, t) :: l) g []
   let vertices g = fold_vertex (fun v l -> v :: l) g []
 
