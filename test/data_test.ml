@@ -30,26 +30,29 @@ let vtables_gt =
     (17, 18);
   ]
 
-let vtables_corr =
+let vtables_rf =
   [
-    (0, "args_sizes_get");
-    (1, "args_get");
-    (2, "proc_exit");
-    (3, "__wasm_call_ctors");
-    (4, "module1_bool_");
-    (5, "module2_bool_");
-    (6, "main");
-    (7, "A::method__");
-    (8, "B::method__");
-    (9, "C::method__");
-    (10, "D::method__");
-    (11, "_start");
-    (12, "__main_void");
-    (13, "dummy");
-    (14, "libc_exit_fini");
-    (15, "exit");
-    (16, "_Exit");
-    (17, "_emscripten_stack_restore");
-    (18, "emscripten_stack_get_current");
+    0;
+    1;
+    2;
+    3;
+    4;
+    5;
+    6;
+    7;
+    8;
+    9;
+    10;
+    11;
+    12;
+    13;
+    14;
+    15;
+    16;
+    17;
+    18;
+    19;
+    20;
+    21;
+    22;
   ]
-  |> List.map (fun (x, y) -> (Int32.of_int x, y))
