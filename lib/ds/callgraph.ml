@@ -8,6 +8,23 @@ module GraphEdge = struct
   let ( ~> ) = edge
 end
 
+module GraphNode = struct
+  type t = Int32.t
+
+  let compare = compare
+end
+
+module ReachableFuncs = struct
+  module S = Set.Make (GraphNode)
+
+  let phi = S.empty
+  let singleton = S.singleton
+  let add = S.add
+  let union = S.union
+  let of_list = S.of_list
+  let to_list g = S.to_seq g |> List.of_seq
+end
+
 module CallGraph = struct
   module S = Set.Make (GraphEdge)
 
@@ -34,7 +51,7 @@ module CallGraph = struct
 end
 
 module Vertex = struct
-  type t = int
+  type t = int32
 
   let compare = Stdlib.compare
   let hash = Hashtbl.hash
@@ -50,18 +67,11 @@ module Edge = struct
 end
 
 module Ga = struct
-  include Graph.Imperative.Digraph.ConcreteBidirectionalLabeled (Vertex) (Edge)
+  include Graph.Persistent.Digraph.ConcreteBidirectionalLabeled (Vertex) (Edge)
 
-  let phi = create ()
+  let phi = empty
   let add_vertex = add_vertex
   let add_edge = add_edge_e
-
-  let union (g1 : t) (g2 : t) =
-    let g_res = phi in
-    iter_vertex (fun v -> add_vertex g_res v) g1;
-    iter_edges_e (fun e -> add_edge_e g_res e) g1;
-    iter_vertex (fun v -> add_vertex g_res v) g2;
-    iter_edges_e (fun e -> add_edge_e g_res e) g2
 end
 
 module Dot = Graph.Graphviz.Dot (struct
@@ -71,7 +81,7 @@ module Dot = Graph.Graphviz.Dot (struct
   let default_edge_attributes _ = []
   let get_subgraph _ = None
   let vertex_attributes _ = [ `Shape `Box ]
-  let vertex_name v = string_of_int v
+  let vertex_name v = Int32.to_string v
   let default_vertex_attributes _ = []
   let graph_attributes _ = []
 end)
