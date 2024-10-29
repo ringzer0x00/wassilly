@@ -74,7 +74,14 @@ module Ga = struct
   let add_edge g s d = add_edge_e g (s, "", d)
   let print _ = failwith ""
   let edges g = fold_edges (fun f t l -> (f, t) :: l) g []
-  let edges_as_int g = fold_edges (fun f t l -> (Int32.to_int f, Int32.to_int t) :: l) g [] |> List.rev
+  let vertices g = fold_vertex (fun v l -> v :: l) g []
+
+  let edges_as_int g =
+    fold_edges (fun f t l -> (Int32.to_int f, Int32.to_int t) :: l) g []
+    |> List.rev
+
+  let vertices_as_int g =
+    fold_vertex (fun v l -> Int32.to_int v :: l) g [] |> List.rev
 end
 
 module Dot = Graph.Graphviz.Dot (struct

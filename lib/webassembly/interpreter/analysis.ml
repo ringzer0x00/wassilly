@@ -94,7 +94,10 @@ let callgraph_analysis' fn _spec_path =
     | None -> ([], [], Int32.minus_one)
     | Some _st -> (
         match Eval.getfbody minst (Int32.to_int _st.it.sfunc.it) with
-        | a, _, _ -> (a, [], _st.it.sfunc.it))
+        | a, _, _ ->
+            Eval.cg :=
+              Datastructures.Callgraph.Ga.add_vertex !Eval.cg _st.it.sfunc.it;
+            (a, [], _st.it.sfunc.it))
   in
   let entrypoints =
     List.filter_map
@@ -102,7 +105,6 @@ let callgraph_analysis' fn _spec_path =
         match x.it.edesc.it with FuncExport v -> Some v | _ -> None)
       mod_.it.exports
   in
-  let _fs_all = List.mapi (fun i _ -> Int32.of_int i) mod_.it.funcs in
   let r_start, c, _ =
     i >>=? fun _ ->
     Eval.fixpoint minst
@@ -111,6 +113,7 @@ let callgraph_analysis' fn _spec_path =
   in
   List.fold_left
     (fun (_, cache) (y : Wasm.Ast.var) ->
+      Eval.cg := Datastructures.Callgraph.Ga.add_vertex !Eval.cg y.it;
       let fb, locs, ft = Eval.getfbody minst (Int32.to_int y.it) in
       let t_in, _t_out =
         match Eval.gettype minst (Int32.to_int ft.it) with

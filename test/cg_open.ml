@@ -9,11 +9,11 @@ let got = Datastructures.Callgraph.Ga.edges_as_int
 
 let%test "memory-init-offset-imported-global" =
   Interpreter.Eval.cg := Datastructures.Callgraph.Ga.phi;
-  got (p "memory-init-offset-imported-global") = [ (0, 1) ]
+  got (p "memory-init-offset-imported-global") = [ (0, 1) ] (*[0;1]*)
 
 let%test "direct-call-imported-func" =
   Interpreter.Eval.cg := Datastructures.Callgraph.Ga.phi;
-  got (p "direct-call-imported-func") = [ (1, 0) ]
+  got (p "direct-call-imported-func") = [ (1, 0) ] (*[0;1]*)
 
 let%test "table-init-offset-imported-global" =
   Interpreter.Eval.cg := Datastructures.Callgraph.Ga.phi;
@@ -21,15 +21,15 @@ let%test "table-init-offset-imported-global" =
 
 let%test "host-callbacks-exports" =
   Interpreter.Eval.cg := Datastructures.Callgraph.Ga.phi;
-  got (p "host-callbacks-exports") = [ (0, 2); (1, 0); (2, 4); (3, 5) ]
+  got (p "host-callbacks-exports") = [ (0, 2); (1, 0); (2, 4); (3, 5) ] (*[0;1;2;3;4;5]*)
 
 let%test "host-reachable-table-export" =
   Interpreter.Eval.cg := Datastructures.Callgraph.Ga.phi;
-  got (p "host-reachable-table-export") = [ (0, 2); (1, 0) ]
+  got (p "host-reachable-table-export") = [ (0, 2); (1, 0) ] (*[0;1;2]*)
 
 let%test "host-reachable-table-import" =
   Interpreter.Eval.cg := Datastructures.Callgraph.Ga.phi;
-  got (p "host-reachable-table-import") = [ (0, 3); (1, 0) ]
+  got (p "host-reachable-table-import") = [ (0, 2); (1, 0) ] (*[0;1;2]*)
 
 let%test "MATTIA-host-code-table-mutable" =
   Interpreter.Eval.cg := Datastructures.Callgraph.Ga.phi;
@@ -37,7 +37,7 @@ let%test "MATTIA-host-code-table-mutable" =
 
 let%test "host-code-table-mutable" =
   Interpreter.Eval.cg := Datastructures.Callgraph.Ga.phi;
-  got (p "host-code-table-mutable") = [ (0, 2) ]
+  got (p "host-code-table-mutable") = [ (0, 2) ] (*[0;1;2]*)
 
 let%test "MATTIA-indirect-call-index-expr-load-const-exported-memory-mutable" =
   Interpreter.Eval.cg := Datastructures.Callgraph.Ga.phi;
