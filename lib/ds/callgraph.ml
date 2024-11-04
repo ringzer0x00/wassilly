@@ -8,6 +8,23 @@ module GraphEdge = struct
   let ( ~> ) = edge
 end
 
+module GraphNode = struct
+  type t = Int32.t
+
+  let compare = compare
+end
+
+module ReachableFuncs = struct
+  module S = Set.Make (GraphNode)
+
+  let phi = S.empty
+  let singleton = S.singleton
+  let add = S.add
+  let union = S.union
+  let of_list = S.of_list
+  let to_list g = S.to_seq g |> List.of_seq
+end
+
 module CallGraph = struct
   module S = Set.Make (GraphEdge)
 
@@ -34,7 +51,7 @@ module CallGraph = struct
 end
 
 module Vertex = struct
-  type t = int
+  type t = int32
 
   let compare = Stdlib.compare
   let hash = Hashtbl.hash
@@ -50,18 +67,20 @@ module Edge = struct
 end
 
 module Ga = struct
-  include Graph.Imperative.Digraph.ConcreteBidirectionalLabeled (Vertex) (Edge)
+  include Graph.Persistent.Digraph.ConcreteBidirectionalLabeled (Vertex) (Edge)
 
-  let phi = create ()
+  let phi = empty
   let add_vertex = add_vertex
-  let add_edge = add_edge_e
+  let add_edge g s d = add_edge_e g (s, "", d)
+  let edges g = fold_edges (fun f t l -> (f, t) :: l) g []
+  let vertices g = fold_vertex (fun v l -> v :: l) g []
 
-  let union (g1 : t) (g2 : t) =
-    let g_res = phi in
-    iter_vertex (fun v -> add_vertex g_res v) g1;
-    iter_edges_e (fun e -> add_edge_e g_res e) g1;
-    iter_vertex (fun v -> add_vertex g_res v) g2;
-    iter_edges_e (fun e -> add_edge_e g_res e) g2
+  let edges_as_int g =
+    fold_edges (fun f t l -> (Int32.to_int f, Int32.to_int t) :: l) g []
+    |> List.rev
+
+  let vertices_as_int g =
+    fold_vertex (fun v l -> Int32.to_int v :: l) g [] |> List.rev
 end
 
 module Dot = Graph.Graphviz.Dot (struct
@@ -71,7 +90,7 @@ module Dot = Graph.Graphviz.Dot (struct
   let default_edge_attributes _ = []
   let get_subgraph _ = None
   let vertex_attributes _ = [ `Shape `Box ]
-  let vertex_name v = string_of_int v
+  let vertex_name v = Int32.to_string v
   let default_vertex_attributes _ = []
   let graph_attributes _ = []
 end)
@@ -79,3 +98,5 @@ end)
 let write_to_file f g =
   let file = open_out_bin f in
   Dot.output_graph file g
+
+let print_graph g = Dot.fprint_graph g

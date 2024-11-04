@@ -5,10 +5,10 @@ let p path =
     (d ^ path ^ "/main.wasm")
     (d ^ path ^ "/spec.wassilly")
 
-let got = Datastructures.Callgraph.CallGraph.edges
+let got = Datastructures.Callgraph.Ga.edges_as_int
 
 let%test "MATTIA-direct-call-value" =
-  Interpreter.Eval.cg := Datastructures.Callgraph.CallGraph.phi;
+  Interpreter.Eval.cg := Datastructures.Callgraph.Ga.phi;
   let m, g = p "MATTIA-direct-call-value" in
   let top_stack = Memories.Memorystate.peek_operand m |> List.hd in
   let val_conc = Memories.Memorystate.operand_as_interval top_stack m in
@@ -16,7 +16,7 @@ let%test "MATTIA-direct-call-value" =
   && Apronext.Intervalext.equal val_conc (Apronext.Intervalext.of_int 6 9)
 
 let%test "MATTIA-direct-call-mutated-global-val" =
-  Interpreter.Eval.cg := Datastructures.Callgraph.CallGraph.phi;
+  Interpreter.Eval.cg := Datastructures.Callgraph.Ga.phi;
   let m, g = p "MATTIA-direct-call-mutated-global-val" in
   let top_stack = Memories.Memorystate.peek_operand m |> List.hd in
   let val_conc = Memories.Memorystate.operand_as_interval top_stack m in
@@ -24,7 +24,7 @@ let%test "MATTIA-direct-call-mutated-global-val" =
   && Apronext.Intervalext.equal val_conc (Apronext.Intervalext.of_int 7 7)
 
 let%test "MATTIA-direct-call-mutated-global-ref" =
-  Interpreter.Eval.cg := Datastructures.Callgraph.CallGraph.phi;
+  Interpreter.Eval.cg := Datastructures.Callgraph.Ga.phi;
   let m, g = p "MATTIA-direct-call-mutated-global-ref" in
   let top_stack = Memories.Memorystate.peek_operand m |> List.hd in
   let val_conc = Memories.Memorystate.operand_as_interval top_stack m in
@@ -32,7 +32,7 @@ let%test "MATTIA-direct-call-mutated-global-ref" =
   && Apronext.Intervalext.equal val_conc (Apronext.Intervalext.of_int 14 14)
 
 let%test "MATTIA-direct-call-mutated-global-ref" =
-  Interpreter.Eval.cg := Datastructures.Callgraph.CallGraph.phi;
+  Interpreter.Eval.cg := Datastructures.Callgraph.Ga.phi;
   let m, g = p "MATTIA-direct-call-mutated-global-ref" in
   let top_stack = Memories.Memorystate.peek_operand m |> List.hd in
   let val_conc = Memories.Memorystate.operand_as_interval top_stack m in
