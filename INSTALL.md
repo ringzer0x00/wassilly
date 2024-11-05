@@ -1,0 +1,6 @@
+``
+sudo apt-get install --no-install-recommends opam
+...
+opam install .
+wassilly ...
+``

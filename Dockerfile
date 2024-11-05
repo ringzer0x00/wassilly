@@ -7,9 +7,10 @@ RUN opam install dune
 RUN opam install ocamlfind 
 RUN opam install camlidl 
 RUN opam install mlgmpidl 
-RUN opam install apron 
+RUN opam install apron=0.9.14
 RUN opam install ounit2
 RUN opam install apronext
+RUN opam install ocamlgraph
 RUN eval $(opam env)
 
 WORKDIR wassilly
