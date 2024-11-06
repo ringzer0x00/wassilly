@@ -1,5 +1,5 @@
-let usage_msg = "append <file1> ... -o <output>"
-let verbose = ref false
+let usage_msg = "wassilly <file1> [-v | -o <output>]"
+let verbose = Utilities.Conf.debug
 let input_files = ref ""
 let specfile = ref ""
 let output_file = ref ""
