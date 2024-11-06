@@ -6,3 +6,5 @@ eval $(opam env --switch=default)
 opam install .
 wassilly [...]
 ``
+
+Dockerfile is available.

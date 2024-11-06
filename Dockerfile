@@ -16,3 +16,4 @@ CMD ["/bin/bash"]
 
 # docker run -it --rm <containter> sh 
 # wassilly test/wasm/microbenchmarks/direct-call-simple/main.wasm -o ciao.dot
+# or dune test to run tests

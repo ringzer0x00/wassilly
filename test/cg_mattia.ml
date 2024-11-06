@@ -1,4 +1,4 @@
-let d = "/home/ringzero/gitrepos/wassilly/test/wasm/microbenchmarks/"
+let d = "../../../../../test/wasm/microbenchmarks/"
 
 let p path =
   Interpreter.Analysis.callgraph_analysis'

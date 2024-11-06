@@ -1,4 +1,4 @@
-let d = "/home/ringzero/gitrepos/wassilly/test/wasm/tc/"
+let d = "../../../../../test/wasm/tc/"
 let p path = Interpreter.Analysis.value_and_callgraph (d ^ path ^ ".wasm") ""
 let got = Datastructures.Callgraph.Ga.edges_as_int
 
