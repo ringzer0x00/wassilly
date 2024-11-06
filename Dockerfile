@@ -10,8 +10,9 @@ RUN apt-get install autoconf libgmp-dev libmpfr-dev -y
 WORKDIR wassilly
 ADD . .
 RUN eval "eval $(opam env --switch=default)" && opam install . -y
-#RUN eval "$(opam env)" && opam update && opam install dune && opam install .
-# ["opam", "exec", "--"]
+RUN echo "eval $(opam env --switch=default)" >> /root/.bashrc
+
 CMD ["/bin/bash"]
-#docker run -it --rm <containter> sh 
-#dune test
+
+# docker run -it --rm <containter> sh 
+# wassilly test/wasm/microbenchmarks/direct-call-simple/main.wasm -o ciao.dot
