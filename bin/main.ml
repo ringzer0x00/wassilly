@@ -16,5 +16,7 @@ let () =
   Arg.parse speclist anon_fun usage_msg;
   if !input_files = "" then print_endline usage_msg
   else
-    Interpreter.Analysis.callgraph_analysis' !input_files !specfile
-    |> Datastructures.Callgraph.write_to_file !output_file
+    let g = Interpreter.Analysis.callgraph_analysis' !input_files !specfile in
+    match !output_file with
+    | "" -> Datastructures.Callgraph.print_graph Format.std_formatter g
+    | _ -> Datastructures.Callgraph.write_to_file !output_file g
