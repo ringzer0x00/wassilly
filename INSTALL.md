@@ -9,3 +9,8 @@ wassilly [...]
 ```
 
 Dockerfile is available.
+```
+docker build . -t wassilly
+docker run -it --rm wassilly
+wassilly [...]
+```
