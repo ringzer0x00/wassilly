@@ -1,12 +1,11 @@
 On Ubuntu:
 ```
-sudo apt-get install --no-install-recommends opam
-opam init -y
+sudo apt-get install --no-install-recommends opam   #if opam not installed
+sudo apt-get install m4 autoconf libgmp-dev libmpfr-dev -y
+opam init -y    #if opam not initialized
 eval $(opam env --switch=default)
 opam install .
 wassilly [...]
 ```
-
-External dependencies may be needed, but opam will help! :)
 
 Dockerfile is available.
