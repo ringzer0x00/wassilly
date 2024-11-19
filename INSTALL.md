@@ -14,3 +14,8 @@ docker build . -t wassilly
 docker run -it --rm wassilly
 wassilly [...]
 ```
+
+For ARM machines:
+``
+docker build --platform linux/amd64 . -t wassilly
+``
