@@ -1,4 +1,4 @@
-FROM ubuntu:24.10
+FROM --platform=linux/amd64 ubuntu:24.10
 
 RUN apt-get update
 RUN apt-get install opam -y
