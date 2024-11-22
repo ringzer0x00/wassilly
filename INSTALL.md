@@ -11,7 +11,7 @@ wassilly [...]
 Dockerfile is available.
 ```
 docker build . -t wassilly
-docker run -it --rm wassilly
+docker run --platform linux/amd64 -it --rm wassilly 
 wassilly [...]
 ```
 
