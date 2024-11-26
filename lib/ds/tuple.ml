@@ -1,0 +1,1 @@
+let tuple_appl f (a, b) = (f a, f b)
