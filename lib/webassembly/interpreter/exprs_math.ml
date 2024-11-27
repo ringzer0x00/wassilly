@@ -408,7 +408,7 @@ let store_standard _vm _mem _addr _val _t (_offset_expl : int32) =
   if is_past_thresh then (
     let m' = Array.copy _mem in
     for i = max mem_min start_from to mem_max do
-      Array.set _mem i Datastructures.Abstractbyte.alloc_byte_top
+      Array.set m' i Datastructures.Abstractbyte.alloc_byte_top
     done;
     m')
   else
