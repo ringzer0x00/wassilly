@@ -19,6 +19,7 @@ let leq b1 b2 =
   match (b1, b2) with
   | Zero, Zero | One, One -> true
   | Zero, One | One, Zero -> false
+  | Top, Top -> true
   | Top, _ -> false
   | _, Top -> true
 
