@@ -95,7 +95,7 @@ let is_lsk_empty k =
   | Bot -> failwith "lsk emptu @ frame"
   | Def kx -> ( match lsk kx.ops with [] -> true | _ -> false)
 
-let write_mem_raw k _off _data =
+let write_mem_raw k (_off : int32) _data =
   k >>= fun a ->
   try
     return

@@ -31,7 +31,7 @@ module LinearMemory = struct
   let internal_load a m =
     match find_opt a m with Some b -> b | None -> Abstractbyte.alloc_byte
 
-  let internal_store a v m =
+  let internal_store_weak a v m =
     update a
       (fun x ->
         match x with
@@ -83,6 +83,12 @@ module LimitedLinearMemory = struct
     else None
 
   let store a v m =
-    if a >= m.min && a <= m.max then Some (LinearMemory.internal_store a v m.m)
+    if a >= m.min && a <= m.max then
+      Some
+        {
+          m = LinearMemory.internal_store_weak a v m.m;
+          min = m.min;
+          max = m.max;
+        }
     else None
 end
