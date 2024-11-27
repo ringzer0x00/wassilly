@@ -1,1 +1,1 @@
-let debug = ref false
+let debug = ref true

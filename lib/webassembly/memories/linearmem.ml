@@ -27,7 +27,8 @@ let internal_write_byte_weak b o m =
 let strong_write_to_mem b o m =
   let mapped = Array.mapi (fun i x -> (x, Int32.add (Int32.of_int i) o)) b in
   Array.fold_left
-    (fun mem (byte, offs) -> internal_write_byte_raw byte offs mem)
+    (fun mem (byte, offs) ->
+     internal_write_byte_raw byte offs mem)
     m mapped
 
 let write_to_mem b o m =

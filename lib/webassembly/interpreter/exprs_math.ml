@@ -284,7 +284,7 @@ let lshift_expr vm l r =
   | false -> Expression (const_expr vm I.top, type_of_operand l)
 
 let load_standard vm mem o t (offset_expl : int32) =
-  let mem_min, mem_max = (0, Memories.Linearmem.length_max mem) in
+  let mem_min, mem_max = (0l, Memories.Linearmem.length_max mem) in
   let _w, _s =
     match t with
     | Wasm.Types.I32Type | F32Type -> (4, 32)
@@ -304,8 +304,7 @@ let load_standard vm mem o t (offset_expl : int32) =
   let c = Memories.Operand.concretize vm o in
   (*range of offset addresses*)
   let start_from, start_to =
-    I.to_float c |> tappl Float.to_int
-    |> tappl (Int.add (Int32.to_int offset_expl))
+    I.to_float c |> tappl Int32.of_float |> tappl (Int32.add offset_expl)
   in
   let threshold_mem = 10 in
   let is_past_thresh =
@@ -314,16 +313,21 @@ let load_standard vm mem o t (offset_expl : int32) =
   let _addrs =
     if is_past_thresh then []
     else
-      List.init (start_to - start_from + 1) (fun x -> start_from + x)
-      |> List.filter (fun a -> a >= mem_min && a <= mem_max - _s)
+      List.init
+        (Int32.add (Int32.sub start_to start_from) 1l |> Int32.to_int)
+        (fun x -> Int32.add start_from (Int32.of_int x))
+      |> List.filter (fun (a : int32) ->
+             a >= mem_min && a <= Int32.sub mem_max (Int32.of_int _s))
   in
   printer Format.print_string "\t~ Set of addresses:";
-  printer (List.iter (fun i -> Format.print_int i)) _addrs;
+  printer (List.iter (fun i -> Format.print_string (Int32.to_string i))) _addrs;
   printer Format.print_newline ();
   (*concretized set of addresses to read from (each sublist represents all of the words to read from memory)*)
   (*BUG: stack overflow this one*)
   let addrs_list_set =
-    listmap' (fun f -> List.init _w (fun x -> f + x)) _addrs
+    listmap'
+      (fun f -> List.init _w (fun x -> Int32.add f (Int32.of_int x)))
+      _addrs
   in
   (*word by word reading*)
   let reads =
@@ -337,7 +341,11 @@ let load_standard vm mem o t (offset_expl : int32) =
     if not is_past_thresh then
       listmap'
         (*memory is little endian, this makes it big endian*)
-          (fun r -> List.fold_left (fun acc v -> Array.append v acc) [||] r)
+          (fun r ->
+          List.fold_left
+            (fun acc v ->
+              match v with Some v -> Array.append v acc | None -> acc)
+            [||] r)
         reads
     else [ Array.make _s Bitwisealu.Bit.Top ]
   in
@@ -380,7 +388,9 @@ let store_standard _vm _mem _addr _val _t (_offset_expl : int32) =
     | Wasm.Types.I32Type | F32Type -> (4, 32)
     | Wasm.Types.I64Type | F64Type -> (8, 64)
   in
-  let mem_min, mem_max = (0, Memories.Linearmem.length_max _mem - _s) in
+  let mem_min, mem_max =
+    (0l, Int32.sub (Memories.Linearmem.length_max _mem) (Int32.of_int _s))
+  in
   let _bytes_to_split =
     Language.Bitwisenumber.of_interval val_ _t
     |> Language.Bitwisenumber.binary_interval_to_abstract_bitwise
@@ -402,21 +412,36 @@ let store_standard _vm _mem _addr _val _t (_offset_expl : int32) =
     >= 0
   in
   let start_from, start_to =
-    I.to_float addr |> tappl Float.to_int
-    |> tappl (Int.add (Int32.to_int _offset_expl))
+    I.to_float addr |> tappl Int32.of_float |> tappl (Int32.add _offset_expl)
   in
-  if is_past_thresh then (
-    let m' = Array.copy _mem in
-    for i = max mem_min start_from to mem_max do
-      Array.set _mem i Datastructures.Abstractbyte.alloc_byte_top
-    done;
-    m')
+  if is_past_thresh then
+    let rec topping addr upto memory =
+      if addr > upto then memory
+      else
+        topping (Int32.succ addr) upto
+          (Memories.Linearmem.strong_write_to_mem
+             [| Datastructures.Abstractbyte.alloc_byte_top |]
+             addr memory)
+    in
+    topping (Int32.max mem_min start_from) mem_max _mem
+    (*(
+      let m' = Array.copy _mem in
+      for i = max mem_min start_from to mem_max do
+        Array.set mem i Datastructures.Abstractbyte.alloc_byte_top
+      done;
+      m')*)
   else
     (*concretized range of offset addresses*)
     let _addrs =
       List.init
-        (min mem_max start_to - max mem_min start_from + 1)
-        (fun x -> max mem_min start_from + x)
+        (*(min mem_max start_to - max mem_min start_from + 1)*)
+        (Int32.add
+           (Int32.sub
+              (Int32.min mem_max start_to)
+              (Int32.max mem_min start_from))
+           1l
+        |> Int32.to_int)
+        (fun x -> Int32.add (Int32.max mem_min start_from) (Int32.of_int x))
     in
     let wf =
       match List.length _addrs with
