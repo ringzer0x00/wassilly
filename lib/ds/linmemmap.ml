@@ -6,7 +6,7 @@ let int_interval_of_interval a_ival =
   |> Tuple.tuple_appl Mpqf.to_float
   |> Tuple.tuple_appl Int32.of_float
 
-module LM = struct
+module LinearMemory = struct
   include Make (Addr) (Abstractbyte)
 
   let join lm1 lm2 =
@@ -20,6 +20,13 @@ module LM = struct
       lm1 lm2
 
   let widen = join
+  let order lm1 lm2 = compare (fun a b -> Abstractbyte.total_order a b) lm1 lm2
+  let eq lm1 lm2 = if order lm1 lm2 = 0 then true else false
+
+  let leq lm1 lm2 =
+    if order lm1 lm2 = 0 || order lm1 lm2 = -1 then true else false
+
+  let le lm1 lm2 = if order lm1 lm2 = -1 then true else false
 
   let internal_load a m =
     match find_opt a m with Some b -> b | None -> Abstractbyte.alloc_byte
@@ -31,8 +38,8 @@ module LM = struct
         | None -> if v = Abstractbyte.alloc_byte then None else Some v
         | Some vold -> Some (Abstractbyte.join v vold))
       m
-
-  let load (a_ival : Apronext.Intervalext.t) m =
+  (*
+  let load a_ival m =
     if Apronext.Intervalext.is_top a_ival then Abstractbyte.alloc_byte_top
     else if Apronext.Intervalext.is_bottom a_ival then failwith "bottom read"
     else
@@ -47,5 +54,27 @@ module LM = struct
         (fun a x -> Abstractbyte.join a x)
         Abstractbyte.alloc_byte reads
 
-  let store _a_ival _v _m = failwith ""
+  let store (a) (_v : Apronext.Intervalext.t) _m =
+    failwith ""*)
+end
+
+module LimitedLinearMemory = struct
+  type t = { m : LinearMemory.t; min : int32; max : int32 }
+
+  let mk_empty max = { m = LinearMemory.empty; min = Int32.zero; max }
+
+  let join m1 m2 =
+    if m1.min = m2.min && m1.max = m2.max then
+      { m = LinearMemory.join m1.m m2.m; min = m1.min; max = m1.max }
+    else failwith "cannot join, memories must be same sized"
+
+  let widen = join
+
+  let load a m =
+    if a >= m.min && a <= m.max then LinearMemory.internal_load a m.m
+    else failwith "oob read"
+
+  let store a v m =
+    if a >= m.min && a <= m.max then LinearMemory.internal_store a v m.m
+    else failwith "oob write"
 end

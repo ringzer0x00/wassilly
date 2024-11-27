@@ -25,6 +25,9 @@ let byte_le b1 b2 =
     (fun fst snd -> Abstractbit.leq fst snd && not (Abstractbit.eq fst snd))
     b1 b2
 
+let total_order b1 b2 =
+  if byte_eq b1 b2 then 0 else if byte_leq b1 b2 then -1 else 1
+
 (* creation *)
 let of_int_array a =
   Array.map
@@ -119,4 +122,9 @@ let as_int_arrays ?(signed = false) a =
   let min, max = as_min_max a signed in
   (to_int_array min, to_int_array max)
 
-let print_byte b = Array.iter (fun x -> Abstractbit.print x; Format.printf " ";) b
+let print_byte b =
+  Array.iter
+    (fun x ->
+      Abstractbit.print x;
+      Format.printf " ")
+    b
