@@ -210,7 +210,6 @@ let extend_u_i32 _prec = failwith "extend unsign"
 
 (*memory ops*)
 let load_i32 prec offset =
-  printer Format.print_string "loaaaaddddding";
   prec >>= fun d ->
   let opsk' =
     unop d.ops (fun x -> load_standard d.var d.mem x Wasm.Types.I32Type offset)

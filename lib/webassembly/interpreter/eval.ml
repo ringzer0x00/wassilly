@@ -43,15 +43,24 @@ let fixpoint _module (call, ifb) stack cache fin ft pres stepf =
       match ifb with
       | false -> stepf _module call stack cache fin ft pres
       | true -> (
+          printer Format.print_string "{Fixpoint computation}: ";
           match Cache.call_in_cache call cache with
           | Some cached -> (
+              printer Format.print_string "Cached: ";
               let stable, resCached = cached in
               match stable with
-              | Cache.Stable -> (resCached, cache, SCG.empty)
-              | Cache.Unstable -> (resCached, cache, SCG.singleton call))
+              | Cache.Stable ->
+                  printer Format.print_string "STABLE\n";
+                  (resCached, cache, SCG.empty)
+              | Cache.Unstable ->
+                  printer Format.print_string "UNSTABLE\n";
+                  (resCached, cache, SCG.singleton call))
           | None -> (
+              printer Format.print_string "NOT Cached: ";
               match Stack.call_in_stack call stack with
-              | true -> (Bot, cache, SCG.singleton call)
+              | true ->
+                  printer Format.print_string "return BOT\n";
+                  (Bot, cache, SCG.singleton call)
               | false ->
                   Iterate.iterate _module call stack cache fin ft pres stepf)))
 
@@ -76,7 +85,6 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
       printer Format.print_string msg;
       printer (Wasm.Print.instr Stdlib.stdout 100) c1;
       let (res1 : ans), cache', _scg_h =
-      printer Format.print_string "evaling";
         (*as opposed to ms this should return a vector of values which is then appended to the ms's operand stack*)
         match c1.it with
         | LocalSet var ->
@@ -208,16 +216,23 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
         | BrIf _i ->
             let ms_t, ms_f = Cflow.ite_condition ms in
             let depth = Int32.to_int _i.it in
-            let fixf l ms =
-              (fun (x : Memories.Label.labelcontent) ms ->
-                fixpoint modi ((ms, x.brcont), true) sk cache fin ft p_ans step)
-                l ms
+            printer Format.print_string "~~~~~~ briffing \n";
+            let fixf l mem =
+              (fun (x : Memories.Label.labelcontent) m ->
+                fixpoint modi ((m, x.cmd), true) sk cache fin ft p_ans step)
+                l mem
             in
             let _a_t, c', scg =
               match ms_t with
-              | Bot -> (Bot, cache, SCG.empty)
-              | _ -> Cflow.br depth ms_t p_ans cache modi ft fixf
+              | Bot ->
+                  printer Format.print_string "~~~~~~ briffing -> BOT \n";
+                  (Bot, cache, SCG.empty)
+              | _ ->
+                  printer Format.print_string "~~~~~~ briffing -> BR \n";
+                  Cflow.br depth ms_t p_ans cache modi ft fixf
             in
+            printer Format.print_string
+              "~~~~~~ briffing -> i have an answer!!! \n";
             let ans =
               match _a_t with
               | Def d ->
@@ -394,10 +409,10 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
             failwith "other commands"
       in
       (*let res2, cache'', scg_t =*)
-        Cflow.monad_step res1 cache' (fun x ->
-            fixpoint modi
-              ((x.nat, c2), false)
-              sk cache' fin ft (pans_of_answer x) step)
-      (*in
-      (seq_result res1 res2, cache'', SCG.union scg_h scg_t)*)
+      Cflow.monad_step res1 cache' (fun x ->
+          fixpoint modi
+            ((x.nat, c2), false)
+            sk cache' fin ft (pans_of_answer x) step)
+(*in
+  (seq_result res1 res2, cache'', SCG.union scg_h scg_t)*)
 (* ) *)
