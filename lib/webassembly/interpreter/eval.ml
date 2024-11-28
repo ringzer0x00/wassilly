@@ -76,6 +76,7 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
       printer Format.print_string msg;
       printer (Wasm.Print.instr Stdlib.stdout 100) c1;
       let (res1 : ans), cache', scg_h =
+      printer Format.print_string "evaling";
         (*as opposed to ms this should return a vector of values which is then appended to the ms's operand stack*)
         match c1.it with
         | LocalSet var ->

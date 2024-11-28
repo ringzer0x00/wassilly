@@ -7,7 +7,7 @@ let anon_fun filename = input_files := filename
 
 let speclist =
   [
-    ("-verbose", Arg.Set verbose, "Output debug information");
+    ("-v", Arg.Set verbose, "Output debug information");
     ("-s", Arg.Set_string specfile, "Specfile");
     ("-o", Arg.Set_string output_file, "Set output file name");
   ]
