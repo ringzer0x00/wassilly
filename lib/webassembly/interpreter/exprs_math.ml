@@ -302,77 +302,83 @@ let load_standard vm mem o t (offset_expl : int32) =
         Utilities.Conversions.float64_binary_to_decimal b |> Float.to_string
   in
   let c = Memories.Operand.concretize vm o in
-  (*range of offset addresses*)
-  let start_from, start_to =
-    I.to_float c |> tappl Int32.of_float |> tappl (Int32.add offset_expl)
-  in
-  let threshold_mem = 10 in
-  let is_past_thresh =
-    Apronext.Scalarext.cmp_int (Apronext.Intervalext.range c) threshold_mem >= 0
-  in
-  let _addrs =
-    if is_past_thresh then []
-    else
-      List.init
-        (Int32.add (Int32.sub start_to start_from) 1l |> Int32.to_int)
-        (fun x -> Int32.add start_from (Int32.of_int x))
-      |> List.filter (fun (a : int32) ->
-             a >= mem_min && a <= Int32.sub mem_max (Int32.of_int _s))
-  in
-  printer Format.print_string "\t~ Set of addresses:";
-  printer (List.iter (fun i -> Format.print_string (Int32.to_string i))) _addrs;
-  printer Format.print_newline ();
-  (*concretized set of addresses to read from (each sublist represents all of the words to read from memory)*)
-  (*BUG: stack overflow this one*)
-  let addrs_list_set =
-    listmap'
-      (fun f -> List.init _w (fun x -> Int32.add f (Int32.of_int x)))
-      _addrs
-  in
-  (*word by word reading*)
-  let reads =
-    listmap'
-      (fun addr_list ->
-        listmap' (fun a -> Memories.Linearmem.read_byte a mem) addr_list)
-      addrs_list_set
-  in
-  (*readings*)
-  let reads' =
-    if not is_past_thresh then
-      listmap'
-        (*memory is little endian, this makes it big endian*)
-          (fun r ->
+  match not (Apronext.Intervalext.is_bounded c) with
+  | true -> Expression (const_expr vm Apronext.Intervalext.top, t)
+  | false ->
+      (*range of offset addresses*)
+      let start_from, start_to =
+        I.to_float c |> tappl Int32.of_float |> tappl (Int32.add offset_expl)
+      in
+      let threshold_mem = 10 in
+      let is_past_thresh =
+        Apronext.Scalarext.cmp_int (Apronext.Intervalext.range c) threshold_mem
+        >= 0
+      in
+      let _addrs =
+        if is_past_thresh then []
+        else
+          List.init
+            (Int32.add (Int32.sub start_to start_from) 1l |> Int32.to_int)
+            (fun x -> Int32.add start_from (Int32.of_int x))
+          |> List.filter (fun (a : int32) ->
+                 a >= mem_min && a <= Int32.sub mem_max (Int32.of_int _s))
+      in
+      printer Format.print_string "\t~ Set of addresses:";
+      printer
+        (List.iter (fun i -> Format.print_string (Int32.to_string i)))
+        _addrs;
+      printer Format.print_newline ();
+      (*concretized set of addresses to read from (each sublist represents all of the words to read from memory)*)
+      (*BUG: stack overflow this one*)
+      let addrs_list_set =
+        listmap'
+          (fun f -> List.init _w (fun x -> Int32.add f (Int32.of_int x)))
+          _addrs
+      in
+      (*word by word reading*)
+      let reads =
+        listmap'
+          (fun addr_list ->
+            listmap' (fun a -> Memories.Linearmem.read_byte a mem) addr_list)
+          addrs_list_set
+      in
+      (*readings*)
+      let reads' =
+        if not is_past_thresh then
+          listmap'
+            (*memory is little endian, this makes it big endian*)
+              (fun r ->
+              List.fold_left
+                (fun acc v ->
+                  match v with Some v -> Array.append v acc | None -> acc)
+                [||] r)
+            reads
+        else [ Array.make _s Bitwisealu.Bit.Top ]
+      in
+      (*bitwise result*)
+      if reads' = [] then Bottom
+      else
+        let read =
           List.fold_left
-            (fun acc v ->
-              match v with Some v -> Array.append v acc | None -> acc)
-            [||] r)
-        reads
-    else [ Array.make _s Bitwisealu.Bit.Top ]
-  in
-  (*bitwise result*)
-  if reads' = [] then Bottom
-  else
-    let read =
-      List.fold_left
-        (fun r x -> Datastructures.Abstractbyte.join r x)
-        (List.nth reads' 0) reads'
-    in
-    let lim1, lim2 =
-      (*BUG(29 aug-2024): when all top, the values produced are -1;0 (all 1s and all 0s.)
-        as_min_max has to work differently to work correctly*)
-      Datastructures.Abstractbyte.as_int_arrays ~signed:true read
-      |> tappl Array.to_list |> tappl conv_f |> tappl Mpqf.of_string
-      |> tappl S.of_mpqf
-    in
-    let i =
-      if S.cmp lim1 lim2 <= 0 then I.of_scalar lim1 lim2
-      else I.of_scalar lim2 lim1
-    in
-    printer Format.print_string "\t~ Loaded:";
-    printer (Apronext.Intervalext.print Format.std_formatter) i;
-    printer Format.print_string "\n";
-    if Apronext.Intervalext.is_bottom i then Bottom
-    else Expression (const_expr vm i, t)
+            (fun r x -> Datastructures.Abstractbyte.join r x)
+            (List.nth reads' 0) reads'
+        in
+        let lim1, lim2 =
+          (*BUG(29 aug-2024): when all top, the values produced are -1;0 (all 1s and all 0s.)
+            as_min_max has to work differently to work correctly*)
+          Datastructures.Abstractbyte.as_int_arrays ~signed:true read
+          |> tappl Array.to_list |> tappl conv_f |> tappl Mpqf.of_string
+          |> tappl S.of_mpqf
+        in
+        let i =
+          if S.cmp lim1 lim2 <= 0 then I.of_scalar lim1 lim2
+          else I.of_scalar lim2 lim1
+        in
+        printer Format.print_string "\t~ Loaded:";
+        printer (Apronext.Intervalext.print Format.std_formatter) i;
+        printer Format.print_string "\n";
+        if Apronext.Intervalext.is_bottom i then Bottom
+        else Expression (const_expr vm i, t)
 
 let store_standard _vm _mem _addr _val _t (_offset_expl : int32) =
   printer Format.printf "~ Symbolic Operand for Address:";
@@ -411,11 +417,13 @@ let store_standard _vm _mem _addr _val _t (_offset_expl : int32) =
     Apronext.Scalarext.cmp_int (Apronext.Intervalext.range addr) threshold_mem
     >= 0
   in
-  let start_from, start_to =
-    I.to_float addr |> tappl Int32.of_float |> tappl (Int32.add _offset_expl)
-  in
-  if is_past_thresh then Memories.Linearmem.T { min = 0l; max = mem_max }
-    (*
+  if not (Apronext.Intervalext.is_bounded addr) then Memories.Linearmem.T { min = 0l; max = mem_max }
+  else
+    let start_from, start_to =
+      I.to_float addr |> tappl Int32.of_float |> tappl (Int32.add _offset_expl)
+    in
+    if is_past_thresh then Memories.Linearmem.T { min = 0l; max = mem_max }
+      (*
     let rec topping addr upto memory =
       if addr > upto then memory
       else
@@ -425,30 +433,30 @@ let store_standard _vm _mem _addr _val _t (_offset_expl : int32) =
              addr memory)
     in
     topping (Int32.max mem_min start_from) mem_max _mem*)
-    (*(
-      let m' = Array.copy _mem in
-      for i = max mem_min start_from to mem_max do
-        Array.set mem i Datastructures.Abstractbyte.alloc_byte_top
-      done;
-      m')*)
-  else
-    (*concretized range of offset addresses*)
-    let _addrs =
-      List.init
-        (*(min mem_max start_to - max mem_min start_from + 1)*)
-        (Int32.add
-           (Int32.sub
-              (Int32.min mem_max start_to)
-              (Int32.max mem_min start_from))
-           1l
-        |> Int32.to_int)
-        (fun x -> Int32.add (Int32.max mem_min start_from) (Int32.of_int x))
-    in
-    let wf =
-      match List.length _addrs with
-      | 0 -> raise NoValidWritesExn
-      | 1 -> Memories.Linearmem.strong_write_to_mem
-      | _ -> Memories.Linearmem.write_to_mem
-    in
-    let mem' = List.fold_left (fun x _a -> wf _b _a x) _mem _addrs in
-    mem'
+      (*(
+        let m' = Array.copy _mem in
+        for i = max mem_min start_from to mem_max do
+          Array.set mem i Datastructures.Abstractbyte.alloc_byte_top
+        done;
+        m')*)
+    else
+      (*concretized range of offset addresses*)
+      let _addrs =
+        List.init
+          (*(min mem_max start_to - max mem_min start_from + 1)*)
+          (Int32.add
+             (Int32.sub
+                (Int32.min mem_max start_to)
+                (Int32.max mem_min start_from))
+             1l
+          |> Int32.to_int)
+          (fun x -> Int32.add (Int32.max mem_min start_from) (Int32.of_int x))
+      in
+      let wf =
+        match List.length _addrs with
+        | 0 -> raise NoValidWritesExn
+        | 1 -> Memories.Linearmem.strong_write_to_mem
+        | _ -> Memories.Linearmem.write_to_mem
+      in
+      let mem' = List.fold_left (fun x _a -> wf _b _a x) _mem _addrs in
+      mem'
