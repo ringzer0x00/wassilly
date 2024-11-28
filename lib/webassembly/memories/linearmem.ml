@@ -26,7 +26,7 @@ let read_byte o = function
   | T _ -> Some AByte.alloc_byte_top
 
 let internal_write_byte_raw b o =
-  printer Format.print_string "\t ~ RAW MEMWRITRE (INIT) in: ";
+  printer Format.print_string "\t ~ RAW MEMWRITE (INIT) in: ";
   printer Format.print_string (Int32.to_string o);
   printer Format.print_newline ();
   function
@@ -43,6 +43,7 @@ let internal_write_byte_weak b o m =
 
 let strong_write_to_mem b o m =
   let mapped = Array.mapi (fun i x -> (x, Int32.add (Int32.of_int i) o)) b in
+  printer Format.print_string "strongwrite!";
   Array.fold_left
     (fun mem (byte, offs) -> internal_write_byte_raw byte offs mem)
     m mapped
@@ -76,8 +77,7 @@ let leq m1 m2 =
 let eq m1 m2 =
   match (m1, m2) with
   | T _, T _ -> true
-  | M _, T _ -> false
-  | T _, M _ -> false
+  | M _, T _ | T _, M _ -> false
   | M m1, M m2 -> LinMem.eq m1 m2
 
 let le = LinMem.le

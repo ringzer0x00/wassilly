@@ -414,7 +414,8 @@ let store_standard _vm _mem _addr _val _t (_offset_expl : int32) =
   let start_from, start_to =
     I.to_float addr |> tappl Int32.of_float |> tappl (Int32.add _offset_expl)
   in
-  if is_past_thresh then
+  if is_past_thresh then Memories.Linearmem.T { min = 0l; max = mem_max }
+    (*
     let rec topping addr upto memory =
       if addr > upto then memory
       else
@@ -423,7 +424,7 @@ let store_standard _vm _mem _addr _val _t (_offset_expl : int32) =
              [| Datastructures.Abstractbyte.alloc_byte_top |]
              addr memory)
     in
-    topping (Int32.max mem_min start_from) mem_max _mem
+    topping (Int32.max mem_min start_from) mem_max _mem*)
     (*(
       let m' = Array.copy _mem in
       for i = max mem_min start_from to mem_max do
