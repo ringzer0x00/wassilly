@@ -75,7 +75,7 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
       let msg = Printf.sprintf "in %i, eval:" (Int32.to_int fin) in
       printer Format.print_string msg;
       printer (Wasm.Print.instr Stdlib.stdout 100) c1;
-      let (res1 : ans), cache', scg_h =
+      let (res1 : ans), cache', _scg_h =
       printer Format.print_string "evaling";
         (*as opposed to ms this should return a vector of values which is then appended to the ms's operand stack*)
         match c1.it with
@@ -393,11 +393,11 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
             Wasm.Print.instr Stdlib.stdout 100 c1;
             failwith "other commands"
       in
-      let res2, cache'', scg_t =
+      (*let res2, cache'', scg_t =*)
         Cflow.monad_step res1 cache' (fun x ->
             fixpoint modi
               ((x.nat, c2), false)
               sk cache' fin ft (pans_of_answer x) step)
-      in
-      (seq_result res1 res2, cache'', SCG.union scg_h scg_t)
+      (*in
+      (seq_result res1 res2, cache'', SCG.union scg_h scg_t)*)
 (* ) *)
