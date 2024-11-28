@@ -11,7 +11,7 @@ doc: "https://there/is/no/documentation"
 bug-reports: "https://github.com/ringzer0x00/wassilly/issues"
 depends: [
   "ocaml"
-  "ocaml-base-compiler" {>= "5.0.0"}
+  "ocaml-base-compiler"
   "dune" {>= "3.12"}
   "wasm"
   "apron" {< "0.9.15"}
