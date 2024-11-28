@@ -189,7 +189,7 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
             in
             let ms' = Cflow.enter_label _lab ms modi in
             let a, c, g =
-              fixpoint modi ((ms', lbody), true) sk cache fin ft p_ans step
+              fixpoint modi ((ms', lbody), false) sk cache fin ft p_ans step
             in
             (Cflow.block_result a [ c1 ], c, g)
         | If (_blocktype, _then, _else) ->
