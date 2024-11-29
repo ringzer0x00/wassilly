@@ -17,6 +17,8 @@
       i32.const 10
       i32.lt_s
       br_if $my_loop
+      i32.const 1
+      drop
     )
   )
 
