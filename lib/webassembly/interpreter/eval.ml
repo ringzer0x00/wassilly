@@ -189,7 +189,7 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
             in
             let ms' = Cflow.enter_label _lab ms modi in
             let a, c, g =
-              fixpoint modi ((ms', lbody), true) sk cache fin ft p_ans step
+              fixpoint modi ((ms', lbody), false) sk cache fin ft p_ans step
             in
             (Cflow.block_result a [ c1 ], c, g)
         | If (_blocktype, _then, _else) ->
@@ -238,7 +238,8 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
               | Def d ->
                   return
                     {
-                      nat = MS.join d.nat ms_f;
+                      nat = (*MS.join d.nat*) ms_f;
+                      (*comment on 29 nov 2024, non credo ci vada il join in nat*)
                       return = MS.join p_ans.p_return d.return;
                       br = LM.lub p_ans.p_br d.br;
                     }
