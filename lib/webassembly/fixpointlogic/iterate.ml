@@ -3,14 +3,17 @@ let wStack = Stackwidening.wStack
 module SCG = Scg.SCC
 module Value = Answer
 open Datastructures.Monad.DefBot
+let printer = Utilities.Printer.print
 
 let wVal ms1 ms2 = Value.widen ms1 ms2
 
 let rec iterate funcs call stack cache1 fin ft pres evalf =
+  printer Format.print_string "{iterate}";
   let stackWidened, callWidened = wStack stack call in
   let valNew, cache2, scg =
     evalf funcs callWidened stackWidened cache1 fin ft pres
   in
+  printer Format.print_string "########################### evalf done\n";
   if SCG.mem callWidened scg then
     let valOld =
       if Cache.Cache.mem callWidened cache2 then
@@ -26,6 +29,7 @@ let rec iterate funcs call stack cache1 fin ft pres evalf =
     in
     let cache3 = Cache.Cache.add callWidened (stable, valWidened) cache2 in
     if Value.le valOld valWidened then
-      iterate funcs call stack cache3 fin ft pres evalf
+      (printer Format.print_string "valOld < valWidened, iterate\n";
+      iterate funcs call stack cache3 fin ft pres evalf)
     else (valWidened, cache3, SCG.diff scg (SCG.singleton callWidened))
   else (valNew, cache2, scg)

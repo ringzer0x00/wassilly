@@ -143,7 +143,7 @@ let test_lub_pans a pres =
 
 let br depth ms p_ans cache modul_ ft fixf =
   let label = MS.peek_nth_label ms depth in
-  let _, _t =
+  let _tin, _tout =
     match label with
     | Some (Memories.Operand.Label l) ->
         Memories.Label.type_of_peeked_label l
@@ -151,11 +151,12 @@ let br depth ms p_ans cache modul_ ft fixf =
     | Some _ -> failwith "cannot do it"
     | None -> ft
   in
-  let _vals, ms' =
-    (MS.peek_n_operand (List.length _t) ms, MS.pop_n_operand (List.length _t) ms)
-  in
   match label with
   | Some (Memories.Operand.Label (BlockLabel b)) ->
+      let _vals, ms' =
+        ( MS.peek_n_operand (List.length _tout) ms,
+          MS.pop_n_operand (List.length _tout) ms )
+      in
       let ms'' = MS.pop_n_labels ms' (depth + 1) in
       let ms''' = MS.push_operand _vals ms'' in
       ( Def
@@ -167,11 +168,23 @@ let br depth ms p_ans cache modul_ ft fixf =
         cache,
         SCG.SCC.empty )
   | Some (Memories.Operand.Label (LoopLabel l)) ->
+      let _vals, ms' =
+        ( MS.peek_n_operand (List.length _tin) ms,
+          MS.pop_n_operand (List.length _tin) ms )
+      in
       let ms'' = MS.pop_n_labels ms' (depth + 1) in
+      let ms'' =
+        MS.push_operand [ Memories.Operand.Label (LoopLabel l) ] ms''
+      in
       let ms''' = MS.push_operand _vals ms'' in
-      fixf l ms'''
+
+      fixf l.cmd ms''' true
       (*this is wrong... probably, i think i should do stack manips beforehand*)
   | None ->
+      let _vals, ms' =
+        ( MS.peek_n_operand (List.length _tout) ms,
+          MS.pop_n_operand (List.length _tout) ms )
+      in
       let ms'' =
         if not (MS.is_lsk_empty ms') then MS.pop_n_labels ms' depth else ms'
       in

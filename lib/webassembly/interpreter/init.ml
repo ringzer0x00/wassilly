@@ -39,7 +39,7 @@ let init_mem (mod_ : modinst) (s : Memories.Memorystate.t) datas _memories =
               let offset =
                 Apronext.Intervalext.to_float
                   (Memories.Operand.concretize _vm _offset)
-                |> fst |> Float.to_int
+                |> fst |> Int32.of_float
               in
               (*each "piece" is 1byte (1 char) (1 word) -> can become sequence -> can become list *)
               let b = String.to_bytes _init in
@@ -48,13 +48,13 @@ let init_mem (mod_ : modinst) (s : Memories.Memorystate.t) datas _memories =
                 Seq.map (fun x -> Char.code x) _bseq
                 |> Array.of_seq
                 |> Array.mapi (fun i x ->
-                       ( i + offset,
+                       ( Int32.add (Int32.of_int i) offset,
                          Language.Bitwisenumber.byte_of_interval
                            (Apronext.Intervalext.of_int x x) ))
               in
               let m' =
                 Array.fold_left
-                  (fun m (_to, (_val : Language.Bitwisenumber.byte)) ->
+                  (fun m ((_to : int32), (_val : Language.Bitwisenumber.byte)) ->
                     let b =
                       Datastructures.Abstractbyte.join _val.min _val.max
                     in
