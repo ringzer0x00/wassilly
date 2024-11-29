@@ -173,13 +173,16 @@ let br depth ms p_ans cache modul_ ft fixf =
           MS.pop_n_operand (List.length _tin) ms )
       in
       let ms'' = MS.pop_n_labels ms' (depth + 1) in
-      (*let ms'' =
+      let ms'' =
         MS.push_operand [ Memories.Operand.Label (LoopLabel l) ] ms''
-      in*)
+      in
       let ms''' = MS.push_operand _vals ms'' in
-
-      fixf l.cmd ms''' true
-      (*this is wrong... probably, i think i should do stack manips beforehand*)
+      let b =
+        match (List.hd l.cmd).it with
+        | Loop (_, b) -> b
+        | _ -> failwith "loop in br if no loop"
+      in
+      fixf b ms''' true
   | None ->
       let _vals, ms' =
         ( MS.peek_n_operand (List.length _tout) ms,

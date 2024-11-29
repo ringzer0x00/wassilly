@@ -73,7 +73,7 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
         ( return { nat = Bot; return = p_ans.p_return; br = p_ans.p_br },
           cache,
           SCG.empty )
-    | Def _ -> ( *)
+    | Def _ -> *)
   match p with
   | [] ->
       if MS.is_lsk_empty ms then (end_of_func ms p_ans, cache, SCG.empty)
@@ -189,8 +189,7 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
             in
             let ms' = Cflow.enter_label _lab ms modi in
             let a, c, g =
-              (* a loop instruction is not by default a loop, it becomes such once you JUMP into it! *)
-              fixpoint modi ((ms', lbody), false) sk cache fin ft p_ans step
+              fixpoint modi ((ms', lbody), true) sk cache fin ft p_ans step
             in
             (Cflow.block_result a [ c1 ], c, g)
         | If (_blocktype, _then, _else) ->
@@ -239,7 +238,7 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
               | Def d ->
                   return
                     {
-                      nat = ms_f;
+                      nat = MS.join d.nat ms_f;
                       return = MS.join p_ans.p_return d.return;
                       br = LM.lub p_ans.p_br d.br;
                     }
@@ -409,11 +408,11 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
             Wasm.Print.instr Stdlib.stdout 100 c1;
             failwith "other commands"
       in
-      (*let res2, cache'', scg_t =*)
-      Cflow.monad_step res1 cache' (fun x ->
-          fixpoint modi
-            ((x.nat, c2), false)
-            sk cache' fin ft (pans_of_answer x) step)
-(*in
-  (seq_result res1 res2, cache'', SCG.union scg_h scg_t)*)
+      let res2, cache'', scg_t =
+        Cflow.monad_step res1 cache' (fun x ->
+            fixpoint modi
+              ((x.nat, c2), false)
+              sk cache' fin ft (pans_of_answer x) step)
+      in
+      (seq_result res1 res2, cache'', SCG.union _scg_h scg_t)
 (* ) *)
