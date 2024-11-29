@@ -44,7 +44,6 @@ let%test "host-code-table-mutable" =
   let cg = p "host-code-table-mutable" in
   edges cg = [ (0, 2) ] && reachable cg = [ 0; 1; 2 ]
 
-(*this test takes a *LONG* time, ~5mins *)
 let%test "cpp-vtable-layout-source-type-info" =
   Interpreter.Eval.cg := Datastructures.Callgraph.Ga.phi;
   let cg = p "cpp-vtable-layout-source-type-info" in
