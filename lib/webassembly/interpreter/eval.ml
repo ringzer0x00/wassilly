@@ -164,10 +164,10 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
         | Nop -> (cmd_result ms p_ans, cache, SCG.empty)
         | Br i ->
             let depth = Int32.to_int i.it in
-            let _ff l ms =
-              (fun (x : Memories.Label.labelcontent) ms ->
-                fixpoint modi ((ms, x.brcont), true) sk cache fin ft p_ans step)
-                l ms
+            let _ff l ms b =
+              (fun body ms b ->
+                fixpoint modi ((ms, body), b) sk cache fin ft p_ans step)
+                l ms b
             in
             Cflow.br depth ms p_ans cache modi ft _ff
         | Block (_bt, bbody) ->
@@ -185,11 +185,12 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
             let _lab =
               Memories.Operand.Label
                 (Memories.Label.LoopLabel
-                   { natcont = c2; brcont = c1 :: c2; typ = _bt; cmd = [ c1 ] })
+                   { natcont = c2; brcont = c1 :: c2; typ = _bt; cmd = lbody })
             in
             let ms' = Cflow.enter_label _lab ms modi in
             let a, c, g =
-              fixpoint modi ((ms', lbody), false) sk cache fin ft p_ans step
+              (* a loop instruction is not by default a loop, it becomes such once you JUMP into it! *)
+              fixpoint modi ((ms', lbody), true) sk cache fin ft p_ans step
             in
             (Cflow.block_result a [ c1 ], c, g)
         | If (_blocktype, _then, _else) ->
@@ -217,10 +218,10 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
             let ms_t, ms_f = Cflow.ite_condition ms in
             let depth = Int32.to_int _i.it in
             printer Format.print_string "~~~~~~ briffing \n";
-            let fixf l mem =
-              (fun (x : Memories.Label.labelcontent) m ->
-                fixpoint modi ((m, x.cmd), true) sk cache fin ft p_ans step)
-                l mem
+            let fixf body mem isloop =
+              (fun body m b ->
+                fixpoint modi ((m, body), b) sk cache fin ft p_ans step)
+                body mem isloop
             in
             let _a_t, c', scg =
               match ms_t with
@@ -238,7 +239,7 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
               | Def d ->
                   return
                     {
-                      nat = ms_f;
+                      nat = MS.join d.nat ms_f;
                       return = MS.join p_ans.p_return d.return;
                       br = LM.lub p_ans.p_br d.br;
                     }
