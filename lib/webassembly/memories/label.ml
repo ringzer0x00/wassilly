@@ -15,6 +15,7 @@ let gettype (mod_ : Instance.instance) idx =
   t.it
 
 let type_of_peeked_label = function BlockLabel c | LoopLabel c -> c.typ
+let cmd_of_lab = function BlockLabel l -> l.cmd | LoopLabel l -> l.cmd
 
 let extract_type_of_label _mod_ (t : block_type) =
   match t with
@@ -24,6 +25,7 @@ let extract_type_of_label _mod_ (t : block_type) =
   | Wasm.Ast.ValBlockType vt -> (
       match vt with Some t -> ([], [ t ]) | None -> ([], []))
 
+let print_label = function BlockLabel _ -> "Block" | LoopLabel _ -> "Loop"
 (*
 let peek_nth nth l = List.nth_opt l nth
 let pop_n : int -> t -> t = SK.pop_n

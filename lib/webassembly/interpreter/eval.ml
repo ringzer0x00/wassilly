@@ -78,7 +78,7 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
   | [] ->
       if MS.is_lsk_empty ms then (end_of_func ms p_ans, cache, SCG.empty)
       else
-        let eob = Instructions.end_of_block ms modi in
+        let eob = Instructions.end_of_block ms p_ans modi in
         (cmd_result eob p_ans, cache, SCG.empty)
   | c1 :: c2 ->
       let msg = Printf.sprintf "in %i, eval:" (Int32.to_int fin) in
@@ -185,12 +185,12 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
             let _lab =
               Memories.Operand.Label
                 (Memories.Label.LoopLabel
-                   { natcont = c2; brcont = c1 :: c2; typ = _bt; cmd = lbody })
+                   { natcont = c2; brcont = c1 :: c2; typ = _bt; cmd = [ c1 ] })
             in
             let ms' = Cflow.enter_label _lab ms modi in
             let a, c, g =
               (* a loop instruction is not by default a loop, it becomes such once you JUMP into it! *)
-              fixpoint modi ((ms', lbody), true) sk cache fin ft p_ans step
+              fixpoint modi ((ms', lbody), false) sk cache fin ft p_ans step
             in
             (Cflow.block_result a [ c1 ], c, g)
         | If (_blocktype, _then, _else) ->
@@ -239,7 +239,7 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
               | Def d ->
                   return
                     {
-                      nat = MS.join d.nat ms_f;
+                      nat = ms_f;
                       return = MS.join p_ans.p_return d.return;
                       br = LM.lub p_ans.p_br d.br;
                     }
@@ -255,7 +255,7 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
             ( return
                 {
                   nat = Bot;
-                  br = LM.empty;
+                  br = p_ans.p_br;
                   return = MS.join p_ans.p_return ms';
                 },
               cache,

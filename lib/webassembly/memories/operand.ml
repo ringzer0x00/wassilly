@@ -190,7 +190,13 @@ let round vm op rnd =
   Expression (cast_expr (const_expr vm i) at rnd, opt)
 
 let jw_operand (mem1, o1) (mem2, o2) operation =
-  (*two memories are needed, one for locals and one for globals*)
+  (match (o1, o2) with
+  | Label l1, Label l2 ->
+      if l1 != l2 then (
+        printer Format.print_string (Label.print_label l1);
+        printer Format.print_string "\n";
+        printer Format.print_string (Label.print_label l2))
+  | _ -> ());
   if o1 = o2 then o1
   else
     let t = type_of_operand o1 in
@@ -208,5 +214,5 @@ let leq_operand m1 (o1 : operand) m2 (o2 : operand) =
 
 let eq_operand m1 (o1 : operand) m2 (o2 : operand) =
   match (o1, o2) with
-  | Label _, Label _ -> true (*prova*)
+  | Label _, Label _ -> o1 = o2 (*prova*)
   | _ -> ival_eq (concretize m1 o1) (concretize m2 o2)
