@@ -1,10 +1,10 @@
 (module
   ;; import the browser console object, you'll need to pass this in from JavaScript
-  (func
+  (func (result i32)
     ;; create a local variable and initialize it to 0
     (local $i i32)
 
-    (loop $my_loop
+    (loop $my_loop (result i32)
 
       ;; add one to $i
       local.get $i
@@ -17,8 +17,7 @@
       i32.const 10
       i32.lt_s
       br_if $my_loop
-      i32.const 1
-      drop
+      local.get $i
     )
   )
 

@@ -189,7 +189,7 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
             in
             let ms' = Cflow.enter_label _lab ms modi in
             let a, c, g =
-              fixpoint modi ((ms', lbody), true) sk cache fin ft p_ans step
+              fixpoint modi ((ms', lbody), false) sk cache fin ft p_ans step
             in
             (Cflow.block_result a [ c1 ], c, g)
         | If (_blocktype, _then, _else) ->
@@ -341,7 +341,7 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
                 _targets
             in
             let mses_called =
-              List.map
+              List.map (*this needs to become a fold - 30 nov 2024*)
                 (fun (f, fidx) ->
                   match f with
                   | Memories.Instance.ImportedFunc term ->
@@ -409,10 +409,10 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
             Wasm.Print.instr Stdlib.stdout 100 c1;
             failwith "other commands"
       in
-      (*let res2, cache'', scg_t =*)
+      let res2, cache'', scg_t =
         Cflow.monad_step res1 cache' (fun x ->
             fixpoint modi
               ((x.nat, c2), false)
               sk cache' fin ft (pans_of_answer x) step)
-      (*in
-      (seq_result res1 res2, cache'', SCG.union _scg_h scg_t)*)
+      in
+      (seq_result res1 res2, cache'', SCG.union _scg_h scg_t)
