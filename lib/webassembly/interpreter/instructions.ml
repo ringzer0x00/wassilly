@@ -256,6 +256,16 @@ let store_i32 prec offset =
     return { ops = opsk'; var = d.var; mem = mem'; tab = d.tab }
   with NoValidWritesExn -> Bot
 
+let store_i64 prec offset =
+  prec >>= fun d ->
+  try
+    let mem', opsk' =
+      storeop d.ops (fun x y ->
+          store_standard d.var d.mem x y Wasm.Types.I64Type offset)
+    in
+    return { ops = opsk'; var = d.var; mem = mem'; tab = d.tab }
+  with NoValidWritesExn -> Bot
+
 let select prec rt =
   prec >>= fun d ->
   let opsk' = ternop d.ops (fun x y z -> select_expr d.var x y z rt) |> push in
