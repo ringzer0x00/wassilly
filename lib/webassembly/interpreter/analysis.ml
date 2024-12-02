@@ -128,6 +128,7 @@ let callgraph_analysis' fn _spec_path =
           ((call_ms, fb), true)
           Eval.Stack.empty cache y.it (t_in, _t_out) Eval.MA.bot_pa Eval.step
       in
+      print_string "fattooooooh\n";
       (!Eval.cg, cache'))
     (!Eval.cg, c) entrypoints
   |> fst

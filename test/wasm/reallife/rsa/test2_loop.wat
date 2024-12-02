@@ -4,69 +4,55 @@
 
     (func (;18;) (type 1) (param i32) (result i32)
     (local i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i32 i64)
-    loop ;; label = @7
-            block  ;; label = @8
-                local.get 0
-                call 1
-                local.tee 2
-                local.get 4
-                i32.lt_u
-                br_if 0 (;@8;)
-                local.get 2
-                local.get 4
-                i32.sub
-                local.tee 2
-                local.get 3
-                i32.ge_u
-                br_if 0 (;@8;)
-                local.get 0
-                local.set 1
-                local.get 2
-                local.tee 3
-                br_if 0 (;@8;)
-                i32.const 0
-                local.set 3
-                i32.const 0
-                br 2
-            end
+        loop  ;; label = @5
+            local.get 0
+            local.get 1
+            local.get 0
+            call 1
+            local.tee 1
+            local.get 4
+            i32.ge_u
+            local.get 1
+            local.get 4
+            i32.sub
+            local.tee 6
+            local.get 3
+            i32.lt_u
+            i32.and
+            local.tee 2
+            select
+            local.set 1
+            local.get 6
+            local.get 3
+            local.get 2
+            select
+            local.set 3
+            local.get 0
+            call 2
+            local.tee 0
+            br_if 0 (;@5;)
+        end
         local.get 0
-        i32.const 20
-        i32.add
-        i32.load
-        local.tee 2
-        local.get 6
-        local.get 2
-        local.get 0
-        local.get 7
-        i32.const 29
-        i32.shr_u
-        i32.const 4
-        i32.and
-        i32.add
-        i32.const 16
-        i32.add
-        i32.load
-        local.tee 0
-        i32.ne
-        select
-        local.get 6
-        local.get 2
-        select
-        local.set 6
-        local.get 7
-        i32.const 1
-        i32.shl
-        local.set 7
-        local.get 0
-        br_if 0 (;@7;)
-    end
-    i32.const 0)
+    )
     (func (;761;) (type 1) (param i32) (result i32)
     local.get 0
     i32.load offset=4
     i32.const -8
     i32.and
     return)
+    (func (;659;) (type 1) (param i32) (result i32)
+    (local i32)
+    local.get 0
+    i32.load offset=16
+    local.tee 1
+    if (result i32)  ;; label = @1
+      local.get 1
+    else
+      local.get 0
+      i32.const 20
+      i32.add
+      i32.load
+    end)
   (memory (;0;) 17)
   (global (;0;) (mut i32) (i32.const 1048576))
   (export "memory" (memory 0))

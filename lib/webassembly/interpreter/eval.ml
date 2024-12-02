@@ -81,7 +81,7 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
         let eob = Instructions.end_of_block ms p_ans modi in
         (cmd_result eob p_ans, cache, SCG.empty)
   | c1 :: c2 ->
-      let msg = Printf.sprintf "in %i, eval:" (Int32.to_int fin) in
+      let msg = Printf.sprintf "\nin %i, eval:" (Int32.to_int fin) in
       printer Format.print_string msg;
       printer (Wasm.Print.instr Stdlib.stdout 100) c1;
       let (res1 : ans), cache', _scg_h =
@@ -191,7 +191,7 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
             let a, c, g =
               fixpoint modi ((ms', lbody), false) sk cache fin ft p_ans step
             in
-            (Cflow.block_result a [ c1 ], c, g)
+            (Cflow.loop_result a [ c1 ], c, g)
         | If (_blocktype, _then, _else) ->
             let l =
               Memories.Operand.Label

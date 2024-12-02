@@ -15,8 +15,8 @@ let wStack stack ((env1, expr) as call : Call.t) =
       if Memory.leq env1 env2 then (
         printer Format.print_string "ENV1 LEQ ENV2 -> TRUE\n";
         (stack, (env2, expr)))
-      else
-        (printer Format.print_string "ENV1 LEQ ENV2 -> FALSE\n";
+      else (
+        printer Format.print_string "ENV1 LEQ ENV2 -> FALSE\n";
         let envWidened = Memory.widen env2 env1 in
         (Stack.Stack.add expr envWidened stack, (envWidened, expr)))
 

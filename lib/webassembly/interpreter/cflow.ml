@@ -61,7 +61,16 @@ let block_result r_b block_body =
     {
       nat = MS.join r.nat (LM.res_label block_body r.br);
       return = r.return;
-      br = LM.remove block_body r.br;
+      br = (*LM.remove block_body*) r.br;
+    }
+
+let loop_result r_b loop_body =
+  r_b >>= fun r ->
+  return
+    {
+      nat = MS.join r.nat (LM.res_label loop_body r.br);
+      return = r.return;
+      br = (*LM.remove loop_body*) r.br;
     }
 
 let simplecmd_answer r pres =
