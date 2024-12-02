@@ -87,6 +87,14 @@ let boole_filter o (mem : varmemories) =
         Apronext.Abstractext.filter_tcons Apronext.Apol.man mem.ad c
       in
       (filter c, filter (Apronext.Tconsext.neg c))
+  | Expression (v, _) ->
+      let prop = Apronext.Abstractext.bound_texpr Apronext.Apol.man mem.ad v in
+      if Apronext.Intervalext.is_zero prop then
+        (Apronext.Abstractext.bottom Apronext.Apol.man mem.ad.env, mem.ad)
+      else if
+        not (Apronext.Intervalext.is_leq (Apronext.Intervalext.of_int 0 0) prop)
+      then (mem.ad, Apronext.Abstractext.bottom Apronext.Apol.man mem.ad.env)
+      else (mem.ad, mem.ad)
   | _ -> (mem.ad, mem.ad)
 
 let operand_to_expr (mem : varmemories) op =

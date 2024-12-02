@@ -49,12 +49,8 @@ let fixpoint _module (call, ifb) stack cache fin ft pres stepf =
               printer Format.print_string "Cached: ";
               let stable, resCached = cached in
               match stable with
-              | Cache.Stable ->
-                  printer Format.print_string "STABLE\n";
-                  (resCached, cache, SCG.empty)
-              | Cache.Unstable ->
-                  printer Format.print_string "UNSTABLE\n";
-                  (resCached, cache, SCG.singleton call))
+              | Cache.Stable -> (resCached, cache, SCG.empty)
+              | Cache.Unstable -> (resCached, cache, SCG.singleton call))
           | None -> (
               printer Format.print_string "NOT Cached: ";
               match Stack.call_in_stack call stack with
