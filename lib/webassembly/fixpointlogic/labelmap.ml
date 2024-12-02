@@ -19,7 +19,12 @@ module LabelMap = struct
     M.union (fun _key m1 m2 -> Some (Memory.widen m1 m2)) _lm1 _lm2
 
   let add_lub c ms lm = lub (M.singleton c ms) lm
-  let leq lm1 lm2 = M.equal Memory.leq lm1 lm2
+
+  let leq lm1 lm2 =
+    if M.compare (fun a b -> if Memory.leq a b then -1 else 0) lm1 lm2 = -1 then
+      true
+    else false
+
   let eq lm1 lm2 = M.equal Memory.eq lm1 lm2
   let le lm1 lm2 = leq lm1 lm2 && not (eq lm1 lm2)
 
