@@ -236,12 +236,21 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
             let ans =
               match _a_t with
               | Def d ->
+                  let br' = LM.lub p_ans.p_br d.br in
+                  let br' =
+                    match MS.peek_nth_label ms depth with
+                    | None -> br'
+                    | Some c -> (
+                        match c with
+                        | Label (LoopLabel c) -> LM.add_lub c.cmd d.nat br'
+                        | _ -> br')
+                  in
                   return
                     {
                       nat = (*MS.join d.nat*) ms_f;
                       (*comment on 29 nov 2024, non credo ci vada il join in nat*)
                       return = MS.join p_ans.p_return d.return;
-                      br = LM.lub p_ans.p_br d.br;
+                      br = br';
                     }
               | Bot ->
                   return

@@ -94,13 +94,13 @@ module VariableMem = struct
     match gl with Glob -> aux b glob | Loc -> aux b loc
 
   let widen (vm1 : t) (vm2 : t) : t =
-    if vm1.glob = vm2.glob && vm2.loc = vm2.loc then
+    if vm1.glob = vm2.glob && vm1.loc = vm2.loc then
       let ad' = AD.widen vm1.ad vm2.ad in
       { glob = vm1.glob; loc = vm1.loc; ad = ad' }
     else failwith "not compatible"
 
   let join (vm1 : t) (vm2 : t) : t =
-    if vm1.glob = vm2.glob && vm2.loc = vm2.loc then
+    if vm1.glob = vm2.glob && vm1.loc = vm2.loc then
       let ad' = AD.join vm1.ad vm2.ad in
       { glob = vm1.glob; loc = vm1.loc; ad = ad' }
     else failwith "not compatible"
@@ -109,11 +109,11 @@ module VariableMem = struct
     { glob = vm.glob; loc = vm.loc; ad = AD.filter vm.ad cons }
 
   let leq vm1 vm2 =
-    if vm1.glob = vm2.glob && vm2.loc = vm2.loc then AD.leq vm1.ad vm2.ad
+    if vm1.glob = vm2.glob && vm1.loc = vm2.loc then AD.leq vm1.ad vm2.ad
     else failwith "not compatible"
 
   let eq vm1 vm2 =
-    if vm1.glob = vm2.glob && vm2.loc = vm2.loc then AD.eq vm1.ad vm2.ad
+    if vm1.glob = vm2.glob && vm1.loc = vm2.loc then AD.eq vm1.ad vm2.ad
     else failwith "not compatible"
 
   let le (vm1 : t) (vm2 : t) = leq vm1 vm2 && not (eq vm1 vm2)

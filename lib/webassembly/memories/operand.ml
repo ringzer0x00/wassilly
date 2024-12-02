@@ -197,9 +197,9 @@ let jw_operand (mem1, o1) (mem2, o2) operation =
         printer Format.print_string "\n";
         printer Format.print_string (Label.print_label l2))
   | _ -> ());
-  if o1 = o2 then o1
+  if compare o1 o2 = 0 then o1
   else
-    let t = type_of_operand o1 in
+    let t, _ = (type_of_operand o1, type_of_operand o2) in
     let a = concretize mem1 o1 in
     let b = concretize mem2 o2 in
     Expression (const_expr mem1 (operation a b), t)
