@@ -22,8 +22,9 @@ let wStack stack ((env1, expr) as call : Call.t) =
 
 (*let wVal = Memories.Stack.widening (*raw intervals, lets see if it is correct*)*)
 let call_in_cache call cache = Cache.call_in_cache call cache
-
+(*
 let call_in_stack (env, expr) stack =
   match Stack.Stack.find_opt expr stack with
-  | Some envStack -> env = envStack
+  | Some envStack -> Memory.eq env envStack
   | None -> false
+*)
