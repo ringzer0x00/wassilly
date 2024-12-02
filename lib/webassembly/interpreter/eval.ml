@@ -315,7 +315,7 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
                   let ms''', c', g =
                     fixpoint modi
                       ((ms'', funbody), true)
-                      sk cache fin' (_ti, _to) p_ans step
+                      sk cache fin' (_ti, _to) Fixpoint.Answer.bot_pa step
                   in
                   (MS.func_res (func_ans ms''') ms' (List.length _to), c', g)
             in
@@ -378,7 +378,7 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
                       let ms''', c', g =
                         fixpoint modi
                           ((ms_prepped, fbody), true)
-                          sk cache fin (_ti, _to) p_ans step
+                          sk cache fin (_ti, _to) Fixpoint.Answer.bot_pa step
                       in
                       (ms''', c', g))
                 funcs
