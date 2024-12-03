@@ -31,7 +31,7 @@ let byte_of_interval interval =
 
 let of_interval interval (type_ : num) =
   let min, max =
-    match Apronext.Intervalext.is_top interval with
+    match not (Apronext.Intervalext.is_bounded interval) with
     | true -> (
         match type_ with
         | I32Type | F32Type ->

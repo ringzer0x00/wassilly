@@ -1,25 +1,25 @@
 (** Aliases from the [Apronext] library.  **)
 
-
-type dom = Apronext.Apol.t
+type dom = Apronext.Abox.t
 type var = Apron.Var.t
 type expr = Apronext.Texprext.t
 type constr = Apronext.Tconsext.t
 
-let join = Apronext.Apol.join
+let man = Apronext.Abox.man
+let join = Apronext.Abox.join
 
 let widen ad1 ad2 =
-  let ad' = Apronext.Apol.widening ad1 ad2 in
-  let ad'' = Apronext.Apol.widening ad2 ad1 in
+  let ad' = Apronext.Abox.widening ad1 ad2 in
+  let ad'' = Apronext.Abox.widening ad2 ad1 in
   join ad' ad''
 
-let add_var = Apronext.Apol.add_var
-let assign_expr = Apronext.Apol.assign_texpr
-let filter = Apronext.Apol.filter_tcons
-let bound_variable = Apronext.Apol.bound_variable
-let leq = Apronext.Apol.is_leq
-let eq = Apronext.Apol.is_eq
-let change_env = Apronext.Apol.change_environment
+let add_var = Apronext.Abox.add_var
+let assign_expr = Apronext.Abox.assign_texpr
+let filter = Apronext.Abox.filter_tcons
+let bound_variable = Apronext.Abox.bound_variable
+let leq = Apronext.Abox.is_leq
+let eq = Apronext.Abox.is_eq
+let change_env = Apronext.Abox.change_environment
 
 (*env funcs*)
 let make_env = Apronext.Environmentext.make

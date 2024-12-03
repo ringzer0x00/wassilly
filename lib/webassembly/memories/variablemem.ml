@@ -159,20 +159,20 @@ module VariableMem = struct
   let return_ (from : t) (to_ : t) : t =
     let locs_from = M.bindings from.loc |> List.map snd |> Array.of_list in
     let _env_ad_from' (*forget locs*) =
-      Apronext.Abstractext.change_environment Apronext.Apol.man from.ad
+      Apronext.Abstractext.change_environment Apronext.Abox.man from.ad
         (Apronext.Environmentext.remove from.ad.env locs_from)
         false
     in
     let globs_to = M.bindings from.glob |> List.map snd |> Array.of_list in
     let _ad_to' (*forget globs*) =
-      Apronext.Abstractext.forget_array Apronext.Apol.man to_.ad globs_to false
+      Apronext.Abstractext.forget_array Apronext.Abox.man to_.ad globs_to false
     in
     let env_lce = Apronext.Environmentext.lce _env_ad_from'.env _ad_to'.env in
     let ad' =
-      Apronext.Abstractext.meet Apronext.Apol.man
-        (Apronext.Abstractext.change_environment Apronext.Apol.man _env_ad_from'
+      Apronext.Abstractext.meet Apronext.Abox.man
+        (Apronext.Abstractext.change_environment Apronext.Abox.man _env_ad_from'
            env_lce false)
-        (Apronext.Abstractext.change_environment Apronext.Apol.man _ad_to'
+        (Apronext.Abstractext.change_environment Apronext.Abox.man _ad_to'
            env_lce false)
     in
     { loc = to_.loc; glob = to_.glob; ad = ad' }

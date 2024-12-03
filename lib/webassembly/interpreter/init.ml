@@ -88,7 +88,7 @@ let init_tab (mod_ : modinst) pre elems _tabs : Eval.MS.t =
         let _extr_offset_int =
           match _offset_value with
           | Expression (ex, _) ->
-              Apronext.Abstractext.bound_texpr Apronext.Apol.man
+              Apronext.Abstractext.bound_texpr Apronext.Abox.man
                 (pre >>=? fun m -> m.var.ad)
                 ex
               |> Apronext.Intervalext.to_float |> fst |> Float.to_int
@@ -199,7 +199,7 @@ let init (_mod : Wasm.Ast.module_) spec =
         mem = Memories.Linearmem.alloc_page mpages;
         var =
           VM.empty
-            (Apronext.Apol.top (Datastructures.Aprondomain.make_env [||] [||]));
+            (Apronext.Abox.top (Datastructures.Aprondomain.make_env [||] [||]));
         tab = [];
       }
   in

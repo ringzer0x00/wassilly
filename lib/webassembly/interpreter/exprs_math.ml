@@ -249,39 +249,47 @@ let lshift_expr vm l r =
   let l_i = Memories.Operand.concretize vm l in
   let lb = Language.Bitwisenumber.of_interval l_i (type_of_operand l) in
   let lb = Datastructures.Abstractbyte.of_min_max lb.min lb.max in
-  match S.equal_int (I.range _by) 0 with
-  (*range == 0*)
-  | true ->
-      let _r = Bitwisealu.shift_left lb (Float.to_int (S.to_float _by.inf)) in
-      let min, max =
-        Datastructures.Abstractbyte.as_int_arrays _r ~signed:true
-      in
-      let ival =
-        match Array.length min with
-        | 32 ->
-            let mi, ma =
-              ( Utilities.Conversions.int32_binary_to_decimal (Array.to_list min),
-                Utilities.Conversions.int32_binary_to_decimal
-                  (Array.to_list max) )
-            in
-            Apronext.Intervalext.of_int
-              (Int32.min mi ma |> Int32.to_int)
-              (Int32.max mi ma |> Int32.to_int)
-        | 64 ->
-            let mi, ma =
-              ( Utilities.Conversions.int64_binary_to_decimal (Array.to_list min),
-                Utilities.Conversions.int64_binary_to_decimal
-                  (Array.to_list max) )
-            in
-            let mi, ma =
-              ( Int64.to_string (Int64.min mi ma),
-                Int64.to_string (Int64.max mi ma) )
-            in
-            Apronext.Intervalext.of_mpqf (Mpqf.of_string mi) (Mpqf.of_string ma)
-        | _ -> failwith "other lengths not allowed"
-      in
-      Expression (const_expr vm ival, type_of_operand l)
+  match I.is_bounded _by with
   | false -> Expression (const_expr vm I.top, type_of_operand l)
+  | true -> (
+      match S.equal_int (I.range _by) 0 with
+      (*range == 0*)
+      | true ->
+          let _r =
+            Bitwisealu.shift_left lb (Float.to_int (S.to_float _by.inf))
+          in
+          let min, max =
+            Datastructures.Abstractbyte.as_int_arrays _r ~signed:true
+          in
+          let ival =
+            match Array.length min with
+            | 32 ->
+                let mi, ma =
+                  ( Utilities.Conversions.int32_binary_to_decimal
+                      (Array.to_list min),
+                    Utilities.Conversions.int32_binary_to_decimal
+                      (Array.to_list max) )
+                in
+                Apronext.Intervalext.of_int
+                  (Int32.min mi ma |> Int32.to_int)
+                  (Int32.max mi ma |> Int32.to_int)
+            | 64 ->
+                let mi, ma =
+                  ( Utilities.Conversions.int64_binary_to_decimal
+                      (Array.to_list min),
+                    Utilities.Conversions.int64_binary_to_decimal
+                      (Array.to_list max) )
+                in
+                let mi, ma =
+                  ( Int64.to_string (Int64.min mi ma),
+                    Int64.to_string (Int64.max mi ma) )
+                in
+                Apronext.Intervalext.of_mpqf (Mpqf.of_string mi)
+                  (Mpqf.of_string ma)
+            | _ -> failwith "other lengths not allowed"
+          in
+          Expression (const_expr vm ival, type_of_operand l)
+      | false -> Expression (const_expr vm I.top, type_of_operand l))
 
 let load_standard vm mem o t (offset_expl : int32) =
   let mem_min, mem_max = (0l, Memories.Linearmem.length_max mem) in
@@ -418,12 +426,13 @@ let store_standard _vm _mem _addr _val _t (_offset_expl : int32) =
     type of func to use to write: bit array array -> int -> t -> t*)
   (*range of offset addresses*)
   let threshold_mem = 1000 in
-  let is_past_thresh =
-    Apronext.Scalarext.cmp_int (Apronext.Intervalext.range addr) threshold_mem
-    >= 0
-  in
-  if is_past_thresh || not (Apronext.Intervalext.is_bounded addr) then
-    Memories.Linearmem.T { min = 0l; max = mem_max }
+  if
+    (not (Apronext.Intervalext.is_bounded addr))
+    || Apronext.Scalarext.cmp_int
+         (Apronext.Intervalext.range addr)
+         threshold_mem
+       >= 0
+  then Memories.Linearmem.T { min = 0l; max = mem_max }
   else
     let start_from, start_to =
       I.to_float addr |> tappl Int32.of_float |> tappl (Int32.add _offset_expl)
