@@ -30,33 +30,32 @@ let eval_cvtop (op : Wasm.Ast.cvtop) ms =
 
 let eval_loadop ({ ty; align; offset; pack } : Wasm.Ast.loadop) ms =
   ignore align;
-  let _ =
-    (*suuport 1 memory, no pack!*)
-    match pack with
-    | None -> assert true
-    | Some _ ->
-        assert false
-    (*Wasm.Types
-      type pack_size = Pack8 | Pack16 | Pack32 | Pack64
-      type extension = SX | ZX*)
-  in
+  (*suuport 1 memory, no pack!*)
+  match pack with
+  | Some _ -> Instructions.stub_load ms ty
+  | None -> (
+      (*Wasm.Types
+        type pack_size = Pack8 | Pack16 | Pack32 | Pack64
+        type extension = SX | ZX*)
 
-  (* align = 0,1,2,3 for load_8, load_16,load_32, load_64*)
-  (* offset is the memory index *)
-  match ty with
-  | Wasm.Types.I32Type -> Instructions.load_i32 ms offset
-  | Wasm.Types.I64Type -> Instructions.load_i64 ms offset
-  | Wasm.Types.F32Type -> Instructions.load_f32 ms offset
-  | Wasm.Types.F64Type -> Instructions.load_f64 ms offset
+      (* align = 0,1,2,3 for load_8, load_16,load_32, load_64*)
+      (* offset is the memory index *)
+      match ty with
+      | Wasm.Types.I32Type -> Instructions.load_i32 ms offset
+      | Wasm.Types.I64Type -> Instructions.load_i64 ms offset
+      | Wasm.Types.F32Type -> Instructions.load_f32 ms offset
+      | Wasm.Types.F64Type -> Instructions.load_f64 ms offset)
 
 let eval_storeop ({ ty; align; offset; pack } : Wasm.Ast.storeop) _ms =
-  let _ = match pack with None -> assert true | Some _psize -> assert false in
   ignore align;
   ignore offset;
-  match ty with
-  | Wasm.Types.I32Type -> (
-      try Instructions.store_i32 _ms offset with Invalid_argument _ -> Bot)
-  | Wasm.Types.I64Type -> (
-    try Instructions.store_i64 _ms offset with Invalid_argument _ -> Bot)
-  | Wasm.Types.F32Type -> failwith "store f32"
-  | Wasm.Types.F64Type -> failwith "store f64"
+  match pack with
+  | Some _psize -> Instructions.store_stub _ms offset
+  | None -> (
+      match ty with
+      | Wasm.Types.I32Type -> (
+          try Instructions.store_i32 _ms offset with Invalid_argument _ -> Bot)
+      | Wasm.Types.I64Type -> (
+          try Instructions.store_i64 _ms offset with Invalid_argument _ -> Bot)
+      | Wasm.Types.F32Type -> failwith "store f32"
+      | Wasm.Types.F64Type -> failwith "store f64")

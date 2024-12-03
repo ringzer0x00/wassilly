@@ -1,11 +1,11 @@
 (** Aliases from the [Apronext] library.  **)
 
-
 type dom = Apronext.Apol.t
 type var = Apron.Var.t
 type expr = Apronext.Texprext.t
 type constr = Apronext.Tconsext.t
 
+let man = Apronext.Apol.man
 let join = Apronext.Apol.join
 
 let widen ad1 ad2 =

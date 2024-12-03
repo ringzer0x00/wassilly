@@ -327,7 +327,8 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
                           MS.pop_n_operand (List.length _ti) ms )
                       in
                       let ms'' =
-                        Cflow.prep_call ms' _vals modi locs typ_idx.it
+                        try Cflow.prep_call ms' _vals modi locs typ_idx.it
+                        with UndefinedDefBot -> Bot
                         (*flab*)
                       in
                       let ms''', c', g =
@@ -395,7 +396,9 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
                             (f.it.body, f.it.locals, f.it.ftype)
                           in
                           let ms_prepped =
-                            Cflow.prep_call _ms'' _vals modi _locs typ_idx.it
+                            try
+                              Cflow.prep_call _ms'' _vals modi _locs typ_idx.it
+                            with UndefinedDefBot -> Bot
                           in
                           let ms''', c', g =
                             fixpoint modi
