@@ -447,6 +447,17 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
             | MemoryGrow ->
                 Printf.printf "WARNING: MEMORY GROW IS NOT SUPPORTED!!!!";
                 (cmd_result ms p_ans, cache, SCG.empty)
+            | BrTable (_branches, _default) ->
+                let _ms' = MS.pop_operand ms in
+                (*let depth = Int32.to_int i.it in
+                  let _ff l ms b =
+                    (fun body ms b ->
+                      fixpoint modi ((ms, body), b) sk cache fin ft p_ans step)
+                      l ms b
+                  in
+                  Cflow.br depth ms p_ans cache modi ft _ff in*)
+                Wasm.Print.instr Stdlib.stdout 100 c1;
+                failwith "other commands"
             | _ ->
                 Wasm.Print.instr Stdlib.stdout 100 c1;
                 failwith "other commands"
