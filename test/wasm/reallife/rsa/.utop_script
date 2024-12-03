@@ -1,6 +1,0 @@
-let d = "/home/ringzero/gitrepos/wassilly/test/wasm/reallife/rsa"
-
-let p =
-  Interpreter.Analysis.callgraph_analysis'
-    (d ^ "/rsa_lib_bg.wasm")
-    (d ^ "/wassilly.spec");;

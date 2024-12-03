@@ -15,15 +15,16 @@ let wStack stack ((env1, expr) as call : Call.t) =
       if Memory.leq env1 env2 then (
         printer Format.print_string "ENV1 LEQ ENV2 -> TRUE\n";
         (stack, (env2, expr)))
-      else
-        (printer Format.print_string "ENV1 LEQ ENV2 -> FALSE\n";
+      else (
+        printer Format.print_string "ENV1 LEQ ENV2 -> FALSE\n";
         let envWidened = Memory.widen env2 env1 in
         (Stack.Stack.add expr envWidened stack, (envWidened, expr)))
 
 (*let wVal = Memories.Stack.widening (*raw intervals, lets see if it is correct*)*)
 let call_in_cache call cache = Cache.call_in_cache call cache
-
+(*
 let call_in_stack (env, expr) stack =
   match Stack.Stack.find_opt expr stack with
-  | Some envStack -> env = envStack
+  | Some envStack -> Memory.eq env envStack
   | None -> false
+*)

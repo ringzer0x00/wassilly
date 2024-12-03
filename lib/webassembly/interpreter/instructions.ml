@@ -7,13 +7,14 @@ open Datastructures.Monad.DefBot
 type wn = Wasm.Types.num_type
 
 (*-- controlflow*)
-let end_of_block prec mod_ =
+let end_of_block prec p_ans mod_ =
   prec >>= fun d ->
-  let _, _t =
+  let lab, (_, _t) =
     match peek_nth_label d.ops 0 with
     | Some (Label l) ->
-        Memories.Label.type_of_peeked_label l
-        |> Memories.Label.extract_type_of_label mod_
+        ( l,
+          Memories.Label.type_of_peeked_label l
+          |> Memories.Label.extract_type_of_label mod_ )
     | _ -> failwith "cannot handle"
   in
   let _vals, ops' =
@@ -25,7 +26,11 @@ let end_of_block prec mod_ =
       { ops = ops'; var = d.var; mem = d.mem; tab = d.tab }
   in
   let prec'' = Memories.Memorystate.pop_n_labels prec' 1 in
-  Memories.Memorystate.push_operand _vals prec''
+  let n = Memories.Memorystate.push_operand _vals prec'' in
+  Memories.Memorystate.join n
+    (Fixpoint.Answer.LM.res_label
+       (Memories.Label.cmd_of_lab lab)
+       (Fixpoint.Answer.p_br p_ans))
 
 let brpeek prec n = prec >>=? fun d -> peek_nth_label d.ops n
 
@@ -211,11 +216,16 @@ let extend_u_i32 _prec = failwith "extend unsign"
 (*memory ops*)
 let load_i32 prec offset =
   prec >>= fun d ->
-  let opsk' =
-    unop d.ops (fun x -> load_standard d.var d.mem x Wasm.Types.I32Type offset)
-    |> push
+  let opsk', o =
+    let op =
+      unop d.ops (fun x ->
+          load_standard d.var d.mem x Wasm.Types.I32Type offset)
+    in
+    (push op, op)
   in
-  return { ops = opsk'; var = d.var; mem = d.mem; tab = d.tab }
+  match fst o with
+  | Bottom -> Bot
+  | _ -> return { ops = opsk'; var = d.var; mem = d.mem; tab = d.tab }
 
 let load_i64 prec offset =
   prec >>= fun d ->
@@ -247,6 +257,16 @@ let store_i32 prec offset =
     let mem', opsk' =
       storeop d.ops (fun x y ->
           store_standard d.var d.mem x y Wasm.Types.I32Type offset)
+    in
+    return { ops = opsk'; var = d.var; mem = mem'; tab = d.tab }
+  with NoValidWritesExn -> Bot
+
+let store_i64 prec offset =
+  prec >>= fun d ->
+  try
+    let mem', opsk' =
+      storeop d.ops (fun x y ->
+          store_standard d.var d.mem x y Wasm.Types.I64Type offset)
     in
     return { ops = opsk'; var = d.var; mem = mem'; tab = d.tab }
   with NoValidWritesExn -> Bot

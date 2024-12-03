@@ -61,7 +61,16 @@ let block_result r_b block_body =
     {
       nat = MS.join r.nat (LM.res_label block_body r.br);
       return = r.return;
-      br = LM.remove block_body r.br;
+      br = (*LM.remove block_body*) r.br;
+    }
+
+let loop_result r_b loop_body =
+  r_b >>= fun r ->
+  return
+    {
+      nat = MS.join r.nat (LM.res_label loop_body r.br);
+      return = r.return;
+      br = LM.remove loop_body r.br;
     }
 
 let simplecmd_answer r pres =
@@ -177,9 +186,12 @@ let br depth ms p_ans cache modul_ ft fixf =
         MS.push_operand [ Memories.Operand.Label (LoopLabel l) ] ms''
       in
       let ms''' = MS.push_operand _vals ms'' in
-
-      fixf l.cmd ms''' true
-      (*this is wrong... probably, i think i should do stack manips beforehand*)
+      let b =
+        match (List.hd l.cmd).it with
+        | Loop (_, b) -> b
+        | _ -> failwith "loop in br if no loop"
+      in
+      fixf b ms''' true
   | None ->
       let _vals, ms' =
         ( MS.peek_n_operand (List.length _tout) ms,

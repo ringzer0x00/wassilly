@@ -8,8 +8,12 @@ module Stack = struct
 
   let call_in_stack (env, expr) stack =
     match find_opt expr stack with
-    | Some envStack -> env = envStack
+    | Some envStack -> Memory.leq env envStack (* env = envStack*)
     | None -> false
 
-  let expr_in_stack e s = exists (fun xpr _ -> e = xpr) s
+  let expr_in_stack e s =
+    exists
+      (fun xpr _ ->
+        (*if List.equal (fun a b -> a = b) e xpr then true else false*) e = xpr)
+      s
 end

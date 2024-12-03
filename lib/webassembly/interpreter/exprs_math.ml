@@ -302,13 +302,18 @@ let load_standard vm mem o t (offset_expl : int32) =
         Utilities.Conversions.float64_binary_to_decimal b |> Float.to_string
   in
   let c = Memories.Operand.concretize vm o in
+  printer Format.print_string "IntervalC:";
+  printer (Apronext.Intervalext.print Format.std_formatter) c;
   (*range of offset addresses*)
   if not (Apronext.Intervalext.is_bounded c) then
     Expression (const_expr vm Apronext.Intervalext.top, t)
+  else if Apronext.Intervalext.is_bottom c then Bottom
   else
     let start_from, start_to =
       I.to_float c |> tappl Int32.of_float |> tappl (Int32.add offset_expl)
     in
+    printer (Printf.printf "IntervalC~From:%s;") (Int32.to_string start_from);
+    printer (Printf.printf "IntervalC~To:%s;") (Int32.to_string start_to);
     let threshold_mem = 10 in
     let is_past_thresh =
       Apronext.Scalarext.cmp_int (Apronext.Intervalext.range c) threshold_mem
