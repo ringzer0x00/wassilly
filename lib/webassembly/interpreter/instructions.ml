@@ -214,6 +214,12 @@ let demote_f64 prec =
 let extend_u_i32 _prec = failwith "extend unsign"
 
 (*memory ops*)
+let stub_load prec t =
+  prec >>= fun d ->
+  let ty = match t with _ -> Wasm.Types.I32Type in
+  let opsk' = unop d.ops (fun _ -> load_stub_expr d.var ty) |> push in
+  return { ops = opsk'; var = d.var; mem = d.mem; tab = d.tab }
+
 let load_i32 prec offset =
   prec >>= fun d ->
   let opsk', o =
@@ -250,6 +256,20 @@ let load_f64 prec offset =
     |> push
   in
   return { ops = opsk'; var = d.var; mem = d.mem; tab = d.tab }
+
+let store_stub prec _ =
+  prec >>= fun d ->
+  let min, max =
+    match d.mem with
+    | T { min; max } -> (min, max)
+    | M { m; min; max } ->
+        ignore m;
+        (min, max)
+  in
+  let mem', opsk' =
+    storeop d.ops (fun _ _ -> Memories.Linearmem.T { min; max })
+  in
+  return { ops = opsk'; var = d.var; mem = mem'; tab = d.tab }
 
 let store_i32 prec offset =
   prec >>= fun d ->

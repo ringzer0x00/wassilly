@@ -243,6 +243,7 @@ let select_expr vm fst snd trd (_rt : Wasm.Types.value_type list option) =
   else Expression (const_expr vm (Apronext.Intervalext.join trd_i snd_i), _rt)
 
 let shift_stub_expr vm l _ = Expression (const_expr vm I.top, type_of_operand l)
+let load_stub_expr vm ty = Expression (const_expr vm I.top, ty)
 
 let lshift_expr vm l r =
   let _by = Memories.Operand.concretize vm r in
