@@ -38,7 +38,7 @@ let update_linearmem mem' (k : t) =
   k >>= fun a -> return { ops = a.ops; var = a.var; mem = mem'; tab = a.tab }
 
 let update_varmem (var' : VariableMem.t) (k : t) =
-  match Apronext.Abstractext.is_bottom Apronext.Abox.man var'.ad with
+  match Apronext.Abstractext.is_bottom Apronext.Apol.man var'.ad with
   | true -> Bot
   | false ->
       k >>= fun a ->
@@ -83,7 +83,7 @@ let table_getrefs idx typ k =
 let concretize_operand o k = k >>=? fun a -> Operand.concretize_in_exp a.var o
 
 let concretize_expr e k =
-  k >>=? fun a -> Apronext.Abstractext.bound_texpr Apronext.Abox.man a.var.ad e
+  k >>=? fun a -> Apronext.Abstractext.bound_texpr Apronext.Apol.man a.var.ad e
 
 let operand_as_interval o k =
   let e = concretize_operand o k in

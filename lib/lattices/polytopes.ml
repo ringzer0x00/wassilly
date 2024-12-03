@@ -95,7 +95,7 @@ module Octagons : ApronD = struct
 end
 
 module Box : ApronD = struct
-  module PT = Abox
+  module PT = Apol
 
   type dt = Box.t
   type t = PT.t
