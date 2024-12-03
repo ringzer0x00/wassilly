@@ -216,11 +216,16 @@ let extend_u_i32 _prec = failwith "extend unsign"
 (*memory ops*)
 let load_i32 prec offset =
   prec >>= fun d ->
-  let opsk' =
-    unop d.ops (fun x -> load_standard d.var d.mem x Wasm.Types.I32Type offset)
-    |> push
+  let opsk', o =
+    let op =
+      unop d.ops (fun x ->
+          load_standard d.var d.mem x Wasm.Types.I32Type offset)
+    in
+    (push op, op)
   in
-  return { ops = opsk'; var = d.var; mem = d.mem; tab = d.tab }
+  match fst o with
+  | Bottom -> Bot
+  | _ -> return { ops = opsk'; var = d.var; mem = d.mem; tab = d.tab }
 
 let load_i64 prec offset =
   prec >>= fun d ->
