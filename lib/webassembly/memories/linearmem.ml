@@ -13,6 +13,10 @@ let wasm_page_size = 65536l
 let alloc_page n =
   M (LinMem.mk_empty (Int32.mul wasm_page_size (Int32.of_int n)))
 
+let grow = function
+  | M llm -> M (LinMem.grow llm)
+  | T t -> T { min = t.min; max = Int32.add t.max wasm_page_size }
+
 let top n = T { min = 0l; max = n }
 
 let size = function
@@ -62,16 +66,16 @@ let write_to_mem b o m =
 
 let join m1 m2 =
   match (m1, m2) with
-  | _, T t | T t, _ -> T t
+  | _, T _t | T _t, _ -> failwith "T t"
   | M m1, M m2 -> M (LinMem.join m1 m2)
 
 let widen = join
 
 let leq m1 m2 =
   match (m1, m2) with
-  | T _, T _ -> true
-  | M _, T _ -> true
-  | T _, M _ -> false
+  | T _, T _ -> failwith "true"
+  | M _, T _ -> failwith "true"
+  | T _, M _ -> failwith "false"
   | M m1, M m2 -> LinMem.leq m1 m2
 
 let eq m1 m2 =

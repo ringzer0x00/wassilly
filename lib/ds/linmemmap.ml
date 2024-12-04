@@ -63,20 +63,31 @@ module LimitedLinearMemory = struct
 
   let mk_empty max = { m = LinearMemory.empty; min = Int32.zero; max }
 
-  let ho_memo f m1 m2 =
-    if m1.min = m2.min && m1.max = m2.max then f m1 m2
-    else failwith "cannot perform operation hh_memo"
-
   let join m1 m2 =
-    ho_memo
-      (fun m1 m2 ->
-        { m = LinearMemory.join m1.m m2.m; min = m1.min; max = m1.max })
+    (fun m1 m2 ->
+      {
+        m = LinearMemory.join m1.m m2.m;
+        min = Int32.min m1.min m2.min;
+        max = Int32.max m1.max m2.max;
+      })
       m1 m2
 
   let widen = join
-  let le m1 m2 = ho_memo (fun m1 m2 -> LinearMemory.le m1.m m2.m) m1 m2
-  let leq m1 m2 = ho_memo (fun m1 m2 -> LinearMemory.leq m1.m m2.m) m1 m2
-  let eq m1 m2 = ho_memo (fun m1 m2 -> LinearMemory.eq m1.m m2.m) m1 m2
+
+  let le m1 m2 =
+    if Int32.compare m1.min m2.min <= 0 && Int32.compare m1.max m2.max <= 0 then
+      (fun m1 m2 -> LinearMemory.le m1.m m2.m) m1 m2
+    else false
+
+  let leq m1 m2 =
+    if Int32.compare m1.min m2.min <= 0 && Int32.compare m1.max m2.max <= 0 then
+      (fun m1 m2 -> LinearMemory.leq m1.m m2.m) m1 m2
+    else false
+
+  let eq m1 m2 =
+    if Int32.compare m1.min m2.min = 0 && Int32.compare m1.max m2.max = 0 then
+      (fun m1 m2 -> LinearMemory.eq m1.m m2.m) m1 m2
+    else false
 
   let load a m =
     if a >= m.min && a <= m.max then Some (LinearMemory.internal_load a m.m)
@@ -91,4 +102,6 @@ module LimitedLinearMemory = struct
           max = m.max;
         }
     else None
+
+  let grow m = { m = m.m; min = m.min; max = Int32.add m.max 65536l }
 end
