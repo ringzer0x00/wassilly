@@ -76,9 +76,9 @@ let push_operand x k =
   if isb then Bot else k >>= fun a -> update_operandstack (x @ a.ops) k
 
 (*table stuff*)
-let table_getrefs idx typ k =
+let table_getrefs tidx idx typ k =
   k >>=? fun a ->
-  let table = List.nth a.tab 0 in
+  let table = List.nth a.tab tidx in
   Table.find_by_idx idx table |> Table.find_by_types typ
 
 (*other*)

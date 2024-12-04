@@ -106,7 +106,7 @@ module VariableMem = struct
 
   let join (vm1 : t) (vm2 : t) : t =
     if equality vm1.glob vm2.glob && equality vm1.loc vm2.loc then (
-      printer (Apronext.Environmentext.print Format.std_formatter) vm1.ad.env;
+      (*printer (Apronext.Environmentext.print Format.std_formatter) vm1.ad.env;
       printer Format.print_string "\n~~~~~~~~~~~~~~~~~~~~\n";
 
       printer (Apronext.Abox.print Format.std_formatter) vm1.ad;
@@ -114,7 +114,7 @@ module VariableMem = struct
       printer (Apronext.Environmentext.print Format.std_formatter) vm2.ad.env;
       printer Format.print_string "\n~~~~~~~~~~~~~~~~~~~~\n";
 
-      printer (Apronext.Abox.print Format.std_formatter) vm2.ad;
+      printer (Apronext.Abox.print Format.std_formatter) vm2.ad;*)
 
       let ad' = AD.join vm1.ad vm2.ad in
       { glob = vm1.glob; loc = vm1.loc; ad = ad' })

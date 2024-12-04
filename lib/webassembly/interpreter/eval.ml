@@ -337,10 +337,10 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
                           sk cache fin' (_ti, _to) Fixpoint.Answer.bot_pa step
                       in
                       (MS.func_res (func_ans ms''') ms' (List.length _to), c', g)
-                      (*error should be here in the change of ctx when calling*)
+                  (*error should be here in the change of ctx when calling*)
                 in
                 (Cflow.call_answer p_ans fres, cache', g)
-            | CallIndirect (_fsign, _table_idx) ->
+            | CallIndirect (_table_idx, _fsign) ->
                 let _ti, _to =
                   match gettype modi (Int32.to_int _fsign.it) with
                   | FuncType (_ti, _to) -> (_ti, _to)
@@ -350,14 +350,15 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
                 in
                 let _interval_idx = MS.operand_as_interval expr_idx ms in
                 let _refs =
-                  MS.table_getrefs _interval_idx (Some _fsign.it) ms'
+                  MS.table_getrefs (Int32.to_int (_table_idx.it)) _interval_idx (Some _fsign.it) ms'
                 in
                 let _targets =
                   List.map
-                    (fun x -> fst (snd x))
+                    (fun x -> snd x |> fst)
                     (Memories.Table.T.bindings _refs)
-                  |> List.filter_map (fun x -> x)
                 in
+                let _targets = List.filter_map (fun x -> x) _targets in
+                (*List.iter (fun x -> Printf.printf "fun to call: %i\n" (Int32.to_int x)) _targets;*)
                 List.iter (fun x -> cg := CallGraph.add_edge !cg fin x) _targets;
                 let typ_ = gettype modi (Int32.to_int _fsign.it) in
                 let _ti, _to =
@@ -412,8 +413,8 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
                 in
                 let computed, cache', scg =
                   List.fold_left
-                    (fun (a, c, g) (a', c', g') ->
-                      (Answer.j a a', Cache.lub c c', SCG.union g g'))
+                    (fun (a, _, g) (a', c', g') ->
+                      (Answer.j a a', c', SCG.union g g'))
                     (Bot, cache, SCG.empty) mses_called
                 in
                 let _f_res =

@@ -103,10 +103,7 @@ let prep_call ms vals mod_ locs typ_idx =
     t.it
   in
   let typ_ = gettype mod_ (Int32.to_int typ_idx) in
-  let _ti, _to =
-    (*list * list*)
-    match typ_ with FuncType (_ti, _to) -> (_ti, _to)
-  in
+  let _ti, _to = match typ_ with FuncType (_ti, _to) -> (_ti, _to) in
   let bindings_input =
     List.mapi
       (fun i x : Memories.Variablemem.MapKey.t ->
