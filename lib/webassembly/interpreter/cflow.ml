@@ -194,7 +194,7 @@ let br depth ms p_ans cache modul_ ft fixf =
         | Loop (_, b) -> b
         | _ -> failwith "loop in br if no loop"
       in
-      fixf b ms''' true
+      fixf b ms'''
   | None ->
       let _vals, ms' =
         ( MS.peek_n_operand (List.length _tout) ms,

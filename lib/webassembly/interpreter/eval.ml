@@ -166,10 +166,10 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
             | Nop -> (cmd_result ms p_ans, cache, SCG.empty)
             | Br i ->
                 let depth = Int32.to_int i.it in
-                let _ff l ms b =
-                  (fun body ms b ->
-                    fixpoint modi ((ms, body), b) sk cache fin ft p_ans step)
-                    l ms b
+                let _ff l ms =
+                  (fun body ms ->
+                    fixpoint modi ((ms, body), true) sk cache fin ft p_ans step)
+                    l ms
                 in
                 Cflow.br depth ms p_ans cache modi ft _ff
             | Block (_bt, bbody) ->
@@ -231,10 +231,10 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
                 let ms_t, ms_f = Cflow.ite_condition ms in
                 let depth = Int32.to_int _i.it in
                 printer Format.print_string "~~~~~~ briffing \n";
-                let fixf body mem isloop =
-                  (fun body m b ->
-                    fixpoint modi ((m, body), b) sk cache fin ft p_ans step)
-                    body mem isloop
+                let fixf body mem =
+                  (fun body m ->
+                    fixpoint modi ((m, body), true) sk cache fin ft p_ans step)
+                    body mem
                 in
                 let _a_t, c', scg =
                   match ms_t with
@@ -337,6 +337,7 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
                           sk cache fin' (_ti, _to) Fixpoint.Answer.bot_pa step
                       in
                       (MS.func_res (func_ans ms''') ms' (List.length _to), c', g)
+                      (*error should be here in the change of ctx when calling*)
                 in
                 (Cflow.call_answer p_ans fres, cache', g)
             | CallIndirect (_fsign, _table_idx) ->
@@ -445,19 +446,25 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
             | Select _rt ->
                 (cmd_result (Instructions.select ms _rt) p_ans, cache, SCG.empty)
             | MemoryGrow ->
-                Printf.printf "WARNING: MEMORY GROW IS NOT SUPPORTED!!!!";
                 (cmd_result (Instructions.grow ms) p_ans, cache, SCG.empty)
             | BrTable (_branches, _default) ->
                 let _ms' = MS.pop_operand ms in
-                (*let depth = Int32.to_int i.it in
-                  let _ff l ms b =
-                    (fun body ms b ->
-                      fixpoint modi ((ms, body), b) sk cache fin ft p_ans step)
-                      l ms b
-                  in
-                  Cflow.br depth ms p_ans cache modi ft _ff in*)
-                Wasm.Print.instr Stdlib.stdout 100 c1;
-                failwith "other commands"
+                let _ff body ms =
+                  (fun body ms ->
+                    fixpoint modi ((ms, body), true) sk cache fin ft p_ans step)
+                    body ms
+                in
+
+                List.fold_right
+                  (fun depth (ans, cache, scg) ->
+                    let ans', cache', scg' =
+                      Cflow.br depth _ms' p_ans cache modi ft _ff
+                    in
+                    (Answer.j ans ans', cache', SCG.union scg scg'))
+                  (List.map
+                     (fun (x : Wasm.Ast.var) -> Int32.to_int x.it)
+                     (_branches @ [ _default ]))
+                  (cmd_result Bot p_ans, cache, SCG.empty)
             | _ ->
                 Wasm.Print.instr Stdlib.stdout 100 c1;
                 failwith "other commands"

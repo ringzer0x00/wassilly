@@ -47,4 +47,5 @@ let%test "host-code-table-mutable" =
 let%test "cpp-vtable-layout-source-type-info" =
   Interpreter.Eval.cg := Datastructures.Callgraph.Ga.phi;
   let cg = p "cpp-vtable-layout-source-type-info" in
+  (*Datastructures.Callgraph.print_graph Format.std_formatter cg;*)
   edges cg = Data_test.vtables_gt && reachable cg = Data_test.vtables_rf

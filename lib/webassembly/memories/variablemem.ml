@@ -2,6 +2,8 @@ module AD = Datastructures.Aprondomain
 module AExpr = Datastructures.Aexpr
 module WT = Wasm.Types
 
+let printer = Utilities.Printer.print
+
 module MapKey = struct
   type t = { i : Int32.t; t : WT.num_type } (* * WasmVarType *)
 
@@ -103,9 +105,19 @@ module VariableMem = struct
     else failwith "not compatible"
 
   let join (vm1 : t) (vm2 : t) : t =
-    if equality vm1.glob vm2.glob && equality vm1.loc vm2.loc then
+    if equality vm1.glob vm2.glob && equality vm1.loc vm2.loc then (
+      printer (Apronext.Environmentext.print Format.std_formatter) vm1.ad.env;
+      printer Format.print_string "\n~~~~~~~~~~~~~~~~~~~~\n";
+
+      printer (Apronext.Abox.print Format.std_formatter) vm1.ad;
+      printer Format.print_string "\n~~~~~~~~~~~~~~~~~~~~\n";
+      printer (Apronext.Environmentext.print Format.std_formatter) vm2.ad.env;
+      printer Format.print_string "\n~~~~~~~~~~~~~~~~~~~~\n";
+
+      printer (Apronext.Abox.print Format.std_formatter) vm2.ad;
+
       let ad' = AD.join vm1.ad vm2.ad in
-      { glob = vm1.glob; loc = vm1.loc; ad = ad' }
+      { glob = vm1.glob; loc = vm1.loc; ad = ad' })
     else failwith "not compatible"
 
   let filter vm cons : t =
@@ -125,7 +137,9 @@ module VariableMem = struct
 
   let new_ { loc; glob; ad } (locs_new : WT.value_type list) : t =
     let locs_old = M.bindings loc |> List.map snd |> Array.of_list in
-    let ad_forgotten = AD.change_env ad (AD.forget_env ad locs_old false).env in
+    let ad_forgotten =
+      AD.change_env ad (AD.forget_existential ad locs_old false).env
+    in
     (*this has to be forgotten, because variables might collide*)
     let globs = M.bindings glob in
     let extract_typed_env_vars (bs : (binding * apronvar) list) =
@@ -159,16 +173,16 @@ module VariableMem = struct
   let return_ (from : t) (to_ : t) : t =
     let locs_from = M.bindings from.loc |> List.map snd |> Array.of_list in
     let _env_ad_from' (*forget locs*) =
-      AD.change_env from.ad (AD.forget_env from.ad locs_from false).env
+      AD.change_env from.ad (AD.remove_var_env from.ad.env locs_from)
     in
 
     let globs_to = M.bindings from.glob |> List.map snd |> Array.of_list in
-    let _ad_to' (*forget globs*) = AD.forget_env to_.ad globs_to false in
-    let env_lce = AD.lce _env_ad_from'.env _ad_to'.env in
+    let _ad_to' (*forget globs*) =
+      AD.forget_existential to_.ad globs_to false
+    in
+    let env' = AD.lce _env_ad_from'.env _ad_to'.env in
     let ad' =
-      AD.meet
-        (AD.change_env _env_ad_from' env_lce)
-        (AD.change_env _ad_to' env_lce)
+      AD.meet (AD.change_env _env_ad_from' env') (AD.change_env _ad_to' env')
     in
     { loc = to_.loc; glob = to_.glob; ad = ad' }
 end

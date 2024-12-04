@@ -2,6 +2,8 @@ module SK = Datastructures.Liststack
 module VariableMem = Variablemem.VariableMem
 open Datastructures.Monad.DefBot
 
+let printer = Utilities.Printer.print
+
 type ms = {
   ops : Operandstack.t;
   var : VariableMem.t;
