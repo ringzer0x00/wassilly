@@ -66,21 +66,24 @@ let write_to_mem b o m =
 
 let join m1 m2 =
   match (m1, m2) with
-  | _, T _t | T _t, _ -> failwith "T t"
+  | M m, T t | T t, M m ->
+      T { min = Int32.min m.min t.min; max = Int32.max m.max t.max }
+  | T t1, T t2 ->
+      T { min = Int32.min t1.min t2.min; max = Int32.max t1.max t2.max }
   | M m1, M m2 -> M (LinMem.join m1 m2)
 
 let widen = join
 
 let leq m1 m2 =
   match (m1, m2) with
-  | T _, T _ -> failwith "true"
-  | M _, T _ -> failwith "true"
-  | T _, M _ -> failwith "false"
+  | T t1, T t2 -> t1.min = t2.min && t1.max <= t2.max
+  | M m, T t -> m.min = t.min && m.max <= t.max
+  | T _, M _ -> false
   | M m1, M m2 -> LinMem.leq m1 m2
 
 let eq m1 m2 =
   match (m1, m2) with
-  | T _, T _ -> true
+  | T t1, T t2 -> t1.min = t2.min && t1.max = t2.max
   | M _, T _ | T _, M _ -> false
   | M m1, M m2 -> LinMem.eq m1 m2
 
