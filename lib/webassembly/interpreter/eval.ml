@@ -446,7 +446,7 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
                 (cmd_result (Instructions.select ms _rt) p_ans, cache, SCG.empty)
             | MemoryGrow ->
                 Printf.printf "WARNING: MEMORY GROW IS NOT SUPPORTED!!!!";
-                (cmd_result ms p_ans, cache, SCG.empty)
+                (cmd_result (Instructions.grow ms) p_ans, cache, SCG.empty)
             | BrTable (_branches, _default) ->
                 let _ms' = MS.pop_operand ms in
                 (*let depth = Int32.to_int i.it in

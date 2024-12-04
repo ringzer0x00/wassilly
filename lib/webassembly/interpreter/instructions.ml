@@ -295,3 +295,8 @@ let select prec rt =
   prec >>= fun d ->
   let opsk' = ternop d.ops (fun x y z -> select_expr d.var x y z rt) |> push in
   return { ops = opsk'; var = d.var; mem = d.mem; tab = d.tab }
+
+let grow prec =
+  prec >>= fun d ->
+  let mem' = Memories.Linearmem.grow d.mem in
+  return { ops = d.ops; var = d.var; mem = mem'; tab = d.tab }
