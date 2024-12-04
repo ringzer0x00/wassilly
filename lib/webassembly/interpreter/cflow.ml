@@ -17,7 +17,10 @@ let intbool (exp : Memories.Operand.operand) (ms : MS.ms) =
   in
   let ms_t ms = MS.update_varmem vm_t' (Def ms) in
   let ms_f ms = MS.update_varmem vm_f' (Def ms) in
-  match (Apronext.Apol.is_bottom t, Apronext.Apol.is_bottom f) with
+  match
+    ( Datastructures.Aprondomain.is_bottom t,
+      Datastructures.Aprondomain.is_bottom f )
+  with
   | true, true -> (Bot, Bot)
   | false, false -> (ms_t ms, ms_f ms)
   | true, false -> (Bot, ms_f ms)

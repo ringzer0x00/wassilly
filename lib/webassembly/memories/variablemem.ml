@@ -125,7 +125,7 @@ module VariableMem = struct
 
   let new_ { loc; glob; ad } (locs_new : WT.value_type list) : t =
     let locs_old = M.bindings loc |> List.map snd |> Array.of_list in
-    let ad_forgotten = AD.change_env ad (AD.forget_env ad.env locs_old) in
+    let ad_forgotten = AD.change_env ad (AD.forget_env ad locs_old false).env in
     (*this has to be forgotten, because variables might collide*)
     let globs = M.bindings glob in
     let extract_typed_env_vars (bs : (binding * apronvar) list) =
@@ -159,21 +159,16 @@ module VariableMem = struct
   let return_ (from : t) (to_ : t) : t =
     let locs_from = M.bindings from.loc |> List.map snd |> Array.of_list in
     let _env_ad_from' (*forget locs*) =
-      Apronext.Abstractext.change_environment Apronext.Apol.man from.ad
-        (Apronext.Environmentext.remove from.ad.env locs_from)
-        false
+      AD.change_env from.ad (AD.forget_env from.ad locs_from false).env
     in
+
     let globs_to = M.bindings from.glob |> List.map snd |> Array.of_list in
-    let _ad_to' (*forget globs*) =
-      Apronext.Abstractext.forget_array Apronext.Apol.man to_.ad globs_to false
-    in
-    let env_lce = Apronext.Environmentext.lce _env_ad_from'.env _ad_to'.env in
+    let _ad_to' (*forget globs*) = AD.forget_env to_.ad globs_to false in
+    let env_lce = AD.lce _env_ad_from'.env _ad_to'.env in
     let ad' =
-      Apronext.Abstractext.meet Apronext.Apol.man
-        (Apronext.Abstractext.change_environment Apronext.Apol.man _env_ad_from'
-           env_lce false)
-        (Apronext.Abstractext.change_environment Apronext.Apol.man _ad_to'
-           env_lce false)
+      AD.meet
+        (AD.change_env _env_ad_from' env_lce)
+        (AD.change_env _ad_to' env_lce)
     in
     { loc = to_.loc; glob = to_.glob; ad = ad' }
 end

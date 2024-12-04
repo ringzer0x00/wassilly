@@ -1,4 +1,5 @@
 module VariableMem = Variablemem.VariableMem
+module ApronDom = Datastructures.Aprondomain
 
 let printer = Utilities.Printer.print
 
@@ -72,7 +73,7 @@ let ref_of_binding b gl =
   | VariableMem.Loc -> LVarRef (b, b.t)
 
 let boole_as_int c (mem : varmemories) =
-  let sat c = Apronext.Abstractext.sat_tcons Apronext.Apol.man mem.ad c in
+  let sat c = ApronDom.sat_tcons mem.ad c in
   let sat_t, sat_f = (sat c, sat (Apronext.Tconsext.neg c)) in
   match (sat_t, sat_f) with
   | true, false -> Apronext.Intervalext.of_int 1 1
@@ -83,17 +84,15 @@ let boole_as_int c (mem : varmemories) =
 let boole_filter o (mem : varmemories) =
   match o with
   | BooleanExpression c ->
-      let filter c =
-        Apronext.Abstractext.filter_tcons Apronext.Apol.man mem.ad c
-      in
+      let filter c = ApronDom.filter_tcons mem.ad c in
       (filter c, filter (Apronext.Tconsext.neg c))
   | Expression (v, _) ->
-      let prop = Apronext.Abstractext.bound_texpr Apronext.Apol.man mem.ad v in
+      let prop = ApronDom.bound_texpr mem.ad v in
       if Apronext.Intervalext.is_zero prop then
-        (Apronext.Abstractext.bottom Apronext.Apol.man mem.ad.env, mem.ad)
+        (ApronDom.bottom mem.ad.env, mem.ad)
       else if
         not (Apronext.Intervalext.is_leq (Apronext.Intervalext.of_int 0 0) prop)
-      then (mem.ad, Apronext.Abstractext.bottom Apronext.Apol.man mem.ad.env)
+      then (mem.ad, ApronDom.bottom mem.ad.env)
       else (mem.ad, mem.ad)
   | _ -> (mem.ad, mem.ad)
 
@@ -109,8 +108,7 @@ let operand_to_expr (mem : varmemories) op =
 
 let concretize (mem : varmemories) op =
   match op with
-  | Expression (e, _) ->
-      Apronext.Abstractext.bound_texpr Apronext.Apol.man mem.ad e
+  | Expression (e, _) -> ApronDom.bound_texpr mem.ad e
   | LVarRef (i, _) -> VariableMem.lookup mem i VariableMem.Loc
   | GVarRef (i, _) -> VariableMem.lookup mem i VariableMem.Glob
   | BooleanExpression c -> boole_as_int c mem

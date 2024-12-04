@@ -13,6 +13,8 @@ let widen ad1 ad2 =
   let ad'' = Apronext.Apol.widening ad2 ad1 in
   join ad' ad''
 
+let meet = Apronext.Apol.meet
+
 let add_var = Apronext.Apol.add_var
 let assign_expr = Apronext.Apol.assign_texpr
 let filter = Apronext.Apol.filter_tcons
@@ -23,4 +25,13 @@ let change_env = Apronext.Apol.change_environment
 
 (*env funcs*)
 let make_env = Apronext.Environmentext.make
-let forget_env = Apronext.Environmentext.remove
+let forget_env = Apronext.Abstractext.forget_array Apronext.Apol.man
+let is_bottom = Apronext.Apol.is_bottom
+let is_top = Apronext.Apol.is_top
+let bound_texpr = Apronext.Abstractext.bound_texpr Apronext.Apol.man
+let sat_tcons = Apronext.Apol.sat_tcons
+let filter_tcons = Apronext.Apol.filter_tcons
+let top = Apronext.Apol.top
+let bottom = Apronext.Apol.bottom
+
+let lce = Apronext.Environmentext.lce
