@@ -350,7 +350,9 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
                 in
                 let _interval_idx = MS.operand_as_interval expr_idx ms in
                 let _refs =
-                  MS.table_getrefs (Int32.to_int (_table_idx.it)) _interval_idx (Some _fsign.it) ms'
+                  MS.table_getrefs
+                    (Int32.to_int _table_idx.it)
+                    _interval_idx (Some _fsign.it) ms'
                 in
                 let _targets =
                   List.map
@@ -414,12 +416,13 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
                 let computed, cache', scg =
                   List.fold_left
                     (fun (a, _, g) (a', c', g') ->
-                      (Answer.j a a', c', SCG.union g g'))
+                      ( MS.join a
+                          (MS.func_res (func_ans a') ms' (List.length _to)),
+                        c',
+                        SCG.union g g' ))
                     (Bot, cache, SCG.empty) mses_called
                 in
-                let _f_res =
-                  MS.func_res (func_ans computed) ms' (List.length _to)
-                in
+                let _f_res = computed in
                 (Cflow.call_answer p_ans _f_res, cache', scg)
             | Compare _r ->
                 (cmd_result (Ops.eval_relop _r ms) p_ans, cache, SCG.empty)
@@ -447,7 +450,10 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
             | Select _rt ->
                 (cmd_result (Instructions.select ms _rt) p_ans, cache, SCG.empty)
             | MemoryGrow ->
-                (cmd_result (Instructions.grow ms) p_ans, cache, SCG.empty)
+                ( cmd_result
+                    (*(Instructions.grow (*pops and returns stuff*)*) ms p_ans,
+                  cache,
+                  SCG.empty )
             | BrTable (_branches, _default) ->
                 let _ms' = MS.pop_operand ms in
                 let _ff body ms =
@@ -456,16 +462,16 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
                     body ms
                 in
 
-                List.fold_right
-                  (fun depth (ans, cache, scg) ->
+                List.fold_left
+                  (fun (ans, cache, scg) depth ->
                     let ans', cache', scg' =
                       Cflow.br depth _ms' p_ans cache modi ft _ff
                     in
                     (Answer.j ans ans', cache', SCG.union scg scg'))
+                  (cmd_result Bot p_ans, cache, SCG.empty)
                   (List.map
                      (fun (x : Wasm.Ast.var) -> Int32.to_int x.it)
                      (_branches @ [ _default ]))
-                  (cmd_result Bot p_ans, cache, SCG.empty)
             | _ ->
                 Wasm.Print.instr Stdlib.stdout 100 c1;
                 failwith "other commands"

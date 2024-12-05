@@ -147,7 +147,7 @@ let cmpstub_expr vm _ _ =
 
 let eqz_expr vm o =
   let l_ex = operand_to_expr vm o in
-  printer Format.print_string "\t Terst:";
+  printer Format.print_string "\t EqZ:";
   printer (Apronext.Texprext.print Format.std_formatter) l_ex;
   printer Format.print_newline ();
   BooleanExpression (Apronext.Tconsext.make l_ex Apronext.Tconsext.EQ)
@@ -209,6 +209,7 @@ let lor_expr vm _o1 _o2 =
     ( Datastructures.Abstractbyte.of_min_max _l_ex.min _l_ex.max,
       Datastructures.Abstractbyte.of_min_max _r_ex.min _r_ex.max )
   in
+  (*Printf.printf "l: %i, r:%i\n" (Array.length _labit) (Array.length _rabit);*)
   let _rmin, _rmax = Bitwisealu.l_or _labit _rabit in
   let v = I.of_int _rmin _rmax in
   Expression (const_expr vm v, _l_ex.t)

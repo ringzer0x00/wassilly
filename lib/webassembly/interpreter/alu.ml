@@ -38,12 +38,12 @@ let int_binop (o : Wasm.Ast.IntOp.binop) (ms : MS.t) =
   | Mul -> Instructions.mul ms
   | DivS -> Instructions.divs ms
   | RemS -> Instructions.rems ms
-  | DivU -> failwith "divu @ binop @ alu"
+  | DivU -> Instructions.shift_stub ms
   | And -> Instructions.l_and ms
   | Or -> Instructions.l_or ms
   | Xor -> Instructions.l_xor ms
   | Shl -> Instructions.l_shift ms
-  | RemU -> failwith "remu"
+  | RemU -> Instructions.shift_stub ms (*stub*)
   | Rotl -> Instructions.shift_stub ms (*stub*)
   | Rotr -> Instructions.shift_stub ms (*stub*)
   | ShrS -> Instructions.shift_stub ms (*stub*)
@@ -97,8 +97,8 @@ let int_cvtop (_o : Wasm.Ast.IntOp.cvtop) (ms : MS.t) =
   | ExtendSI32 (*extend to 64bit version, keep sign*) ->
       Instructions.extend_s_i32 ms
   | ExtendUI32 (*re-interpret and extend to 64bit version*) ->
-      failwith "convert to unsigned and then change type"
-  | WrapI64 (*~~*) -> failwith "i64 to i32 (reducing the value mod 2^32)"
+      Instructions.extend_u_i32 ms
+  | WrapI64 (*~~*) -> Instructions.wrap_as_i32 ms (*stub*)
   | ReinterpretFloat (*~~*) ->
       failwith "-0 as a floating point -> -2147483648"
       (*cannot use apron cast, must use bits*)

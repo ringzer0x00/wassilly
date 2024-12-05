@@ -206,17 +206,24 @@ let extend_s_i32 prec =
   let opsk' = cvtop d.ops (fun x -> convert_extend d.var x I64Type) |> push in
   return { ops = opsk'; var = d.var; mem = d.mem; tab = d.tab }
 
+let wrap_as_i32 prec =
+  prec >>= fun d ->
+  let opsk' = cvtop d.ops (fun x -> extend_stub d.var x I32Type) |> push in
+  return { ops = opsk'; var = d.var; mem = d.mem; tab = d.tab }
+
+let extend_u_i32 prec =
+  prec >>= fun d ->
+  let opsk' = cvtop d.ops (fun x -> extend_stub d.var x I64Type) |> push in
+  return { ops = opsk'; var = d.var; mem = d.mem; tab = d.tab }
+
 let demote_f64 prec =
   prec >>= fun d ->
   let opsk' = cvtop d.ops (fun x -> demote d.var x F32Type) |> push in
   return { ops = opsk'; var = d.var; mem = d.mem; tab = d.tab }
 
-let extend_u_i32 _prec = failwith "extend unsign"
-
 (*memory ops*)
-let stub_load prec t =
+let stub_load prec ty =
   prec >>= fun d ->
-  let ty = match t with _ -> Wasm.Types.I32Type in
   let opsk' = unop d.ops (fun _ -> load_stub_expr d.var ty) |> push in
   return { ops = opsk'; var = d.var; mem = d.mem; tab = d.tab }
 

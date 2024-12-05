@@ -173,6 +173,9 @@ let repl operand to_replace (mem : varmemories) =
   | Label _ as l -> l
   | Bottom -> failwith "bottom @ operand to replace"
 
+let extend_stub vm _ dt =
+  Expression (const_expr vm Apronext.Intervalext.top, dt)
+
 let convert_extend vm op dt =
   match op with
   | Expression (e, _) -> Expression (e, dt)
