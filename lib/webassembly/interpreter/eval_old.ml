@@ -366,16 +366,8 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
                     (fun x -> snd x |> fst)
                     (Memories.Table.T.bindings refs_map)
                 in
-                let targets =
-                  List.filter_map (fun x -> x) targets
-                  |> List.sort_uniq Int32.compare
-                in
-                (*Printf.printf "fun to call:\n";
-                List.iter
-                  (fun x -> Printf.printf "%i,\n" (Int32.to_int x))
-                  targets;
-                Printf.printf "==============================\n";
-                Format.print_flush ();*)
+                let targets = List.filter_map (fun x -> x) targets in
+                (*List.iter (fun x -> Printf.printf "fun to call: %i\n" (Int32.to_int x)) _targets;*)
                 List.iter (fun x -> cg := CallGraph.add_edge !cg fin x) targets;
                 let typ_ = gettype modi (Int32.to_int fsign.it) in
                 let tin, tout =
@@ -389,44 +381,51 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
                 let funcs =
                   List.map
                     (fun x -> (getfbody_wrapped modi (Int32.to_int x), x))
-                    targets
+                    targets |> List.rev
                 in
-
-                let feval ms (f, fin') cache =
-                  match f with
-                  | Memories.Instance.ImportedFunc term ->
-                      let res, calls = Spec_eval.eval term ms modi in
-                      let edges =
-                        List.map
-                          (fun (Importspec.Term.Calls x) -> (fin', x))
-                          calls
-                      in
-                      List.iter
-                        (fun (s, d) -> cg := CallGraph.add_edge !cg s d)
-                        edges;
-                      (res, cache, SCG.empty)
-                  | Memories.Instance.Func f ->
-                      let fbody, locs, (typ_idx : Wasm.Ast.var) =
-                        (f.it.body, f.it.locals, f.it.ftype)
-                      in
-                      let ms_prepped =
-                        try Cflow.prep_call ms args_val modi locs typ_idx.it
-                        with UndefinedDefBot -> Bot
-                      in
-                      fixpoint modi
-                        ((ms_prepped, fbody), true)
-                        sk cache fin' (tin, tout) Fixpoint.Answer.bot_pa step
+                let mses_called =
+                  List.map (*this needs to become a fold - 30 nov 2024*)
+                    (fun (f, fidx) ->
+                      match f with
+                      | Memories.Instance.ImportedFunc term ->
+                          let res, calls = Spec_eval.eval term ms'' modi in
+                          let edges =
+                            List.map
+                              (fun (Importspec.Term.Calls x) -> (fidx, x))
+                              calls
+                          in
+                          List.iter
+                            (fun (s, d) -> cg := CallGraph.add_edge !cg s d)
+                            edges;
+                          (res, cache, SCG.empty)
+                      | Memories.Instance.Func f ->
+                          let fbody, locs, (typ_idx : Wasm.Ast.var) =
+                            (f.it.body, f.it.locals, f.it.ftype)
+                          in
+                          let fin' = fidx in
+                          let ms_prepped =
+                            try
+                              Cflow.prep_call ms'' args_val modi locs
+                                typ_idx.it
+                            with UndefinedDefBot -> Bot
+                          in
+                          let ms''', c', g =
+                            fixpoint modi
+                              ((ms_prepped, fbody), true)
+                              sk cache fin' (tin, tout) Fixpoint.Answer.bot_pa
+                              step
+                          in
+                          (ms''', c', g))
+                    funcs
                 in
                 let computed, cache', scg =
                   List.fold_left
-                    (fun (a, c, g) (f, fidx) ->
-                      let a', c', g' = feval ms'' (f, fidx) c in
+                    (fun (a, _, g) (a', c', g') ->
                       ( MS.join a
-                          (MS.func_res (func_ans a') ms''
-                             (*used to be ms'*) (List.length tout)),
+                          (MS.func_res (func_ans a') ms''(*used to be ms'*) (List.length tout)),
                         c',
                         SCG.union g g' ))
-                    (Bot, cache, SCG.empty) funcs
+                    (Bot, cache, SCG.empty) mses_called
                 in
                 (Cflow.call_answer p_ans computed, cache', scg)
             | Compare _r ->
@@ -454,17 +453,14 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
             | Unreachable -> (cmd_result Bot p_ans, cache, SCG.empty)
             | Select _rt ->
                 (cmd_result (Instructions.select ms _rt) p_ans, cache, SCG.empty)
-            | MemorySize ->
-                (cmd_result (Instructions.mem_size ms) p_ans, cache, SCG.empty)
             | MemoryGrow ->
                 ( cmd_result
-                    (*(Instructions.grow (*pops and returns new pagesize*)*) ms
-                    p_ans,
+                    (*(Instructions.grow (*pops and returns stuff*)*) ms p_ans,
                   cache,
                   SCG.empty )
             | BrTable (_branches, _default) ->
-                let ms' = MS.pop_operand ms in
-                let fixf body ms =
+                let _ms' = MS.pop_operand ms in
+                let _ff body ms =
                   (fun body ms ->
                     fixpoint modi ((ms, body), true) sk cache fin ft p_ans step)
                     body ms
@@ -473,7 +469,7 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
                 List.fold_left
                   (fun (ans, cache, scg) depth ->
                     let ans', cache', scg' =
-                      Cflow.br depth ms' p_ans cache modi ft fixf
+                      Cflow.br depth _ms' p_ans cache modi ft _ff
                     in
                     (Answer.j ans ans', cache', SCG.union scg scg'))
                   (cmd_result Bot p_ans, cache, SCG.empty)
@@ -484,11 +480,10 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
                 Wasm.Print.instr Stdlib.stdout 100 c1;
                 failwith "other commands"
           in
-          (*
-          let res2, cache'', scg_t =*)
+          (*let res2, cache'', scg_t =*)
           Cflow.monad_step res1 cache' (fun x ->
               fixpoint modi
                 ((x.nat, c2), false)
-                sk cache' fin ft (pans_of_answer x) step)
-          (* in
-             (seq_result res1 res2, cache'', SCG.union _scg_h scg_t)*))
+                sk cache' fin ft (pans_of_answer x) step))
+(*in
+  (seq_result res1 res2, cache'', SCG.union _scg_h scg_t)*)

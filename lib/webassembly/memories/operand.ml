@@ -57,12 +57,13 @@ let max_val = function Wasm.Types.I32Type -> failwith "" | _ -> failwith ""
 let var_expr (mem : varmemories) var = Apronext.Texprext.var mem.ad.env var
 
 let ref_to_apronvar op =
+  (*05/12/2024 maybe make this an optional*)
   match op with
   | LVarRef (i, _) -> VariableMem.apronvar_of_binding i VariableMem.Loc
   | GVarRef (i, _) -> VariableMem.apronvar_of_binding i VariableMem.Glob
   | Expression _ -> Apron.Var.of_string "non-existing-variable"
   | BooleanExpression _ ->
-      failwith "ref to apronvar @ operandstack - bexpr case"
+      Apron.Var.of_string "non-existing-variable"
   | FuncRef _ -> failwith "no correspondance of funcref here"
   | Label _ -> failwith "apronvar of label lmao"
   | Bottom -> failwith "bottom @ ref"
@@ -163,15 +164,20 @@ let repl operand to_replace (mem : varmemories) =
       printer (Apronext.Texprext.print Format.std_formatter) v_expr;
       if operand = to_replace then Expression (v_expr, t) else to_replace
   | BooleanExpression bex ->
-      let exp = Apronext.Tconsext.get_texpr1 bex in
+      let exp, ty_exp =
+        (Apronext.Tconsext.get_texpr1 bex, Apronext.Tconsext.get_typ bex)
+      in
       let _v =
         Apronext.Texprext.of_expr mem.ad.env
           (replace_var_in_exp (Apronext.Texprext.to_expr exp) operand mem)
       in
-      failwith "re-construct bex', analyse stuff in bex blabla"
+      let c' = Apronext.Tconsext.make _v ty_exp in
+      BooleanExpression c'
   | FuncRef _ -> failwith "funcref @ concretize"
   | Label _ as l -> l
   | Bottom -> failwith "bottom @ operand to replace"
+
+let extend_stub vm _ dt = Expression (const_expr vm Apronext.Intervalext.top, dt)
 
 let convert_extend vm op dt =
   match op with
@@ -196,13 +202,6 @@ let round vm op rnd =
   Expression (cast_expr (const_expr vm i) at rnd, opt)
 
 let jw_operand (mem1, o1) (mem2, o2) operation =
-  (match (o1, o2) with
-  | Label l1, Label l2 ->
-      if l1 != l2 then (
-        printer Format.print_string (Label.print_label l1);
-        printer Format.print_string "\n";
-        printer Format.print_string (Label.print_label l2))
-  | _ -> ());
   if compare o1 o2 = 0 then o1
   else
     let t, _ = (type_of_operand o1, type_of_operand o2) in

@@ -58,4 +58,6 @@ let eval_storeop ({ ty; align; offset; pack } : Wasm.Ast.storeop) _ms =
       | Wasm.Types.I64Type -> (
           try Instructions.store_i64 _ms offset with Invalid_argument _ -> Bot)
       | Wasm.Types.F32Type -> failwith "store f32"
-      | Wasm.Types.F64Type -> failwith "store f64")
+      | Wasm.Types.F64Type -> (
+          try Instructions.store_stub _ms offset
+          with Invalid_argument _ -> Bot))

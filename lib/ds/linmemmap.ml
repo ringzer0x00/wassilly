@@ -75,17 +75,17 @@ module LimitedLinearMemory = struct
   let widen = join
 
   let le m1 m2 =
-    if Int32.compare m1.min m2.min <= 0 && Int32.compare m1.max m2.max <= 0 then
+    if m1.min <= m2.min && m1.max <= m2.max then
       (fun m1 m2 -> LinearMemory.le m1.m m2.m) m1 m2
     else false
 
   let leq m1 m2 =
-    if Int32.compare m1.min m2.min <= 0 && Int32.compare m1.max m2.max <= 0 then
+    if m1.min <= m2.min && m1.max <= m2.max then
       (fun m1 m2 -> LinearMemory.leq m1.m m2.m) m1 m2
     else false
 
   let eq m1 m2 =
-    if Int32.compare m1.min m2.min = 0 && Int32.compare m1.max m2.max = 0 then
+    if m1.min = m2.min && m1.max = m2.max then
       (fun m1 m2 -> LinearMemory.eq m1.m m2.m) m1 m2
     else false
 

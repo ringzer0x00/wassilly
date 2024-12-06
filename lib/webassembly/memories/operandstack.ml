@@ -6,6 +6,8 @@ open Operand
 type t = operand list
 type varmemories = VariableMem.t
 
+let printer = Utilities.Printer.print
+
 let print_stack s =
   Format.printf "OPStack:[";
   List.iter (fun x -> print_operand x) s;
@@ -57,6 +59,10 @@ let ival_widen (smaller : Apron.Interval.t) (bigger : Apron.Interval.t) =
     Apron.Interval.of_scalar lower' upper'
 
 let join (m1, s1) (m2, s2) =
+  (*let s =
+      Printf.sprintf "Lenght1:%i;Lenght2:%i;\n" (List.length s1) (List.length s2)
+    in
+    printer Format.print_string s;*)
   List.map2 (fun x y -> Operand.jw_operand (m1, x) (m2, y) ival_join) s1 s2
 
 let widen (m1, s1) (m2, s2) =

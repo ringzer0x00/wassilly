@@ -147,7 +147,7 @@ let cmpstub_expr vm _ _ =
 
 let eqz_expr vm o =
   let l_ex = operand_to_expr vm o in
-  printer Format.print_string "\t Terst:";
+  printer Format.print_string "\t EqZ:";
   printer (Apronext.Texprext.print Format.std_formatter) l_ex;
   printer Format.print_newline ();
   BooleanExpression (Apronext.Tconsext.make l_ex Apronext.Tconsext.EQ)
@@ -209,6 +209,7 @@ let lor_expr vm _o1 _o2 =
     ( Datastructures.Abstractbyte.of_min_max _l_ex.min _l_ex.max,
       Datastructures.Abstractbyte.of_min_max _r_ex.min _r_ex.max )
   in
+  (*Printf.printf "l: %i, r:%i\n" (Array.length _labit) (Array.length _rabit);*)
   let _rmin, _rmax = Bitwisealu.l_or _labit _rabit in
   let v = I.of_int _rmin _rmax in
   Expression (const_expr vm v, _l_ex.t)
@@ -310,6 +311,7 @@ let load_standard vm mem o t (offset_expl : int32) =
     | F64Type ->
         Utilities.Conversions.float64_binary_to_decimal b |> Float.to_string
   in
+
   let c = Memories.Operand.concretize vm o in
   printer Format.print_string "IntervalC:";
   printer (Apronext.Intervalext.print Format.std_formatter) c;
@@ -377,11 +379,18 @@ let load_standard vm mem o t (offset_expl : int32) =
           (fun r x -> Datastructures.Abstractbyte.join r x)
           (List.nth reads' 0) reads'
       in
+      Array.iter (fun b -> printer Bitwisealu.Bit.print b) read;
+      let mpqf_of_string' s =
+        printer Format.print_string "\n\n~~~~";
+        printer Format.print_string s;
+        printer Format.print_string "\n\n~~~~";
+        if s = "0." then Mpqf.of_int 0 else Mpqf.of_string s
+      in
       let lim1, lim2 =
         (*BUG(29 aug-2024): when all top, the values produced are -1;0 (all 1s and all 0s.)
           as_min_max has to work differently to work correctly*)
         Datastructures.Abstractbyte.as_int_arrays ~signed:true read
-        |> tappl Array.to_list |> tappl conv_f |> tappl Mpqf.of_string
+        |> tappl Array.to_list |> tappl conv_f |> tappl mpqf_of_string'
         |> tappl S.of_mpqf
       in
       let i =
@@ -476,3 +485,8 @@ let store_standard _vm _mem _addr _val _t (_offset_expl : int32) =
     in
     let mem' = List.fold_left (fun x _a -> wf _b _a x) _mem _addrs in
     mem'
+
+let memsize vm mem =
+  let s = Memories.Linearmem.size mem |> Int32.to_int in
+  let ival = I.of_scalar (S.of_int s) (S.of_int s) in
+  Expression (const_expr vm ival, I32Type)

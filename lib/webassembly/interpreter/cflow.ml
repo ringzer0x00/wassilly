@@ -103,10 +103,7 @@ let prep_call ms vals mod_ locs typ_idx =
     t.it
   in
   let typ_ = gettype mod_ (Int32.to_int typ_idx) in
-  let _ti, _to =
-    (*list * list*)
-    match typ_ with FuncType (_ti, _to) -> (_ti, _to)
-  in
+  let _ti, _to = match typ_ with FuncType (_ti, _to) -> (_ti, _to) in
   let bindings_input =
     List.mapi
       (fun i x : Memories.Variablemem.MapKey.t ->
@@ -194,16 +191,16 @@ let br depth ms p_ans cache modul_ ft fixf =
         | Loop (_, b) -> b
         | _ -> failwith "loop in br if no loop"
       in
-      fixf b ms''' true
+      fixf b ms'''
   | None ->
       let _vals, ms' =
         ( MS.peek_n_operand (List.length _tout) ms,
           MS.pop_n_operand (List.length _tout) ms )
       in
-      let ms'' =
+      (*let ms'' =
         if not (MS.is_lsk_empty ms') then MS.pop_n_labels ms' depth else ms'
-      in
-      let ms''' = MS.push_operand _vals ms'' in
+      in*)
+      let ms''' = MS.update_operandstack _vals ms' in
       ( Def { nat = Bot; br = p_ans.p_br; return = MS.join p_ans.p_return ms''' },
         cache,
         SCG.SCC.empty )

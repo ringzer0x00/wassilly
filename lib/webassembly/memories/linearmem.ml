@@ -64,16 +64,6 @@ let write_to_mem b o m =
            m mapped)
   | T _ -> m
 
-let join m1 m2 =
-  match (m1, m2) with
-  | M m, T t | T t, M m ->
-      T { min = Int32.min m.min t.min; max = Int32.max m.max t.max }
-  | T t1, T t2 ->
-      T { min = Int32.min t1.min t2.min; max = Int32.max t1.max t2.max }
-  | M m1, M m2 -> M (LinMem.join m1 m2)
-
-let widen = join
-
 let leq m1 m2 =
   match (m1, m2) with
   | T t1, T t2 -> t1.min = t2.min && t1.max <= t2.max
@@ -88,6 +78,26 @@ let eq m1 m2 =
   | M m1, M m2 -> LinMem.eq m1 m2
 
 let le = LinMem.le
+
+let join m1 m2 =
+  match (m1, m2) with
+  | M m, T t | T t, M m ->
+      T { min = Int32.min m.min t.min; max = Int32.max m.max t.max }
+  | T t1, T t2 ->
+      T { min = Int32.min t1.min t2.min; max = Int32.max t1.max t2.max }
+  | M m1, M m2 -> M (LinMem.join m1 m2)
+
+let widen m1 m2 =
+  if m1 = m2 then m1
+  else
+    match (m1, m2) with
+    | M m, T t | T t, M m ->
+        T { min = Int32.min m.min t.min; max = Int32.max m.max t.max }
+    | T t1, T t2 ->
+        T { min = Int32.min t1.min t2.min; max = Int32.max t1.max t2.max }
+    | M m1, M m2 ->
+        T { min = Int32.min m1.min m2.min; max = Int32.max m1.max m2.max }
+
 let read _ _ _ = failwith "read m-pos for n bytes"
 
 let printmem (mem : t) =
