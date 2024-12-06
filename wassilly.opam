@@ -10,8 +10,8 @@ homepage: "https://github.com/ringzer0x00/wassilly"
 doc: "https://there/is/no/documentation"
 bug-reports: "https://github.com/ringzer0x00/wassilly/issues"
 depends: [
-  "ocaml" {>= "5.0.0+flambda"}
-  "ocaml-option-flambda"
+  "ocaml"
+  "ocaml-base-compiler"
   "dune" {>= "3.12"}
   "wasm"
   "apron" {< "0.9.15"}

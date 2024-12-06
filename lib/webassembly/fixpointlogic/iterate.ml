@@ -34,4 +34,7 @@ let rec iterate funcs call stack cache1 fin ft pres evalf =
     else (
       printer Format.print_string "REMOVED CALL WIDENED FROM SCG\n";
       (valWidened, cache3, SCG.diff scg (SCG.singleton callWidened)))
-  else (valNew, cache2, scg)
+  else (
+    printer Format.print_string
+      "########################### call does not belong in SCG;\n";
+    (valNew, cache2, scg))

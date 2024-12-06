@@ -366,13 +366,16 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
                     (fun x -> snd x |> fst)
                     (Memories.Table.T.bindings refs_map)
                 in
-                let targets = List.filter_map (fun x -> x) targets in
-                Printf.printf "fun to call:\n";
+                let targets =
+                  List.filter_map (fun x -> x) targets
+                  |> List.sort_uniq Int32.compare
+                in
+                (*Printf.printf "fun to call:\n";
                 List.iter
                   (fun x -> Printf.printf "%i,\n" (Int32.to_int x))
                   targets;
                 Printf.printf "==============================\n";
-                Format.print_flush ();
+                Format.print_flush ();*)
                 List.iter (fun x -> cg := CallGraph.add_edge !cg fin x) targets;
                 let typ_ = gettype modi (Int32.to_int fsign.it) in
                 let tin, tout =
@@ -387,7 +390,6 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
                   List.map
                     (fun x -> (getfbody_wrapped modi (Int32.to_int x), x))
                     targets
-                  |> List.rev
                 in
 
                 let feval ms (f, fin') cache =
@@ -482,10 +484,11 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
                 Wasm.Print.instr Stdlib.stdout 100 c1;
                 failwith "other commands"
           in
-          (*let res2, cache'', scg_t =*)
+          (*
+          let res2, cache'', scg_t =*)
           Cflow.monad_step res1 cache' (fun x ->
               fixpoint modi
                 ((x.nat, c2), false)
-                sk cache' fin ft (pans_of_answer x) step))
-(*in
-  (seq_result res1 res2, cache'', SCG.union _scg_h scg_t)*)
+                sk cache' fin ft (pans_of_answer x) step)
+          (* in
+             (seq_result res1 res2, cache'', SCG.union _scg_h scg_t)*))
