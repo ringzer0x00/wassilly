@@ -105,6 +105,7 @@ let callgraph_analysis' fn _spec_path =
         match x.it.edesc.it with FuncExport v -> Some v | _ -> None)
       mod_.it.exports
   in
+  (*let entrypoints = [ List.nth entrypoints 2 ](*ricordalo*) in*)
   let r_start, c, _ =
     i >>=? fun _ ->
     Eval.fixpoint minst

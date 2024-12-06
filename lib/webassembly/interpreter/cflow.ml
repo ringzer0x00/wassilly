@@ -197,10 +197,10 @@ let br depth ms p_ans cache modul_ ft fixf =
         ( MS.peek_n_operand (List.length _tout) ms,
           MS.pop_n_operand (List.length _tout) ms )
       in
-      let ms'' =
+      (*let ms'' =
         if not (MS.is_lsk_empty ms') then MS.pop_n_labels ms' depth else ms'
-      in
-      let ms''' = MS.push_operand _vals ms'' in
+      in*)
+      let ms''' = MS.update_operandstack _vals ms' in
       ( Def { nat = Bot; br = p_ans.p_br; return = MS.join p_ans.p_return ms''' },
         cache,
         SCG.SCC.empty )

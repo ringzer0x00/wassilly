@@ -256,13 +256,10 @@ let load_f32 prec offset =
   in
   return { ops = opsk'; var = d.var; mem = d.mem; tab = d.tab }
 
-let load_f64 prec offset =
+let load_f64 prec _offset =
   prec >>= fun d ->
-  let opsk' =
-    unop d.ops (fun x -> load_standard d.var d.mem x Wasm.Types.F64Type offset)
-    |> push
-  in
-  return { ops = opsk'; var = d.var; mem = d.mem; tab = d.tab }
+    let opsk' = unop d.ops (fun _ -> load_stub_expr d.var Wasm.Types.F64Type) |> push in
+    return { ops = opsk'; var = d.var; mem = d.mem; tab = d.tab }
 
 let store_stub prec _ =
   prec >>= fun d ->
@@ -298,6 +295,16 @@ let store_i64 prec offset =
     return { ops = opsk'; var = d.var; mem = mem'; tab = d.tab }
   with NoValidWritesExn -> Bot
 
+let store_f64 prec offset =
+  prec >>= fun d ->
+  try
+    let mem', opsk' =
+      storeop d.ops (fun x y ->
+          store_standard d.var d.mem x y Wasm.Types.F64Type offset)
+    in
+    return { ops = opsk'; var = d.var; mem = mem'; tab = d.tab }
+  with NoValidWritesExn -> Bot
+
 let select prec rt =
   prec >>= fun d ->
   let opsk' = ternop d.ops (fun x y z -> select_expr d.var x y z rt) |> push in
@@ -307,3 +314,9 @@ let grow prec =
   prec >>= fun d ->
   let mem' = Memories.Linearmem.grow d.mem in
   return { ops = d.ops; var = d.var; mem = mem'; tab = d.tab }
+
+let mem_size prec =
+  prec >>= fun d ->
+  let s = memsize d.var d.mem in
+  let ops' = push (s, d.ops) in
+  return { ops = ops'; var = d.var; mem = d.mem; tab = d.tab }
