@@ -367,7 +367,12 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
                     (Memories.Table.T.bindings refs_map)
                 in
                 let targets = List.filter_map (fun x -> x) targets in
-                (*List.iter (fun x -> Printf.printf "fun to call: %i\n" (Int32.to_int x)) _targets;*)
+                Printf.printf "fun to call:\n";
+                List.iter
+                  (fun x -> Printf.printf "%i,\n" (Int32.to_int x))
+                  targets;
+                Printf.printf "==============================\n";
+                Format.print_flush ();
                 List.iter (fun x -> cg := CallGraph.add_edge !cg fin x) targets;
                 let typ_ = gettype modi (Int32.to_int fsign.it) in
                 let tin, tout =
@@ -447,10 +452,12 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
             | Unreachable -> (cmd_result Bot p_ans, cache, SCG.empty)
             | Select _rt ->
                 (cmd_result (Instructions.select ms _rt) p_ans, cache, SCG.empty)
-            | MemorySize -> (cmd_result (Instructions.mem_size ms) p_ans, cache, SCG.empty)
+            | MemorySize ->
+                (cmd_result (Instructions.mem_size ms) p_ans, cache, SCG.empty)
             | MemoryGrow ->
                 ( cmd_result
-                    (*(Instructions.grow (*pops and returns new pagesize*)*) ms p_ans,
+                    (*(Instructions.grow (*pops and returns new pagesize*)*) ms
+                    p_ans,
                   cache,
                   SCG.empty )
             | BrTable (_branches, _default) ->
