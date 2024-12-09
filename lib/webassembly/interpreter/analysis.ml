@@ -105,7 +105,6 @@ let callgraph_analysis' fn _spec_path =
         match x.it.edesc.it with FuncExport v -> Some v | _ -> None)
       mod_.it.exports
   in
-  (*let entrypoints = [ List.nth entrypoints 2 ](*ricordalo*) in*)
   let r_start, c, _ =
     i >>=? fun _ ->
     Eval.fixpoint minst
@@ -129,8 +128,11 @@ let callgraph_analysis' fn _spec_path =
           ((call_ms, fb), true)
           Eval.Stack.empty cache y.it (t_in, _t_out) Eval.MA.bot_pa Eval.step
       in
-      print_string "fattooooooh\n";
-      Format.print_flush ();
+      (*let oc = open_out_gen [Open_creat; Open_text; Open_append] 0o666 "filename.txt" in
+      Printf.fprintf oc "Finito!\n";
+      flush stdout;
+      close_out oc;
+      Format.print_flush ();*)
       (!Eval.cg, cache'))
     (!Eval.cg, c) entrypoints
   |> fst

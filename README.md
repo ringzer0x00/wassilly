@@ -7,4 +7,3 @@ For installation instruction see [INSTALL.md](https://github.com/ringzer0x00/was
 
 To run the evaluation benchmarks run `dune test`.
 The testfiles of interest are `cg_open.ml` and `cg_closed.ml`.
-Note that the test `cpp-vtable-layout-source-type-info` will take a long time (and memory) due to inefficiencies in how the linear memory is represented.

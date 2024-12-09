@@ -203,7 +203,7 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
                 in
                 let ms' = Cflow.enter_label _lab ms modi in
                 let a, c, g =
-                  fixpoint modi ((ms', lbody), false) sk cache fin ft p_ans step
+                  fixpoint modi ((ms', lbody), true) sk cache fin ft p_ans step
                 in
                 (Cflow.loop_result a [ c1 ], c, g)
             | If (_blocktype, _then, _else) ->
@@ -370,12 +370,12 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
                   List.filter_map (fun x -> x) targets
                   |> List.sort_uniq Int32.compare
                 in
-                (*Printf.printf "fun to call:\n";
+                Printf.printf "fun to call:\n";
                 List.iter
                   (fun x -> Printf.printf "%i,\n" (Int32.to_int x))
                   targets;
                 Printf.printf "==============================\n";
-                Format.print_flush ();*)
+                Format.print_flush ();
                 List.iter (fun x -> cg := CallGraph.add_edge !cg fin x) targets;
                 let typ_ = gettype modi (Int32.to_int fsign.it) in
                 let tin, tout =
