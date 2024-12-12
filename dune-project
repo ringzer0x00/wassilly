@@ -23,7 +23,6 @@
  (description "Call graph extraction for the WebAssembly language.")
  (depends
   ocaml
-  ocaml-base-compiler
   dune
   wasm
   (apron
