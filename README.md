@@ -1,8 +1,7 @@
 # wassilly
 WebAssembly Ain't So SILLY
 
-Artifact for the paper `Hybrid Call Graph Analysis for WebAssembly: Combining Abstract Interpretation and Specification in the Pursue of Soundness` (under review) by Mattia Paccamiccio, Franco Raimondi, Michele Loreti. 
-You can find the paper's pre-print [HERE](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=5110464).
+Artifact for the paper `Hybrid Call Graph Analysis for WebAssembly: Combining Abstract Interpretation and Specification in the Pursuit of Soundness`.
 
 For installation instructions see [INSTALL.md](https://github.com/ringzer0x00/wassilly/blob/master/INSTALL.md).
 
