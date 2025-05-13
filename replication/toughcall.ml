@@ -19,32 +19,34 @@ let p path spec =
   in
   (vertices g, edges g)
 
-let tc_aux tcn spec gt =
-  Format.printf "Benchmark[%s]:\n" tcn;
+let _tc_aux tcn spec gt =
+  Format.printf "[%s]:\t\t\t" tcn;
   let v, e = p tcn spec in
   let vgt, egt = gt in
   let s = Soundcomplete.sound e egt v vgt in
-  if not s then (
-    Soundcomplete.EdgesSet.iter
-      (fun (f, t) ->
-        Printf.printf "%i -> %i\n" (Int32.to_int f) (Int32.to_int t))
-      e;
-    Soundcomplete.VerticesSet.iter
-      (fun v -> Printf.printf "%i,\n" (Int32.to_int v))
-      v);
-  if not s then (
-    Soundcomplete.EdgesSet.iter
-      (fun (f, t) ->
-        Printf.printf "%i -> %i\n" (Int32.to_int f) (Int32.to_int t))
-      egt;
-    Soundcomplete.VerticesSet.iter
-      (fun v -> Printf.printf "%i,\n" (Int32.to_int v))
-      vgt);
   let c = Soundcomplete.complete e egt v vgt in
   let e = Soundcomplete.exact e egt v vgt in
   Format.printf "\tSound:%b; Complete:%b; Exact:%b\n" s c e;
   Format.print_flush ();
   (s, c, e)
+
+let tc_aux tcn spec gt =
+  let v, e = p tcn spec in
+  let vgt, egt = gt in
+  let s = Soundcomplete.sound e egt v vgt in
+  let c = Soundcomplete.complete e egt v vgt in
+  let ex = Soundcomplete.exact e egt v vgt in
+
+  (* Stampa intestazione se serve – può essere spostata all'esterno per stamparla una sola volta *)
+  (* Format.printf "%-20s | %-7s | %-9s | %-6s\n" "Test Case" "Sound" "Complete" "Exact"; *)
+  (* Format.printf "%s\n" (String.make 52 '-'); *)
+
+  (* Stampa tabellare *)
+  let topbot x = if x then "T" else "F" in
+  let s_s, c_s, ex_s = (topbot s, topbot c, topbot ex) in
+  Format.printf "%-55s | %-1s | %-1s | %-1s\n" tcn s_s c_s ex_s;
+  Format.print_flush ();
+  (s, c, ex)
 
 open Ground_truths
 
@@ -55,6 +57,7 @@ let trd (_, _, a) = a
 let%test "Soundness" =
   Format.print_flush ();
   Format.print_newline ();
+  Format.printf "%-55s | %-1s | %-1s | %-1s\n" "TestCase" "S" "C" "E";
   TestMap.for_all
     (fun name (gt, hasSpec) -> tc_aux name hasSpec gt |> fst)
     gts_map
@@ -68,36 +71,3 @@ let%test "exact" =
   TestMap.for_all
     (fun name (gt, hasSpec) -> tc_aux name hasSpec gt |> trd)
     gts_map*)
-(*
-let%test "entry-point-start" =
-  let tcn = "entry-point-start" in
-  tc_aux tcn None entry_point_start
-
-let%test "direct-call-simple" =
-  let tcn = "direct-call-simple" in
-  tc_aux tcn None direct_call_simple
-
-let%test "direct-call-transitive" =
-  let tcn = "direct-call-transitive" in
-  tc_aux tcn None direct_call_transitive
-
-let%test "indirect-call-index-expr-memory-mutable" =
-  let tcn = "indirect-call-index-expr-memory-mutable" in
-  tc_aux tcn None indirect_call_index_expr_memory_mutable
-
-let%test "indirect-call-func-in-table" =
-  let tcn = "indirect-call-index-expr-memory-mutable" in
-  tc_aux tcn None indirect_call_index_expr_memory_mutable
-
-let%test "indirect-call-index-expr-const" =
-  let tcn = "indirect-call-index-expr-const" in
-  tc_aux tcn None indirect_call_index_expr_const
-
-let%test "indirect-call-index-expr-interprocedural-param" =
-  let tcn = "indirect-call-index-expr-interprocedural-param" in
-  tc_aux tcn None indirect_call_index_expr_interprocedural_param
-
-let%test "indirect-call-index-expr-local" =
-  let tcn = "indirect-call-index-expr-local" in
-  tc_aux tcn None indirect_call_index_expr_local
-*)
