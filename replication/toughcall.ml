@@ -57,7 +57,12 @@ let trd (_, _, a) = a
 let%test "Soundness" =
   Format.print_flush ();
   Format.print_newline ();
+  let bold, endbold = "\027[1m", "\027[0m" in
+  Format.printf "%s" bold;
   Format.printf "%-55s | %-1s | %-1s | %-1s\n" "TestCase" "S" "C" "E";
+  Format.printf "--------------------------------------------------------------------\n";
+  Format.printf "%s" endbold;
+
   TestMap.for_all
     (fun name (gt, hasSpec) -> tc_aux name hasSpec gt |> fst)
     gts_map
