@@ -24,9 +24,25 @@ let tc_aux tcn spec gt =
   let v, e = p tcn spec in
   let vgt, egt = gt in
   let s = Soundcomplete.sound e egt v vgt in
+  if not s then (
+    Soundcomplete.EdgesSet.iter
+      (fun (f, t) ->
+        Printf.printf "%i -> %i\n" (Int32.to_int f) (Int32.to_int t))
+      e;
+    Soundcomplete.VerticesSet.iter
+      (fun v -> Printf.printf "%i,\n" (Int32.to_int v))
+      v);
+  if not s then (
+    Soundcomplete.EdgesSet.iter
+      (fun (f, t) ->
+        Printf.printf "%i -> %i\n" (Int32.to_int f) (Int32.to_int t))
+      egt;
+    Soundcomplete.VerticesSet.iter
+      (fun v -> Printf.printf "%i,\n" (Int32.to_int v))
+      vgt);
   let c = Soundcomplete.complete e egt v vgt in
   let e = Soundcomplete.exact e egt v vgt in
-  Format.printf "\tSound:%b; Complete:%b; Exact:%b\n\n" s c e;
+  Format.printf "\tSound:%b; Complete:%b; Exact:%b\n" s c e;
   Format.print_flush ();
   (s, c, e)
 
@@ -36,7 +52,9 @@ let fst (a, _, _) = a
 let snd (_, a, _) = a
 let trd (_, _, a) = a
 
-let%test "soundness" =
+let%test "Soundness" =
+  Format.print_flush ();
+  Format.print_newline ();
   TestMap.for_all
     (fun name (gt, hasSpec) -> tc_aux name hasSpec gt |> fst)
     gts_map
