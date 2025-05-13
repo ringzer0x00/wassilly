@@ -21,11 +21,11 @@ let gts_comprehensive_closed =
     ( "host-callbacks-exports",
       ([ 0; 1; 2; 3; 4; 5 ], [ (0, 2); (1, 0); (2, 4); (3, 5) ]),
       Some "" );
-    (*host-reachable-table-export*)
-    (*host-reachable-table-import*)
-    (*host-code-table-mutable*)
-    (*table-init-offset-imported-global*)
-    (*memory-init-offset-imported-global*)
+    ("host-reachable-table-export", ([ 0; 1; 2 ], [ (0, 2); (1, 0) ]), Some "");
+    ("host-reachable-table-import", ([ 0; 1; 2 ], [ (0, 2); (1, 0) ]), Some "");
+    ("host-code-table-mutable", ([ 0; 1; 2 ], [ (0, 2) ]), Some "");
+    ("table-init-offset-imported-global", ([ 0; 1 ], [ (0, 1) ]), Some "");
+    ("memory-init-offset-imported-global", ([ 0; 1 ], [ (0, 1) ]), Some "");
     ("indirect-call-func-in-table", ([ 0; 1 ], [ (0, 1) ]), None);
     ("indirect-call-type-based", ([ 0; 1 ], [ (0, 1) ]), None);
     ("indirect-call-index-expr-const", ([ 0; 1 ], [ (0, 1) ]), None);
