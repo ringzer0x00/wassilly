@@ -6,11 +6,13 @@ Install Opam dependencies, apply your modifications, then re-compile it with
 
 and run it with `./_build/default/bin/main.exe [...]`.
 
+Other ways include re-install the modified package with `opam install .` but, as it requires a bit more nuance, the relevant Opam documentation should be consulted.
+
 ## Project structure
 
 ``.``  
-``├── bin`` -> **program entry point**  
-``├── lib``  
+``├── bin`` -> **analyzer front-end**  
+``├── lib`` -> **libraries**  
 ``│   ├── ds`` -> **data structures**  
 ``│   ├── importspec`` -> **specification engine language and parser**  
 ``│   ├── utilities`` -> **helper functions and configuration**  
