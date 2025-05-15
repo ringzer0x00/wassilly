@@ -3,6 +3,8 @@ WebAssembly Ain't So SILLY
 
 Artifact for the paper `Hybrid Call Graph Analysis for WebAssembly: Combining Abstract Interpretation and Specification in the Pursuit of Soundness`.
 
+This artifact is divided in two parts: the [tool](./wassilly/) and the [proofs](./wassilly-proofs/).
+
 - For instructions regarding the replication of experiments and proofs, see [Replication](#replication).
 - For instructions on general usage of `wassilly`, see [...](#development).
 - For instructions on developing on top of `wassilly`, see [Development](#development).
@@ -33,7 +35,7 @@ To build the container dedicated to the proofs and type-check them, run:
 
 `make proofs`
 
-from the root directory. Again, this **might** require root privileges. It will build a dedicated Docker container with the LEAN toolchain, and compile the proofs. A green or red log will show, stating the success or fail of the proof.
+from the root directory. Again, this **might** require root privileges. It will build a dedicated Docker container with the LEAN proof assistant toolchain, and type-check the proofs. A green or red log will show, stating the success or fail of the proof.
 
 *This build is faster (**~1.5 minute**).*
 
