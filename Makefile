@@ -1,11 +1,10 @@
-hello:
-	echo "Hello, World"
+default:
+	@echo "Select an option."
+	@echo -e "i.e.: run \033[1mmake benchmarks\033[0m or \033[1mmake proofs\033[0m."
+	exit 1
 
-dockerbuild:
-	docker build . -t wassilly
+benchmarks:
+	make -C wassilly/ wassilly-replicate
 
-dockerrun:
-	docker run --platform linux/amd64 -it --rm wassilly
-
-sas-replication:
-	dune runtest replication
+proofs:
+	make -C wassilly-proofs/ all

@@ -43,6 +43,9 @@ let fixpoint _module (call, ifb) stack cache fin ft pres stepf =
       match ifb with
       | false -> stepf _module call stack cache fin ft pres
       | true -> (
+          let stack, call, _stackMod =
+            Fixpoint.Stackwidening.wStack stack call
+          in
           printer Format.print_string "{Fixpoint computation}: ";
           match Cache.call_in_cache call cache with
           | Some cached -> (
@@ -53,7 +56,7 @@ let fixpoint _module (call, ifb) stack cache fin ft pres stepf =
               | Cache.Unstable -> (resCached, cache, SCG.singleton call))
           | None -> (
               printer Format.print_string "NOT Cached: ";
-              match Stack.call_in_stack call stack with
+              match Stack.call_in_stack call stack && not _stackMod with
               | true ->
                   printer Format.print_string "return BOT\n";
                   (Bot, cache, SCG.singleton call)
@@ -327,7 +330,8 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
                       let typ_ = gettype modi (Int32.to_int typ_idx.it) in
                       let _ti, _to =
                         (*list * list*)
-                        match typ_ with FuncType (_ti, _to) -> (_ti, _to)
+                        match typ_ with
+                        | FuncType (_ti, _to) -> (_ti, _to)
                       in
                       let _vals, ms' =
                         ( MS.peek_n_operand (List.length _ti) ms,
@@ -374,7 +378,8 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
                 let typ_ = gettype modi (Int32.to_int fsign.it) in
                 let tin, tout =
                   (*list * list*)
-                  match typ_ with FuncType (_ti, _to) -> (_ti, _to)
+                  match typ_ with
+                  | FuncType (_ti, _to) -> (_ti, _to)
                 in
                 let args_val, ms'' =
                   ( MS.peek_n_operand (List.length tin) ms',
@@ -485,4 +490,5 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
                 ((x.nat, c2), false)
                 sk cache' fin ft (pans_of_answer x) step)
           (* in
-             (seq_result res1 res2, cache'', SCG.union _scg_h scg_t)*))
+             (seq_result res1 res2, cache'', SCG.union _scg_h scg_t)*)
+      )
