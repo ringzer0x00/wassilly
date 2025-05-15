@@ -3,12 +3,12 @@ WebAssembly Ain't So SILLY
 
 Artifact for the paper `Hybrid Call Graph Analysis for WebAssembly: Combining Abstract Interpretation and Specification in the Pursuit of Soundness`.
 
-This artifact is divided in two parts: the [tool](./wassilly/) and the [proofs](./wassilly-proofs/).
+This artifact is divided in two parts: the [**tool**](./wassilly/) and the [**proofs**](./wassilly-proofs/) backing it.
 
 - For instructions regarding the replication of experiments and proofs, see [Replication](#replication).
-- For instructions on general usage of `wassilly`, see [...](#development).
+- For instructions on general usage of `wassilly`, see [`./wassilly/README.md`](./wassilly/README.md).
 - For instructions on developing on top of `wassilly`, see [Development](#development).
-- For installation instructions see [./wassilly/INSTALL.md](./wassilly/INSTALL.md).
+- For installation instructions see [`./wassilly/INSTALL.md`](./wassilly/INSTALL.md).
 
 # Replication
 Dependencies: `docker`, `make`.
