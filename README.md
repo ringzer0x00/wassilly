@@ -26,9 +26,17 @@ To run the benchmarks from the paper:
 
 from the root directory. This **might** require root privileges. It will build a dedicated Docker container with the OCaml toolchain, libraries etc. and run the replication tests. For better visualization of the table of experiments it is suggested to expand the terminal.
 
+#### How to read the experiments
 You can find 4 columns in the output: TestCase, S, C, E representing, respectively: the benchmark name (benchmarks from *Lehmann et al.* referenced in the paper), **S** for Soundness, **C** for Completeness, and **E** for Exact, as in both Sound and Complete analysis results.
 
+The ground truth for the reachable call graph can be found (encoded) in [`./wassilly/replication/ground_truths.ml`](./wassilly/replication/ground_truths.ml)
+and the original ones provided in *Lehman et al.* in [`./wassilly/replication/microbenchmarks-ground-truths.json`](./wassilly/replication/microbenchmarks-ground-truth.json)
+
+---
+
 *The build needs some time to finish (**~10-15 minutes**) due to project dependencies, so I suggest you grab some coffee, listen to some music, or maybe play with your dog or cat!*
+
+---
 
 ### Run mechanized proofs
 To build the container dedicated to the proofs and type-check them, run:
@@ -37,7 +45,10 @@ To build the container dedicated to the proofs and type-check them, run:
 
 from the root directory. Again, this **might** require root privileges. It will build a dedicated Docker container with the LEAN proof assistant toolchain, and type-check the proofs. A green or red log will show, stating the success or fail of the proof.
 
+---
+
 *This build is faster (**~1.5 minute**).*
 
+---
 # Development
 See [./wassilly/DEV.md](./wassilly/DEV.md).
