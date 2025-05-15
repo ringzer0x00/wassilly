@@ -1,5 +1,11 @@
 # Development of `wassilly`
 
+Install Opam dependencies, apply your modifications, then re-compile it with 
+
+`dune build`
+
+and run it with `./_build/default/bin/main.exe [...]`.
+
 ## Project structure
 
 ``.``  

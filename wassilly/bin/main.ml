@@ -1,4 +1,4 @@
-let usage_msg = "wassilly <file1> [-v | -o <output>]"
+let usage_msg = "wassilly <file.wasm> [-v | -o <graph.dot> | -s <specfile.silly>]"
 let verbose = Utilities.Conf.debug
 let input_files = ref ""
 let specfile = ref ""
@@ -7,9 +7,9 @@ let anon_fun filename = input_files := filename
 
 let speclist =
   [
-    ("-v", Arg.Set verbose, "Output debug information");
-    ("-s", Arg.Set_string specfile, "Specfile");
-    ("-o", Arg.Set_string output_file, "Set output file name");
+    ("-v", Arg.Set verbose, "(verbose) Output debug information");
+    ("-s", Arg.Set_string specfile, "(spec) path to specification file");
+    ("-o", Arg.Set_string output_file, "(output) Set output file name");
   ]
 
 let () =
