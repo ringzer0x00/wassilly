@@ -123,16 +123,17 @@ let callgraph_analysis' fn _spec_path =
         r_start >>=? fun d ->
         Cflow.prep_call d.return (unbound_input t_in d.return) minst locs ft.it
       in
-      let _, cache', _ =
+      let _, _, _ =
         Eval.fixpoint minst
           ((call_ms, fb), true)
           Eval.Stack.empty cache y.it (t_in, _t_out) Eval.MA.bot_pa Eval.step
       in
-      (*let oc = open_out_gen [Open_creat; Open_text; Open_append] 0o666 "filename.txt" in
-      Printf.fprintf oc "Finito!\n";
-      flush stdout;
-      close_out oc;
+      (*Printf.printf "Finito!\n";
       Format.print_flush ();*)
-      (!Eval.cg, cache'))
+      (*let oc = open_out_gen [Open_creat; Open_text; Open_append] 0o666 "filename.txt" in
+      Format.print_flush ();
+      flush stdout;
+      close_out oc;*)
+      (!Eval.cg, cache))
     (!Eval.cg, c) entrypoints
   |> fst
