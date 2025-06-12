@@ -14,7 +14,7 @@ module TestMap = Map.Make (String)
 let gts_comprehensive_closed =
   [
     ("direct-call-simple", ([ 0; 1 ], [ (0, 1) ]), None);
-    ("direct-call-transitive", ([ 0; 1 ], [ (0, 1) ]), None);
+    ("direct-call-transitive", ([ 0; 1; 2 ], [ (0, 1); (1, 2) ]), None);
     ("direct-call-imported-func", ([ 0; 1 ], [ (1, 0) ]), Some "");
     ("entry-point-start", ([ 0; 1 ], [ (0, 1) ]), None);
     ("entry-point-wasi", ([ 0; 1 ], [ (0, 1) ]), None);
