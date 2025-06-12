@@ -19,7 +19,7 @@ let gts_comprehensive_closed =
     ("entry-point-start", ([ 0; 1 ], [ (0, 1) ]), None);
     ("entry-point-wasi", ([ 0; 1 ], [ (0, 1) ]), None);
     ( "host-callbacks-exports",
-      ([ 0; 1; 2; 3; 4; 5 ], [ (0, 2); (1, 0); (2, 4); (3, 5) ]),
+      ([ 0; 1; 2; 3; 4; 5 ], [ (1, 0); (2, 4); (3, 5) ]),
       Some "" );
     ("host-reachable-table-export", ([ 0; 1; 2 ], [ (0, 2); (1, 0) ]), Some "");
     ("host-reachable-table-import", ([ 0; 1; 2 ], [ (0, 2); (1, 0) ]), Some "");
