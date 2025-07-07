@@ -24,6 +24,8 @@ To run the benchmarks from the paper:
 
 from the root directory. This **might** require root privileges. It will build a dedicated Docker container with the OCaml toolchain, libraries etc. and run the replication tests. For better visualization of the table of experiments it is suggested to expand the terminal.
 
+> A `sturdy` Dockerfile is also available for replication of the comparison in [`./wassilly/replication/replication-sturdy`](./wassilly/replication/replication-sturdy). 
+
 #### How to read the experiments
 You can find 4 columns in the output: TestCase, S, C, E representing, respectively: the benchmark name (benchmarks from *Lehmann et al.* referenced in the paper), **S** for Soundness, **C** for Completeness, and **E** for Exact, as in both Sound and Complete analysis results.
 
