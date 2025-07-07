@@ -3,8 +3,6 @@ WebAssembly Ain't So SILLY
 
 Artifact for the paper `Hybrid Call Graph Analysis for WebAssembly: Combining Abstract Interpretation and Specification in the Pursuit of Soundness`.
 
-This artifact is divided in two parts: the [**tool**](./wassilly/) and the [**proofs**](./wassilly-proofs/) backing it.
-
 - For instructions regarding the replication of experiments and proofs, see [Replication](#replication).
 - For instructions on general usage of `wassilly`, see [`./wassilly/README.md`](./wassilly/README.md).
 - For instructions on developing on top of `wassilly`, see [Development](#development).
@@ -26,6 +24,8 @@ To run the benchmarks from the paper:
 
 from the root directory. This **might** require root privileges. It will build a dedicated Docker container with the OCaml toolchain, libraries etc. and run the replication tests. For better visualization of the table of experiments it is suggested to expand the terminal.
 
+> A `sturdy` Dockerfile is also available for replication of the comparison in [`./wassilly/replication/replication-sturdy`](./wassilly/replication/replication-sturdy). 
+
 #### How to read the experiments
 You can find 4 columns in the output: TestCase, S, C, E representing, respectively: the benchmark name (benchmarks from *Lehmann et al.* referenced in the paper), **S** for Soundness, **C** for Completeness, and **E** for Exact, as in both Sound and Complete analysis results.
 
@@ -38,17 +38,5 @@ and the original ones provided in *Lehman et al.* in [`./wassilly/replication/mi
 
 ---
 
-### Run mechanized proofs
-To build the container dedicated to the proofs and type-check them, run:
-
-`make proofs`
-
-from the root directory. Again, this **might** require root privileges. It will build a dedicated Docker container with the LEAN proof assistant toolchain, and type-check the proofs. A green or red log will show, stating the success or fail of the proof.
-
----
-
-*This build is faster (**~1.5 minute**).*
-
----
 # Development
 See [./wassilly/DEV.md](./wassilly/DEV.md).

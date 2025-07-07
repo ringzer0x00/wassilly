@@ -85,3 +85,8 @@ let%test "entry-point-wasi" =
   Interpreter.Eval.cg := Datastructures.Callgraph.Ga.phi;
   let cg = p "entry-point-wasi" in
   edges cg = [ (0, 1) ] && reachable cg = [ 0; 1 ]
+
+let%test "indirect-call-index-expr-interprocedural-result" =
+  Interpreter.Eval.cg := Datastructures.Callgraph.Ga.phi;
+  let cg = p "indirect-call-index-expr-interprocedural-result" in
+  edges cg = [ (0, 1); (0, 2) ] && reachable cg = [ 0; 1; 2 ]
