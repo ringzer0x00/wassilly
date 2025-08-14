@@ -416,6 +416,10 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
                         ((ms_prepped, fbody), true)
                         sk cache fin' (tin, tout) Fixpoint.Answer.bot_pa step
                 in
+                (*if List.length targets > 8 then
+                  failwith
+                    "(Cflow.call_answer p_ans computed, cache, SCG.empty)"
+                else*)
                 let computed, cache', scg =
                   List.fold_left
                     (fun (a, c, g) (f, fidx) ->
