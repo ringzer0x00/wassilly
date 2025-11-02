@@ -15,6 +15,7 @@ module SCG = Scg.SCC
 module CallGraph = Datastructures.Callgraph.Ga
 
 let printer = Utilities.Printer.print
+let printerbypass = Utilities.Printer.print_always
 let cg = ref CallGraph.phi
 let cmd_result = Cflow.simplecmd_answer
 let seq_result = Cflow.seq_answer
@@ -49,18 +50,21 @@ let fixpoint _module (call, ifb) stack cache fin ft pres stepf =
           printer Format.print_string "{Fixpoint computation}: ";
           match Cache.call_in_cache call cache with
           | Some cached -> (
+              (*printerbypass Format.print_string "Cache hit @ fix\n";*)
               printer Format.print_string "Cached: ";
               let stable, resCached = cached in
               match stable with
               | Cache.Stable -> (resCached, cache, SCG.empty)
               | Cache.Unstable -> (resCached, cache, SCG.singleton call))
           | None -> (
-              printer Format.print_string "NOT Cached: ";
+              (*printerbypass Format.print_string "NOT Cached: ";*)
               match Stack.call_in_stack call stack && not _stackMod with
               | true ->
-                  printer Format.print_string "return BOT\n";
+                  (*printerbypass Format.print_string "return BOT\n";*)
+                  let cache = Cache.add call (Cache.Unstable, Bot) cache in
                   (Bot, cache, SCG.singleton call)
               | false ->
+                  (*printerbypass Format.print_string "ITERATE\n";*)
                   Iterate.iterate _module call stack cache fin ft pres stepf)))
 
 (*eval should not be called recursively*)
@@ -72,7 +76,7 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
       ( return { nat = Bot; return = p_ans.p_return; br = p_ans.p_br },
         cache,
         SCG.empty )
-  | Def d -> (
+  | Def _ -> (
       match p with
       | [] ->
           if MS.is_lsk_empty ms then (
@@ -83,9 +87,9 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
             let eob = Instructions.end_of_block ms p_ans modi in
             (cmd_result eob p_ans, cache, SCG.empty)
       | c1 :: c2 ->
-          let msg = Printf.sprintf "\nin %i, eval:" (Int32.to_int fin) in
+          let msg = Printf.sprintf "\nin %i, eval f_idx:" (Int32.to_int fin) in
           let msg_sklen =
-            Printf.sprintf "Stack length: %i\n" (List.length d.ops)
+            Printf.sprintf "Stack length: %i\n" (Stack.cardinal sk)
           in
           printer Format.print_string msg;
           printer Format.print_string msg_sklen;
@@ -194,6 +198,7 @@ let rec step (modi : module_) call sk cache (fin : Int32.t) ft p_ans :
                 in
                 (Cflow.block_result a [ c1 ], c, g)
             | Loop (_bt, lbody) ->
+                (*printerbypass Format.print_string "loop\n";*)
                 let _lab =
                   Memories.Operand.Label
                     (Memories.Label.LoopLabel

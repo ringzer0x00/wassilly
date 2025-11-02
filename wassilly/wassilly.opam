@@ -13,7 +13,7 @@ depends: [
   "ocaml"
   "ocaml-base-compiler"
   "dune" {>= "3.12"}
-  "wasm"
+  "wasm" {= "1.1.1"}
   "apron" {< "0.9.15"}
   "apronext" {= "1.0.4"}
   "stdio"

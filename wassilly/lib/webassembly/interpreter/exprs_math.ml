@@ -363,7 +363,7 @@ let load_standard vm mem o t (offset_expl : int32) =
       if not is_past_thresh then
         listmap'
           (*memory is little endian, this makes it big endian*)
-            (fun r ->
+          (fun r ->
             List.fold_left
               (fun acc v ->
                 match v with Some v -> Array.append v acc | None -> acc)

@@ -25,7 +25,7 @@
   ocaml
   ocaml-base-compiler
   dune
-  wasm
+  (wasm (= 1.1.1))
   (apron
    (< 0.9.15))
   (apronext (= 1.0.4))
